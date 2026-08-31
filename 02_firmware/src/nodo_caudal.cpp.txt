@@ -1,0 +1,95 @@
+/* ============================================================
+ *  HidroSopó — NODO DE CAUDAL
+ *  Cuenta pulsos del caudalímetro y reporta volumen acumulado.
+ *  Este nodo NO duerme profundo: debe contar pulsos siempre.
+ *
+ *  Es el nodo que genera la evidencia para el reporte PUEAA/CAR.
+ * ============================================================ */
+
+#include <Arduino.h>
+#include <RadioLib.h>
+#include <Preferences.h>
+#include <ArduinoJson.h>
+
+#define NODO_ID          "NODO-CAUDAL-01"
+#define NODO_TOKEN       "cambiar_por_token"
+#define PIN_CAUDAL       5
+#define PIN_BATERIA      7
+
+// CALIBRAR EN CAMPO con probeta. El valor de fábrica del YF-S201
+// (450 pulsos/L) tiene hasta 10% de error.
+#define PULSOS_POR_LITRO 450.0f
+
+#define INTERVALO_REPORTE_MS  (15UL * 60UL * 1000UL)
+
+#define LORA_FREQ 915.0
+SX1262 radio = new Module(8, 14, 12, 13);
+Preferences prefs;
+
+volatile uint32_t pulsos = 0;
+uint32_t pulsosAcumHistorico = 0;   // se persiste: el contador nunca se reinicia
+uint32_t ultimoReporte = 0;
+uint32_t ultimoGuardado = 0;
+
+void IRAM_ATTR isrCaudal() { pulsos++; }
+
+void setup() {
+  Serial.begin(115200);
+  delay(150);
+
+  prefs.begin("caudal", false);
+  pulsosAcumHistorico = prefs.getULong("acum", 0);
+  Serial.printf("[INIT] acumulado historico: %u pulsos = %.2f L\n",
+                pulsosAcumHistorico, pulsosAcumHistorico / PULSOS_POR_LITRO);
+
+  pinMode(PIN_CAUDAL, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(PIN_CAUDAL), isrCaudal, FALLING);
+
+  int st = radio.begin(LORA_FREQ, 125.0, 9, 5, RADIOLIB_SX126X_SYNC_WORD_PRIVATE, 20);
+  if (st != RADIOLIB_ERR_NONE) { Serial.printf("[FATAL] LoRa %d\n", st); }
+  radio.sleep();
+}
+
+void loop() {
+  uint32_t ahora = millis();
+
+  // Persistir el acumulado cada 5 min: si se corta la energía,
+  // no se pierde el conteo (crítico para el reporte a la CAR).
+  if (ahora - ultimoGuardado > 300000UL) {
+    ultimoGuardado = ahora;
+    noInterrupts(); uint32_t p = pulsos; pulsos = 0; interrupts();
+    pulsosAcumHistorico += p;
+    prefs.putULong("acum", pulsosAcumHistorico);
+  }
+
+  if (ahora - ultimoReporte >= INTERVALO_REPORTE_MS) {
+    ultimoReporte = ahora;
+
+    noInterrupts(); uint32_t p = pulsos; pulsos = 0; interrupts();
+    pulsosAcumHistorico += p;
+    prefs.putULong("acum", pulsosAcumHistorico);
+
+    float litros_periodo = p / PULSOS_POR_LITRO;
+    float m3_acumulado   = pulsosAcumHistorico / PULSOS_POR_LITRO / 1000.0f;
+    float caudal_lpm     = litros_periodo / (INTERVALO_REPORTE_MS / 60000.0f);
+    float caudal_lps     = caudal_lpm / 60.0f;
+
+    StaticJsonDocument<256> doc;
+    doc["id"]  = NODO_ID;
+    doc["tok"] = NODO_TOKEN;
+    doc["lp"]  = roundf(litros_periodo * 100) / 100;   // litros del período
+    doc["m3"]  = roundf(m3_acumulado * 1000) / 1000;   // m3 acumulado histórico
+    doc["qls"] = roundf(caudal_lps * 1000) / 1000;     // caudal medio l/s
+    doc["vb"]  = (analogRead(PIN_BATERIA) / 4095.0f) * 3.3f * 2.0f;
+
+    String out; serializeJson(doc, out);
+    Serial.println(out);
+
+    radio.standby();
+    int st = radio.transmit(out);
+    Serial.printf("[TX] %d\n", st);
+    radio.sleep();
+  }
+
+  delay(50);   // light sleep implícito, la ISR sigue activa
+}

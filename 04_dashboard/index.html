@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>HidroSopó</title>
+<meta name="theme-color" content="#3A2E23">
+<meta name="description" content="Cuánta agua tiene su tierra hoy, y si necesita regar. Sopó, Cundinamarca.">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="iconos/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="HidroSopó">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+<style>
+:root{
+  /* Colores tomados de los materiales reales: andisol de la Sabana, kikuyo, agua */
+  --tierra-honda:#3A2E23;
+  --tierra-media:#54412D;
+  --tierra-viva:#6E5637;
+  --pasto:#7A9B3E;
+  --pasto-seco:#B8A052;
+  --agua:#2E7EA6;
+  --agua-clara:#5AA8C9;
+  --cielo:#EBF0EE;
+  --carbon:#1A1F1C;
+  --humo:#5C6660;
+  --arcilla:#C4622D;
+  --alarma:#A83E30;
+  --linea:#D3DAD6;
+  --papel:#FFFFFF;
+
+  --sans:"Inter",system-ui,-apple-system,sans-serif;
+  --display:"Bricolage Grotesque","Inter",system-ui,sans-serif;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  font-family:var(--sans);
+  background:var(--cielo);
+  color:var(--carbon);
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
+/* El atributo hidden pone display:none desde la hoja del navegador, pero
+   cualquier regla de autor con display lo vence (.aviso usa flex). Sin esto,
+   los elementos "ocultos" se siguen viendo. */
+[hidden]{display:none !important}
+:focus-visible{outline:2.5px solid var(--agua);outline-offset:3px;border-radius:4px}
+
+.envoltura{max-width:600px;margin:0 auto;background:var(--papel);min-height:100vh}
+@media(min-width:601px){ .envoltura{box-shadow:0 0 60px rgba(58,46,35,.10)} }
+
+/* ---------- Encabezado ---------- */
+.cabecera{
+  display:flex;justify-content:space-between;align-items:baseline;
+  padding:1.1rem 1.25rem .9rem;
+  padding-top:calc(1.1rem + env(safe-area-inset-top));
+}
+.finca{font-family:var(--display);font-size:1.15rem;font-weight:600;letter-spacing:-.02em}
+.pulso{display:flex;align-items:center;gap:.4rem;font-size:.78rem;color:var(--humo)}
+.pulso i{width:7px;height:7px;border-radius:50%;background:var(--pasto);flex:none}
+.pulso.frio i{background:var(--humo)}
+
+/* ---------- Héroe: el corte de suelo ---------- */
+.corte{position:relative;background:var(--tierra-honda);line-height:0}
+.corte svg{width:100%;height:auto;display:block;touch-action:manipulation}
+.sensor-tocable{cursor:pointer}
+.sensor-tocable:hover .aro{r:16}
+.aro{transition:r .18s ease}
+
+.globo{
+  position:absolute;background:rgba(26,31,28,.94);color:#fff;
+  padding:.5rem .7rem;border-radius:8px;font-size:.8rem;line-height:1.35;
+  pointer-events:none;opacity:0;transition:opacity .16s ease;
+  white-space:nowrap;transform:translate(-50%,-115%);z-index:5;
+}
+.globo.ver{opacity:1}
+.globo b{font-family:var(--display);font-size:1rem;display:block;font-weight:600}
+
+/* ---------- Veredicto ---------- */
+.veredicto{padding:1.5rem 1.25rem 1.25rem;border-bottom:1px solid var(--linea)}
+.marca{display:block;width:100%;height:4px;border-radius:2px;background:var(--pasto);margin-bottom:1rem}
+.marca.regar{background:var(--arcilla)}
+.marca.critica{background:var(--alarma)}
+.marca.preparar{background:var(--pasto-seco)}
+.veredicto h1{
+  font-family:var(--display);font-size:clamp(1.9rem,7vw,2.5rem);
+  font-weight:800;letter-spacing:-.035em;line-height:1.08;margin-bottom:.5rem;
+}
+.veredicto p{color:var(--humo);font-size:.98rem;max-width:44ch}
+
+/* ---------- Acción de riego ---------- */
+.accion{padding:1.25rem;background:var(--tierra-honda);color:#F2EDE6;border-bottom:1px solid var(--linea)}
+.accion .fila{display:flex;gap:1.75rem;flex-wrap:wrap}
+.accion .dato span{display:block;font-size:.78rem;color:#B9AC9B;margin-bottom:.1rem}
+.accion .dato strong{
+  font-family:var(--display);font-size:2rem;font-weight:600;
+  letter-spacing:-.03em;font-variant-numeric:tabular-nums;
+}
+.accion .nota{
+  margin-top:1rem;padding-top:.9rem;border-top:1px solid rgba(242,237,230,.18);
+  font-size:.88rem;color:#D6C9B8;max-width:48ch;
+}
+
+/* ---------- Deslizador de proyección ---------- */
+.futuro{padding:1.35rem 1.25rem;border-bottom:1px solid var(--linea)}
+.futuro h2{font-family:var(--display);font-size:1.05rem;font-weight:600;letter-spacing:-.015em;margin-bottom:.15rem}
+.futuro .sub{font-size:.85rem;color:var(--humo);margin-bottom:1rem}
+
+.pista{margin:0 2px .6rem}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:34px;background:transparent;cursor:grab;display:block}
+input[type=range]:active{cursor:grabbing}
+input[type=range]::-webkit-slider-runnable-track{
+  height:6px;border-radius:3px;
+  background:linear-gradient(90deg,var(--agua) 0%,var(--pasto-seco) 55%,var(--arcilla) 100%);
+}
+input[type=range]::-moz-range-track{
+  height:6px;border-radius:3px;
+  background:linear-gradient(90deg,var(--agua) 0%,var(--pasto-seco) 55%,var(--arcilla) 100%);
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:30px;height:30px;border-radius:50%;
+  background:var(--papel);border:3.5px solid var(--carbon);margin-top:-12px;
+  box-shadow:0 2px 8px rgba(26,31,28,.28);
+}
+input[type=range]::-moz-range-thumb{
+  width:30px;height:30px;border-radius:50%;background:var(--papel);
+  border:3.5px solid var(--carbon);box-shadow:0 2px 8px rgba(26,31,28,.28);
+}
+.dias{display:flex;justify-content:space-between;font-size:.72rem;color:var(--humo);padding:0 4px}
+.dias span{flex:1;text-align:center}
+.dias span:first-child{text-align:left}
+.dias span:last-child{text-align:right}
+.dias span.activo{color:var(--carbon);font-weight:600}
+
+.lectura{display:flex;align-items:baseline;gap:.6rem;margin-top:1rem;padding:.85rem 1rem;background:var(--cielo);border-radius:10px}
+.lectura b{font-family:var(--display);font-size:2.1rem;font-weight:600;letter-spacing:-.035em;font-variant-numeric:tabular-nums;line-height:1}
+.lectura em{font-style:normal;font-size:.88rem;color:var(--humo)}
+.gota-lluvia{color:var(--agua);font-size:.85rem;margin-top:.55rem;display:block}
+
+/* ---------- Cifras ---------- */
+.cifras{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--linea)}
+.cifra{padding:1.05rem 1.25rem;border-right:1px solid var(--linea)}
+.cifra:nth-child(2n){border-right:none}
+.cifra:nth-child(-n+2){border-bottom:1px solid var(--linea)}
+.cifra span{display:block;font-size:.78rem;color:var(--humo);margin-bottom:.15rem}
+.cifra strong{font-family:var(--display);font-size:1.55rem;font-weight:600;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.cifra small{display:block;font-size:.76rem;color:var(--humo);margin-top:.1rem}
+
+/* ---------- Pastoreo ---------- */
+.pastoreo{padding:1.35rem 1.25rem;border-bottom:1px solid var(--linea)}
+.pastoreo h2{font-family:var(--display);font-size:1.05rem;font-weight:600;margin-bottom:.5rem}
+.pastoreo p{font-size:.93rem;color:var(--humo);margin-bottom:1rem;max-width:46ch}
+.crecer{height:12px;background:var(--cielo);border-radius:6px;overflow:hidden}
+.crecer i{display:block;height:100%;background:var(--pasto);transition:width .6s cubic-bezier(.32,.72,0,1)}
+.crecer.sobremaduro i{background:var(--pasto-seco)}
+.crecer-pie{display:flex;justify-content:space-between;font-size:.76rem;color:var(--humo);margin-top:.4rem;gap:1rem}
+
+/* ---------- Gráficas ---------- */
+.graficas{padding:1.35rem 1.25rem 2rem}
+.pestanas{display:flex;gap:.4rem;margin-bottom:1.1rem;flex-wrap:wrap}
+.pestanas button{padding:.45rem .85rem;border-radius:999px;font-size:.86rem;background:var(--cielo);color:var(--humo);transition:background .15s,color .15s}
+.pestanas button[aria-selected=true]{background:var(--carbon);color:#fff}
+.lienzo{position:relative;height:250px}
+.lienzo[hidden]{display:none}
+
+/* ---------- Lo que se ahorró ---------- */
+.ahorro{padding:1.5rem 1.25rem;background:var(--tierra-honda);color:#F2EDE6;border-bottom:1px solid var(--linea)}
+.ahorro h2{font-family:var(--display);font-size:1.05rem;font-weight:600;margin-bottom:1.1rem;color:#D6C9B8}
+.ahorro .cifra-grande{
+  font-family:var(--display);font-size:clamp(2.6rem,11vw,3.4rem);font-weight:800;
+  letter-spacing:-.04em;line-height:1;font-variant-numeric:tabular-nums;
+}
+.ahorro .contexto{font-size:.9rem;color:#B9AC9B;margin-top:.35rem;max-width:40ch}
+.ahorro .partidas{margin-top:1.3rem;padding-top:1.1rem;border-top:1px solid rgba(242,237,230,.18)}
+.partida{display:flex;justify-content:space-between;align-items:baseline;gap:1rem;padding:.45rem 0;font-size:.92rem}
+.partida span{color:#B9AC9B}
+.partida b{font-variant-numeric:tabular-nums;font-weight:600}
+.partida.suma{border-top:1px solid rgba(242,237,230,.18);margin-top:.4rem;padding-top:.7rem;font-size:1rem}
+.ahorro .pie-nota{margin-top:1.1rem;font-size:.8rem;color:#9C9184;line-height:1.5}
+
+/* ---------- Conversación ---------- */
+.charla{border-bottom:1px solid var(--linea)}
+.charla-cabeza{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:1.15rem 1.25rem;cursor:pointer;width:100%;text-align:left;
+}
+.charla-cabeza h2{font-family:var(--display);font-size:1.05rem;font-weight:600;letter-spacing:-.015em}
+.charla-cabeza small{display:block;font-size:.82rem;color:var(--humo);font-weight:400;margin-top:.1rem}
+.charla-cabeza .flecha{color:var(--humo);font-size:1.3rem;line-height:1;transition:transform .22s ease}
+.charla[data-abierta=si] .flecha{transform:rotate(180deg)}
+
+.hilo{padding:0 1.25rem;max-height:340px;overflow-y:auto;scroll-behavior:smooth}
+.burbuja{
+  max-width:85%;padding:.7rem .9rem;border-radius:14px;
+  margin-bottom:.6rem;font-size:.92rem;line-height:1.45;white-space:pre-line;
+}
+.burbuja.productor{background:var(--carbon);color:#F2EDE6;margin-left:auto;border-bottom-right-radius:4px}
+.burbuja.sistema{background:var(--cielo);border-bottom-left-radius:4px}
+.burbuja.pensando{color:var(--humo);font-style:italic}
+
+.sugerencias{display:flex;gap:.4rem;overflow-x:auto;padding:.5rem 1.25rem .25rem;scrollbar-width:none}
+.sugerencias::-webkit-scrollbar{display:none}
+.sugerencias button{
+  white-space:nowrap;padding:.4rem .8rem;border-radius:999px;
+  background:var(--cielo);font-size:.83rem;color:var(--carbon);flex:none;
+}
+.sugerencias button:hover{background:#DFE6E2}
+
+.escribir{display:flex;gap:.5rem;padding:.75rem 1.25rem 1.25rem}
+.escribir input{
+  flex:1;font:inherit;font-size:1rem;padding:.7rem .9rem;
+  border:1.5px solid var(--linea);border-radius:999px;background:var(--papel);color:var(--carbon);
+}
+.escribir input:focus{outline:none;border-color:var(--agua)}
+.escribir button{
+  width:44px;height:44px;border-radius:50%;background:var(--carbon);color:#fff;
+  display:grid;place-items:center;flex:none;font-size:1.1rem;
+}
+.escribir button:disabled{opacity:.4;cursor:default}
+
+/* ---------- Avisos ---------- */
+.aviso{margin:0;padding:.85rem 1.25rem;font-size:.86rem;display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;border-bottom:1px solid var(--linea)}
+.aviso.instalar{background:var(--carbon);color:#F2EDE6;border-bottom:none}
+.aviso.instalar button{background:#F2EDE6;color:var(--carbon);padding:.45rem .9rem;border-radius:999px;font-weight:600;font-size:.84rem;flex:none}
+.aviso.offline{background:#EEF3F6;color:#265D78}
+.aviso.demo{background:#FBF3E9;color:#7A5320}
+
+/* ---------- Pie ---------- */
+.pie{padding:1.75rem 1.25rem;padding-bottom:calc(1.75rem + env(safe-area-inset-bottom));font-size:.78rem;color:var(--humo);text-align:center;line-height:1.6}
+.pie .barra{display:flex;gap:.5rem;justify-content:center;margin-bottom:1rem;flex-wrap:wrap}
+.pie select,.pie button.enlace{font-size:.82rem;padding:.4rem .8rem;border-radius:999px;background:var(--cielo);border:none;color:var(--carbon);cursor:pointer}
+
+/* ---------- Carga ---------- */
+.cargando{padding:5rem 1.25rem;text-align:center;color:var(--humo)}
+.cargando .gota{width:34px;height:34px;margin:0 auto 1rem;border-radius:50% 50% 50% 0;background:var(--agua);transform:rotate(-45deg);animation:latir 1.5s ease-in-out infinite}
+@keyframes latir{0%,100%{opacity:.35;transform:rotate(-45deg) scale(.85)}50%{opacity:1;transform:rotate(-45deg) scale(1)}}
+
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms !important;transition-duration:.01ms !important}
+}
+</style>
+</head>
+<body>
+
+<div class="envoltura">
+
+  <header class="cabecera">
+    <span class="finca" id="nombreFinca">HidroSopó</span>
+    <span class="pulso" id="pulso"><i></i><span id="pulsoTexto">conectando</span></span>
+  </header>
+
+  <div class="aviso instalar" id="avisoInstalar" hidden>
+    <span id="textoInstalar">Instale la app para abrirla sin señal.</span>
+    <button id="btnInstalar">Instalar</button>
+  </div>
+  <div class="aviso offline" id="avisoOffline" hidden>
+    <span>Sin señal. Esta es la última información que llegó <b id="edadDatos"></b>.</span>
+  </div>
+  <div class="aviso demo" id="avisoDemo" hidden>
+    <span>Datos de ejemplo. El servidor no responde todavía.</span>
+  </div>
+
+  <div id="cargando" class="cargando"><div class="gota"></div>Leyendo los sensores</div>
+
+  <main id="app" hidden>
+
+    <section class="corte" id="corte" aria-label="Corte del suelo con la humedad medida">
+      <svg id="svgSuelo" viewBox="0 0 400 430" role="img" aria-labelledby="tituloSuelo">
+        <title id="tituloSuelo">Corte del suelo</title>
+      </svg>
+      <div class="globo" id="globo"></div>
+    </section>
+
+    <section class="veredicto">
+      <span class="marca" id="marca"></span>
+      <h1 id="titular">…</h1>
+      <p id="razon"></p>
+    </section>
+
+    <section class="accion" id="accion" hidden>
+      <div class="fila">
+        <div class="dato"><span>Tiempo de riego</span><strong id="aMinutos">—</strong></div>
+        <div class="dato"><span>Agua a aplicar</span><strong id="aVolumen">—</strong></div>
+        <div class="dato"><span>Lámina</span><strong id="aLamina">—</strong></div>
+      </div>
+      <p class="nota" id="aNota"></p>
+    </section>
+
+    <section class="futuro">
+      <h2>Si no riega, ¿qué pasa?</h2>
+      <p class="sub">Deslice para ver cómo se seca la tierra día por día.</p>
+      <div class="pista">
+        <input type="range" id="dias" min="0" max="6" value="0" step="1" aria-label="Días hacia adelante">
+        <div class="dias" id="etiquetasDias"></div>
+      </div>
+      <div class="lectura">
+        <b id="proyPct">—</b>
+        <em id="proyTexto">de agua le queda a la tierra</em>
+      </div>
+      <span class="gota-lluvia" id="proyLluvia"></span>
+    </section>
+
+    <section class="ahorro" id="ahorro" hidden>
+      <h2>Lo que lleva ahorrado</h2>
+      <div class="cifra-grande" id="ahorroPesos">—</div>
+      <p class="contexto" id="ahorroContexto"></p>
+      <div class="partidas" id="ahorroPartidas"></div>
+      <p class="pie-nota" id="ahorroNota"></p>
+    </section>
+
+    <section class="charla" id="charla" data-abierta="no">
+      <button class="charla-cabeza" id="charlaCabeza" aria-expanded="false" aria-controls="charlaCuerpo">
+        <span>
+          <h2>Cuénteme</h2>
+          <small>Dígame cuánto regó o pregúnteme lo que sea</small>
+        </span>
+        <span class="flecha" aria-hidden="true">⌄</span>
+      </button>
+      <div id="charlaCuerpo" hidden>
+        <div class="hilo" id="hilo"></div>
+        <div class="sugerencias" id="sugerencias"></div>
+        <form class="escribir" id="formChat">
+          <input id="entradaChat" placeholder="Regué 40 minutos…" autocomplete="off"
+                 enterkeyhint="send" aria-label="Escriba su mensaje">
+          <button type="submit" aria-label="Enviar">→</button>
+        </form>
+      </div>
+    </section>
+
+    <section class="cifras" id="cifras"></section>
+
+    <section class="pastoreo" id="pastoreo" hidden>
+      <h2>La franja</h2>
+      <p id="pastoreoTexto"></p>
+      <div class="crecer" id="crecerBarra"><i style="width:0%"></i></div>
+      <div class="crecer-pie">
+        <span id="pastoreoDias"></span>
+        <span id="pastoreoAltura"></span>
+      </div>
+    </section>
+
+    <section class="graficas">
+      <div class="pestanas" role="tablist">
+        <button role="tab" aria-selected="true"  data-g="gHumedad">Humedad</button>
+        <button role="tab" aria-selected="false" data-g="gClima">Clima</button>
+        <button role="tab" aria-selected="false" data-g="gConsumo">Consumo</button>
+      </div>
+      <div class="lienzo"><canvas id="gHumedad"></canvas></div>
+      <div class="lienzo" hidden><canvas id="gClima"></canvas></div>
+      <div class="lienzo" hidden><canvas id="gConsumo"></canvas></div>
+    </section>
+
+    <footer class="pie">
+      <div class="barra">
+        <select id="selPredio" aria-label="Predio"></select>
+        <button class="enlace" id="btnReporte">Descargar informe</button>
+      </div>
+      Las recomendaciones son una ayuda. La decisión de regar siempre es suya.<br>
+      Proyecto de Ciencia, Tecnología e Innovación · Municipio de Sopó
+    </footer>
+
+  </main>
+</div>
+
+<script>
+'use strict';
+const API = localStorage.getItem('hidrosopo_api') || 'http://localhost:8000';
+const $ = s => document.querySelector(s);
+const fmt = (n, d = 1) => (n == null || isNaN(n)) ? '—' : Number(n).toFixed(d);
+
+let predioId = 1, datos = null, graficas = {}, modoDemo = false, primeraCarga = true;
+
+/* ══════════════════════════════════════════════════════════
+   EL CORTE DE SUELO
+   Se dibuja en SVG desde cero. Muestra el pasto arriba (que se
+   pone amarillo y se encoge con el estrés), los tres horizontes
+   del suelo con su saturación real, los sensores a su
+   profundidad, las raíces y la línea del umbral de riego.
+   ══════════════════════════════════════════════════════════ */
+
+const SUELO = {
+  W: 400, H: 430, superficieY: 96, fondoY: 415,
+  y(cm){ return this.superficieY + (cm / 60) * (this.fondoY - this.superficieY); }
+};
+
+function mezclar(a, b, t){
+  const p = c => [parseInt(c.slice(1,3),16), parseInt(c.slice(3,5),16), parseInt(c.slice(5,7),16)];
+  const [r1,g1,b1] = p(a), [r2,g2,b2] = p(b);
+  const k = Math.max(0, Math.min(1, t));
+  const m = (x,y) => Math.round(x + (y - x) * k);
+  return `rgb(${m(r1,r2)},${m(g1,g2)},${m(b1,b2)})`;
+}
+
+/* La tierra seca se ve clara y polvorienta; la húmeda, oscura y saturada. */
+const SECO = { '#6E5637':'#A08862', '#54412D':'#8A7052', '#3A2E23':'#5E4C38' };
+const colorTierra = (pct, base) => mezclar(SECO[base] || '#A08862', base, pct / 100);
+
+function dibujarSuelo(humedades, pctAgua, umbralPct, coefEstres){
+  const S = SUELO;
+  const estres = 1 - Math.max(0, Math.min(1, coefEstres ?? 1));
+  const colorPasto = mezclar('#7A9B3E', '#B8A052', estres);
+  const altoPasto = 40 - estres * 16;
+
+  const h = [
+    humedades[0] ?? 25,
+    humedades[1] ?? humedades[0] ?? 24,
+    humedades[2] ?? humedades[1] ?? 23
+  ];
+  const sat = v => Math.max(0, Math.min(100, (v / 40) * 100));
+
+  let svg = `<rect x="0" y="0" width="${S.W}" height="${S.superficieY}" fill="#EBF0EE"/>`;
+
+  // Pasto: matas dibujadas una por una, con variación
+  for(let x = -6; x < S.W + 10; x += 7){
+    const alt = altoPasto * (0.62 + Math.abs(Math.sin(x * 0.83)) * 0.5);
+    const inc = Math.sin(x * 0.31) * 5;
+    svg += `<path d="M${x},${S.superficieY} q${(inc*0.5).toFixed(1)},${(-alt*0.6).toFixed(1)} ${inc.toFixed(1)},${(-alt).toFixed(1)}" stroke="${colorPasto}" stroke-width="2.6" fill="none" stroke-linecap="round"/>`;
+  }
+
+  // Horizontes del suelo
+  [{d:0,h2:22,base:'#6E5637',v:h[0]},
+   {d:22,h2:38,base:'#54412D',v:h[1]},
+   {d:38,h2:60,base:'#3A2E23',v:h[2]}].forEach(c => {
+    const y0 = S.y(c.d), y1 = S.y(c.h2);
+    svg += `<rect x="0" y="${y0.toFixed(1)}" width="${S.W}" height="${(y1-y0).toFixed(1)}" fill="${colorTierra(sat(c.v), c.base)}"/>`;
+    if(c.d > 0)   // frontera entre horizontes, como se ve en una calicata real
+      svg += `<line x1="0" y1="${y0.toFixed(1)}" x2="${S.W}" y2="${y0.toFixed(1)}" stroke="#241C14" stroke-width="1" opacity="0.30"/>`;
+  });
+
+  // Textura de granos y piedritas
+  for(let i = 0; i < 130; i++){
+    const x = (i * 61.8) % S.W;
+    const y = S.superficieY + ((i * 97.3) % (S.fondoY - S.superficieY));
+    const r = 0.7 + ((i * 13) % 10) / 9;
+    svg += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(1)}" fill="#241C14" opacity="${(0.07 + (i % 5) * 0.03).toFixed(2)}"/>`;
+  }
+
+  // Raíces
+  svg += `<g opacity="0.42" stroke="${mezclar('#E8DCC4','#C9B896',estres)}" fill="none" stroke-linecap="round">`;
+  [70, 155, 245, 330].forEach((x, i) => {
+    const prof = S.y(38 + (i % 2) * 9);
+    svg += `<path d="M${x},${S.superficieY} C${x-9},${S.superficieY+55} ${x+11},${(prof-58).toFixed(1)} ${x+3},${prof.toFixed(1)}" stroke-width="2.1"/>`;
+    for(let k = 1; k <= 3; k++){
+      const yr = S.superficieY + (prof - S.superficieY) * (k / 4);
+      const lado = k % 2 ? 1 : -1;
+      svg += `<path d="M${x + lado*2},${yr.toFixed(1)} q${lado*16},9 ${lado*26},4" stroke-width="1.2"/>`;
+    }
+  });
+  svg += `</g>`;
+
+  svg += `<line x1="0" y1="${S.superficieY}" x2="${S.W}" y2="${S.superficieY}" stroke="#2A2118" stroke-width="1.6" opacity="0.55"/>`;
+
+  // Umbral de riego
+  if(umbralPct != null){
+    const yU = S.superficieY + (1 - umbralPct/100) * (S.fondoY - S.superficieY);
+    svg += `<line x1="0" y1="${yU.toFixed(1)}" x2="${S.W}" y2="${yU.toFixed(1)}" stroke="#E8B23C" stroke-width="1.6" stroke-dasharray="7 5" opacity="0.85"/>
+            <text x="52" y="${(yU-7).toFixed(1)}" font-family="Inter,sans-serif" font-size="10.5" fill="#E8B23C">de aquí para abajo, hay que regar</text>`;
+  }
+
+  // Reserva de agua
+  const xR = 26, wR = 15, topR = S.y(4), botR = S.y(52);
+  const altoR = botR - topR;
+  const lleno = altoR * Math.max(0, Math.min(1, pctAgua / 100));
+  svg += `<rect x="${xR}" y="${topR.toFixed(1)}" width="${wR}" height="${altoR.toFixed(1)}" rx="7.5" fill="#1A1310" opacity="0.34"/>
+          <rect id="reservaAgua" x="${xR}" y="${(botR-lleno).toFixed(1)}" width="${wR}" height="${lleno.toFixed(1)}" rx="7.5" fill="url(#degradadoAgua)"/>
+          <rect x="${xR}" y="${topR.toFixed(1)}" width="${wR}" height="${altoR.toFixed(1)}" rx="7.5" fill="none" stroke="#EBF0EE" stroke-width="1.2" opacity="0.42"/>
+          <text x="${xR + wR/2}" y="${(topR-11).toFixed(1)}" text-anchor="middle" font-family="Inter,sans-serif" font-size="10.5" fill="#C4B7A6">reserva</text>`;
+
+  // Sensores
+  const xS = 300;
+  [{cm:15,v:h[0]},{cm:30,v:h[1]},{cm:45,v:h[2]}].forEach((s, i) => {
+    const y = S.y(s.cm);
+    svg += `<g class="sensor-tocable" data-cm="${s.cm}" data-v="${s.v.toFixed(1)}" data-x="${xS}" data-y="${y.toFixed(0)}">
+              <line x1="${xS-58}" y1="${y.toFixed(1)}" x2="${xS-16}" y2="${y.toFixed(1)}" stroke="#EBF0EE" stroke-width="1.1" opacity="0.4"/>
+              <circle class="aro" cx="${xS}" cy="${y.toFixed(1)}" r="13" fill="#EBF0EE" opacity="0.16"/>
+              <circle cx="${xS}" cy="${y.toFixed(1)}" r="7" fill="${mezclar('#B8A052','#5AA8C9', sat(s.v)/100)}" stroke="#EBF0EE" stroke-width="1.8"/>
+              <text x="${xS+21}" y="${(y-2).toFixed(1)}" font-family="Bricolage Grotesque,sans-serif" font-size="16" font-weight="600" fill="#F2EDE6">${s.v.toFixed(0)}%</text>
+              <text x="${xS+21}" y="${(y+13).toFixed(1)}" font-family="Inter,sans-serif" font-size="10.5" fill="#C4B7A6">${s.cm} cm</text>
+            </g>`;
+  });
+
+  const defs = `<defs><linearGradient id="degradadoAgua" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#5AA8C9"/><stop offset="100%" stop-color="#2E7EA6"/>
+    </linearGradient></defs>`;
+
+  $('#svgSuelo').innerHTML =
+    `<title id="tituloSuelo">Corte del suelo: ${fmt(pctAgua, 0)}% de agua disponible</title>` + defs + svg;
+
+  // Una sola secuencia de carga: el agua sube. Después nada se mueve solo.
+  if(primeraCarga && !window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+    const r = document.getElementById('reservaAgua');
+    if(r){
+      r.setAttribute('y', botR); r.setAttribute('height', 0);
+      requestAnimationFrame(() => {
+        r.style.transition = 'y 1s cubic-bezier(.32,.72,0,1), height 1s cubic-bezier(.32,.72,0,1)';
+        r.setAttribute('y', botR - lleno); r.setAttribute('height', lleno);
+      });
+    }
+    primeraCarga = false;
+  }
+
+  conectarSensores();
+}
+
+function conectarSensores(){
+  const globo = $('#globo'), corte = $('#corte');
+  document.querySelectorAll('.sensor-tocable').forEach(g => {
+    const mostrar = () => {
+      const esc = corte.getBoundingClientRect().width / SUELO.W;
+      globo.innerHTML = `<b>${g.dataset.v}% de humedad</b>a ${g.dataset.cm} cm de profundidad`;
+      globo.style.left = (g.dataset.x * esc) + 'px';
+      globo.style.top  = (g.dataset.y * esc) + 'px';
+      globo.classList.add('ver');
+      clearTimeout(globo._t);
+      globo._t = setTimeout(() => globo.classList.remove('ver'), 2600);
+    };
+    g.onclick = mostrar;
+    g.onmouseenter = mostrar;
+    g.onmouseleave = () => globo.classList.remove('ver');
+  });
+}
+
+/* ══════════════════════════════════════════════════════════
+   PINTAR
+   ══════════════════════════════════════════════════════════ */
+
+const TITULARES = {
+  regar:'Hay que regar hoy',
+  esperar:'Hoy no riegue',
+  preparar:'Todavía no, pero prepárese',
+  no_regar:'La tierra está bien'
+};
+
+function pintar(r){
+  datos = r;
+  const d = r.decision, e = r.estado_suelo, c = r.clima;
+
+  $('#nombreFinca').textContent = (r.predio && r.predio.nombre) || 'HidroSopó';
+
+  const umbral = e.agua_disponible_total_mm > 0
+    ? 100 * (1 - e.agua_facilmente_disponible_mm / e.agua_disponible_total_mm) : null;
+
+  dibujarSuelo(e.lecturas_por_profundidad || [], e.pct_agua_disponible, umbral, e.coef_estres_ks);
+
+  $('#titular').textContent = TITULARES[d.accion] || d.accion;
+  $('#razon').textContent = d.razon;
+  $('#marca').className = 'marca ' +
+    (d.urgencia === 'critica' ? 'critica' : d.accion === 'regar' ? 'regar'
+     : d.accion === 'preparar' ? 'preparar' : '');
+
+  const acc = $('#accion');
+  if(r.riego){
+    acc.hidden = false;
+    $('#aMinutos').textContent = fmt(r.riego.minutos, 0) + ' min';
+    $('#aVolumen').textContent = fmt(r.riego.volumen_m3, 1) + ' m³';
+    $('#aLamina').textContent  = fmt(r.riego.lamina_bruta_mm) + ' mm';
+    $('#aNota').textContent = r.riego.fraccionar_en_pasadas
+      ? `Divida el riego en ${r.riego.pasadas_sugeridas} pasadas, con descanso entre ellas. De un solo golpe la tierra no alcanza a absorber y el agua se escurre.`
+      : `Con su sistema de ${(r.riego.sistema || '').toLowerCase()} y el caudal que tiene.`;
+  } else acc.hidden = true;
+
+  $('#cifras').innerHTML = `
+    <div class="cifra"><span>Agua disponible</span>
+      <strong>${fmt(e.pct_agua_disponible, 0)}%</strong>
+      <small>${fmt(e.agotamiento_mm)} mm le faltan</small></div>
+    <div class="cifra"><span>Gasto del cultivo hoy</span>
+      <strong>${fmt(c.etc_hoy_mm, 1)} mm</strong>
+      <small>lo que se evapora y transpira</small></div>
+    <div class="cifra"><span>Lluvia en 7 días</span>
+      <strong>${fmt(c.lluvia_proxima_7d_mm, 0)} mm</strong>
+      <small>según el pronóstico</small></div>
+    <div class="cifra"><span>Humedad de la tierra</span>
+      <strong>${fmt(e.humedad_ponderada_pct)}%</strong>
+      <small>promedio de los tres sensores</small></div>`;
+
+  pintarFuturo(r);
+  pintarAhorro();
+  pintarPastoreo(r.pastoreo);
+}
+
+function pintarFuturo(r){
+  const tr = (r.proyeccion && r.proyeccion.trayectoria) || [];
+  const rango = $('#dias');
+  if(!tr.length){ rango.disabled = true; return; }
+  rango.max = tr.length - 1;
+
+  const nombres = ['hoy','mañana','en 2 días','en 3 días','en 4 días','en 5 días','en 6 días'];
+  $('#etiquetasDias').innerHTML = tr.map((_, i) =>
+    `<span data-i="${i}">${i === 0 ? 'Hoy' : '+' + i}</span>`).join('');
+
+  const e = r.estado_suelo;
+  const umbral = e.agua_disponible_total_mm > 0
+    ? 100 * (1 - e.agua_facilmente_disponible_mm / e.agua_disponible_total_mm) : null;
+
+  const actualizar = () => {
+    const i = +rango.value, t = tr[i];
+    if(!t) return;
+
+    $('#proyPct').textContent = fmt(t.pct_agua_disponible, 0) + '%';
+    $('#proyTexto').textContent = i === 0
+      ? 'de agua le queda a la tierra hoy'
+      : `de agua le quedaría ${nombres[i]}, si no riega`;
+
+    const ll = (r.clima.lluvia_por_dia_mm || [])[i] || 0;
+    $('#proyLluvia').textContent = ll > 0.5 ? `Se esperan ${fmt(ll)} mm de lluvia ese día.` : '';
+
+    // El suelo se seca en vivo mientras el usuario desliza
+    const base = Math.max(1, e.pct_agua_disponible);
+    const factor = t.pct_agua_disponible / base;
+    const ks = (umbral != null && t.pct_agua_disponible < (100 - umbral)) ? 0.55 : 1.0;
+    dibujarSuelo((e.lecturas_por_profundidad || []).map(h => h * factor),
+                 t.pct_agua_disponible, umbral, ks);
+
+    document.querySelectorAll('#etiquetasDias span').forEach(s =>
+      s.classList.toggle('activo', +s.dataset.i === i));
+  };
+
+  rango.oninput = actualizar;
+  rango.value = 0;
+  actualizar();
+}
+
+const cop = v => '$' + Math.round(v).toLocaleString('es-CO');
+
+async function pintarAhorro(){
+  const sec = $('#ahorro');
+  let d;
+  if(modoDemo){
+    d = {ahorro:{m3:54.6, cop:35343, cop_agua:33390, cop_energia:1953, kwh:12.2, paga_agua:true},
+         proyeccion_anual:{cop:430006},
+         equivalencias:['55 tanques de mil litros','5.5 carrotanques de 10 m³'],
+         detalle_volumen:{dias:30, ahorro_pct:21}};
+  }else{
+    try{ d = await pedir(`/api/v1/predios/${predioId}/costo-agua`); }
+    catch{ sec.hidden = true; return; }
+  }
+
+  const a = d.ahorro;
+  if(!a || a.m3 <= 0){
+    // Sin línea base todavía: es más honesto no mostrar nada que inventar una cifra
+    sec.hidden = true;
+    return;
+  }
+  sec.hidden = false;
+
+  const dias = (d.detalle_volumen && d.detalle_volumen.dias) || 30;
+  const pct  = (d.detalle_volumen && d.detalle_volumen.ahorro_pct) || 0;
+
+  $('#ahorroPesos').textContent = cop(a.cop);
+  $('#ahorroContexto').textContent =
+    `en ${dias} días. Son ${a.m3.toFixed(1)} m³ de agua que no gastó, un ${Math.round(pct)}% menos que antes.`;
+
+  // Las dos partidas van separadas: el agua y la energía son plata
+  // de bolsillos distintos, y en muchas fincas una de las dos es cero.
+  const filas = [];
+  if(a.paga_agua)
+    filas.push(`<div class="partida"><span>Factura del agua</span><b>${cop(a.cop_agua)}</b></div>`);
+  if(a.cop_energia > 0){
+    const unidad = a.litros_diesel != null
+      ? `${a.litros_diesel.toFixed(1)} L de ACPM`
+      : `${a.kwh.toFixed(0)} kWh`;
+    const etiqueta = a.litros_diesel != null ? 'Combustible' : 'Factura de la luz';
+    filas.push(`<div class="partida"><span>${etiqueta} · ${unidad}</span><b>${cop(a.cop_energia)}</b></div>`);
+  }
+  if(filas.length > 1)
+    filas.push(`<div class="partida suma"><span>Total</span><b>${cop(a.cop)}</b></div>`);
+  if(d.proyeccion_anual && d.proyeccion_anual.cop > 0)
+    filas.push(`<div class="partida"><span>A este ritmo, en un año</span><b>${cop(d.proyeccion_anual.cop)}</b></div>`);
+  $('#ahorroPartidas').innerHTML = filas.join('');
+
+  const eq = (d.equivalencias || [])[0];
+  $('#ahorroNota').textContent = (eq ? 'Equivale a ' + eq + '. ' : '')
+    + 'En época de lluvias se riega menos, así que el ahorro cambia con la temporada.';
+}
+
+function pintarPastoreo(p){
+  const sec = $('#pastoreo');
+  if(!p || p.estado === 'sin_datos'){ sec.hidden = true; return; }
+  sec.hidden = false;
+  $('#pastoreoTexto').textContent = p.mensaje;
+  const barra = $('#crecerBarra');
+  barra.className = 'crecer ' + p.estado;
+  barra.querySelector('i').style.width = Math.min(100, p.pct_recuperacion || 0) + '%';
+  const faltan = Math.max(0, (p.dias_descanso_recomendado || 0) - (p.dias_descanso_actual || 0));
+  $('#pastoreoDias').textContent = `${p.dias_descanso_actual} días de descanso, faltan ${faltan}`;
+  $('#pastoreoAltura').textContent = `entrar a ${p.altura_objetivo_cm} cm, dejar ${p.altura_residual_cm}`;
+}
+
+/* ══════════════════════════════════════════════════════════
+   GRÁFICAS
+   ══════════════════════════════════════════════════════════ */
+
+const COMUN = {
+  responsive:true, maintainAspectRatio:false,
+  interaction:{mode:'index', intersect:false},
+  plugins:{legend:{labels:{font:{family:'Inter',size:11}, boxWidth:10, usePointStyle:true}}},
+  scales:{x:{ticks:{maxTicksLimit:6, font:{family:'Inter',size:10}}, grid:{display:false}}}
+};
+
+function grafica(id, cfg){
+  if(graficas[id]) graficas[id].destroy();
+  graficas[id] = new Chart(document.getElementById(id), cfg);
+}
+
+function pintarGraficas(s, consumo){
+  const et = s.suelo.map(x => new Date(x.ts).toLocaleString('es-CO',
+    {day:'2-digit', month:'short', hour:'2-digit'}));
+
+  grafica('gHumedad', {
+    type:'line',
+    data:{labels:et, datasets:[
+      {label:'15 cm', data:s.suelo.map(x=>x.h1), borderColor:'#2E7EA6', borderWidth:2, pointRadius:0, tension:.32},
+      {label:'30 cm', data:s.suelo.map(x=>x.h2), borderColor:'#7A9B3E', borderWidth:2, pointRadius:0, tension:.32},
+      {label:'45 cm', data:s.suelo.map(x=>x.h3), borderColor:'#8A7052', borderWidth:2, pointRadius:0, tension:.32}]},
+    options:{...COMUN, scales:{...COMUN.scales,
+      y:{title:{display:true, text:'humedad (%)', font:{family:'Inter',size:11}}}}}
+  });
+
+  grafica('gClima', {
+    data:{labels:et, datasets:[
+      {type:'bar', label:'Lluvia (mm)', data:s.suelo.map(x=>x.lluvia), backgroundColor:'#2E7EA6', yAxisID:'y1'},
+      {type:'line', label:'Temperatura (°C)', data:s.suelo.map(x=>x.ta), borderColor:'#C4622D', borderWidth:2, pointRadius:0, tension:.32, yAxisID:'y'}]},
+    options:{...COMUN, scales:{...COMUN.scales,
+      y:{position:'left', title:{display:true, text:'°C', font:{family:'Inter',size:11}}},
+      y1:{position:'right', beginAtZero:true, grid:{drawOnChartArea:false},
+          title:{display:true, text:'mm', font:{family:'Inter',size:11}}}}}
+  });
+
+  grafica('gConsumo', {
+    type:'bar',
+    data:{labels:consumo.map(x=>x.fecha.slice(5)), datasets:[
+      {label:'Agua usada (m³)', data:consumo.map(x=>x.m3), backgroundColor:'#5AA8C9'}]},
+    options:{...COMUN, scales:{...COMUN.scales,
+      y:{beginAtZero:true, title:{display:true, text:'m³ por día', font:{family:'Inter',size:11}}}}}
+  });
+}
+
+document.querySelectorAll('.pestanas button').forEach((b, i) => {
+  b.onclick = () => {
+    document.querySelectorAll('.pestanas button').forEach(x => x.setAttribute('aria-selected','false'));
+    b.setAttribute('aria-selected','true');
+    document.querySelectorAll('.lienzo').forEach((l, k) => l.hidden = (k !== i));
+    if(graficas[b.dataset.g]) graficas[b.dataset.g].resize();
+  };
+});
+
+/* ══════════════════════════════════════════════════════════
+   DATOS
+   ══════════════════════════════════════════════════════════ */
+
+async function pedir(ruta){
+  const r = await fetch(API + ruta);
+  if(!r.ok) throw new Error(r.status);
+  return r.json();
+}
+
+function ejemplo(){
+  const ahora = Date.now(), suelo = [], consumo = [];
+  for(let i = 168; i >= 0; i--){
+    const t = new Date(ahora - i*3600e3), hh = 6 + t.getHours() + t.getMinutes()/60;
+    const base = 27 - (i % 62) * 0.085;
+    suelo.push({ts:t.toISOString(),
+      h1:+(base + 1.4*Math.sin(hh/3.8) + Math.random()*.35).toFixed(2),
+      h2:+(base - 1.1 + Math.random()*.28).toFixed(2),
+      h3:+(base - 2.3 + Math.random()*.22).toFixed(2),
+      ta:+(13 + 6*Math.sin((hh-9)/24*6.283) + Math.random()).toFixed(1),
+      lluvia:(i % 43 === 0) ? +(Math.random()*6).toFixed(1) : 0});
+  }
+  for(let d = 29; d >= 0; d--)
+    consumo.push({fecha:new Date(ahora - d*864e5).toISOString().slice(0,10),
+      m3:+(d > 14 ? 5.4 + Math.random()*2.8 : 3.3 + Math.random()*1.8).toFixed(2)});
+
+  return {series:{suelo}, consumo, reco:{
+    predio:{nombre:'Finca La Esperanza'}, modo:'pastoreo',
+    decision:{accion:'esperar', urgencia:'baja',
+      razon:'La tierra llegó al punto de regar, pero se esperan 18 mm de lluvia en dos días. Regar hoy sería botar el agua.'},
+    estado_suelo:{humedad_ponderada_pct:23.4, lecturas_por_profundidad:[24.8, 23.1, 21.9],
+      pct_agua_disponible:46, agotamiento_mm:38.7, agua_facilmente_disponible_mm:39.6,
+      agua_disponible_total_mm:72.0, coef_estres_ks:1.0, en_estres:false},
+    clima:{et0_hoy_mm:3.12, etc_hoy_mm:3.12, kc_actual:1.0, lluvia_proxima_7d_mm:24.5,
+      lluvia_por_dia_mm:[0, 11.2, 6.8, 0, 2.1, 4.4, 0], fuente:'pronóstico'},
+    proyeccion:{dias_a_umbral_riego:6, percolacion_total_mm:2.1,
+      trayectoria:[46,38,58,63,54,48,41].map((p,i)=>({dia:i, pct_agua_disponible:p,
+        agotamiento_mm:+(72*(1-p/100)).toFixed(1)}))},
+    riego:null,
+    pastoreo:{estado:'en_recuperacion',
+      mensaje:'La franja va bien. Le faltan unos 6 días para que el pasto tenga la altura y las reservas que necesita.',
+      dias_descanso_actual:29, dias_descanso_recomendado:35,
+      grados_dia_acumulados:348, grados_dia_objetivo:420, pct_recuperacion:83,
+      altura_objetivo_cm:25, altura_residual_cm:8}}};
+}
+
+function marcarPulso(estado, texto){
+  $('#pulso').className = 'pulso' + (estado ? ' ' + estado : '');
+  $('#pulsoTexto').textContent = texto;
+}
+
+/* Un solo aviso visible a la vez. Tres apilados tapan el corte de suelo,
+   que es lo que la persona vino a ver. Prioridad: instalar > demo > sin señal. */
+let quiereInstalar = false;
+function ordenarAvisos(){
+  const sinDatos = !localStorage.getItem('hidrosopo_ultima');
+  const offline  = !navigator.onLine && !modoDemo && !sinDatos;
+  $('#avisoInstalar').hidden = !quiereInstalar;
+  $('#avisoDemo').hidden     = quiereInstalar || !modoDemo;
+  $('#avisoOffline').hidden  = quiereInstalar || modoDemo || !offline;
+  if(offline){
+    const t = localStorage.getItem('hidrosopo_ultima');
+    $('#edadDatos').textContent = 'el ' + new Date(+t).toLocaleString('es-CO',
+      {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'});
+  }
+}
+
+async function cargar(){
+  try{
+    const [reco, s, consumo] = await Promise.all([
+      pedir(`/api/v1/predios/${predioId}/recomendacion`),
+      pedir(`/api/v1/predios/${predioId}/series?horas=168`),
+      pedir(`/api/v1/predios/${predioId}/consumo?dias=30`)
+    ]);
+    modoDemo = false;
+    localStorage.setItem('hidrosopo_ultima', Date.now());
+    marcarPulso('', 'al día');
+    ordenarAvisos();
+    pintar(reco);
+    pintarGraficas(s, consumo);
+  }catch(err){
+    modoDemo = true;
+    marcarPulso('frio', 'sin conexión');
+    ordenarAvisos();
+    const d = ejemplo();
+    pintar(d.reco);
+    pintarGraficas(d.series, d.consumo);
+  }finally{
+    $('#cargando').hidden = true;
+    $('#app').hidden = false;
+  }
+}
+
+async function cargarPredios(){
+  try{
+    const ps = await pedir('/api/v1/predios');
+    $('#selPredio').innerHTML = ps.map(p => `<option value="${p.id}">${p.nombre}</option>`).join('');
+    if(ps.length) predioId = ps[0].id;
+  }catch{
+    $('#selPredio').innerHTML = '<option>Finca La Esperanza</option>';
+  }
+}
+
+$('#selPredio').onchange = e => { predioId = +e.target.value; primeraCarga = true; cargar(); };
+$('#btnReporte').onclick = () => {
+  if(modoDemo){ alert('El informe necesita conexión con el servidor.'); return; }
+  const hasta = new Date().toISOString().slice(0,10);
+  const desde = new Date(Date.now() - 30*864e5).toISOString().slice(0,10);
+  window.open(`${API}/api/v1/predios/${predioId}/reporte-pueaa?desde=${desde}&hasta=${hasta}`, '_blank');
+};
+
+/* ══════════════════════════════════════════════════════════
+   CONVERSACIÓN
+   El productor le cuenta cosas al sistema y el sistema aprende
+   de lo que él realmente hace, no solo de lo que miden los sensores.
+   ══════════════════════════════════════════════════════════ */
+
+const SUGERENCIAS = [
+  'Regué 40 minutos',
+  '¿Cuánta agua he ahorrado?',
+  '¿Riego hoy?',
+  '¿Va a llover?',
+  '¿Cuándo meto los animales?',
+  'Se dañó un sensor',
+];
+
+function burbuja(texto, de){
+  const b = document.createElement('div');
+  b.className = 'burbuja ' + de;
+  b.textContent = texto;
+  const hilo = $('#hilo');
+  hilo.appendChild(b);
+  hilo.scrollTop = hilo.scrollHeight;
+  return b;
+}
+
+$('#charlaCabeza').onclick = () => {
+  const c = $('#charla'), abierta = c.dataset.abierta === 'si';
+  c.dataset.abierta = abierta ? 'no' : 'si';
+  $('#charlaCuerpo').hidden = abierta;
+  $('#charlaCabeza').setAttribute('aria-expanded', String(!abierta));
+  if(!abierta){
+    if(!$('#hilo').children.length) abrirCharla();
+    setTimeout(() => $('#entradaChat').focus(), 120);
+  }
+};
+
+async function abrirCharla(){
+  $('#sugerencias').innerHTML = SUGERENCIAS
+    .map(t => `<button type="button">${t}</button>`).join('');
+  document.querySelectorAll('#sugerencias button').forEach(b =>
+    b.onclick = () => enviar(b.textContent));
+
+  if(modoDemo){
+    burbuja('Buenas, Jaime. Hoy la tierra está bien de agua. Si quiere, cuénteme cuánto regó y le digo si fue lo justo.', 'sistema');
+    return;
+  }
+  try{
+    const h = await pedir(`/api/v1/predios/${predioId}/conversacion?n=20`);
+    if(h.length) h.forEach(m => burbuja(m.texto, m.de));
+    else burbuja('Buenas. Cuénteme cuánto regó, o pregúnteme lo que necesite.', 'sistema');
+  }catch{
+    burbuja('Buenas. Cuénteme cuánto regó, o pregúnteme lo que necesite.', 'sistema');
+  }
+}
+
+async function enviar(texto){
+  texto = (texto || '').trim();
+  if(!texto) return;
+  $('#entradaChat').value = '';
+  burbuja(texto, 'productor');
+
+  if(modoDemo){
+    burbuja('Esta es una demostración. Cuando el servidor esté conectado, aquí le respondo de verdad.', 'sistema');
+    return;
+  }
+
+  const esperando = burbuja('escribiendo…', 'sistema');
+  esperando.classList.add('pensando');
+  try{
+    const r = await fetch(`${API}/api/v1/predios/${predioId}/conversar`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({texto, canal:'app'})
+    }).then(x => x.json());
+    esperando.remove();
+    burbuja(r.respuesta, 'sistema');
+    // Si el sistema registró algo, los datos cambiaron: refrescar.
+    if(r.accion_ejecutada) setTimeout(cargar, 900);
+  }catch{
+    esperando.remove();
+    burbuja('No pude enviar el mensaje. Revise la señal e intente otra vez.', 'sistema');
+  }
+}
+
+$('#formChat').onsubmit = e => { e.preventDefault(); enviar($('#entradaChat').value); };
+
+/* ══════════════════════════════════════════════════════════
+   APP INSTALABLE
+   ══════════════════════════════════════════════════════════ */
+
+if('serviceWorker' in navigator)
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+
+let promptInstalar = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault(); promptInstalar = e;
+  quiereInstalar = true; ordenarAvisos();
+});
+$('#btnInstalar').onclick = async () => {
+  if(!promptInstalar) return;
+  promptInstalar.prompt();
+  await promptInstalar.userChoice;
+  promptInstalar = null;
+  quiereInstalar = false; ordenarAvisos();
+};
+window.addEventListener('appinstalled', () => { quiereInstalar = false; ordenarAvisos(); });
+
+(function iOS(){
+  const esIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  const instalada = window.navigator.standalone ||
+                    window.matchMedia('(display-mode: standalone)').matches;
+  if(esIOS && !instalada && !localStorage.getItem('hidrosopo_ios')){
+    $('#textoInstalar').innerHTML = 'Para instalarla: toque <b>Compartir</b> y luego <b>Agregar a inicio</b>.';
+    $('#btnInstalar').hidden = true;
+    quiereInstalar = true; ordenarAvisos();
+    localStorage.setItem('hidrosopo_ios','1');
+  }
+})();
+
+function revisarRed(){
+  if(!navigator.onLine) marcarPulso('frio', 'sin señal');
+  ordenarAvisos();
+}
+window.addEventListener('online',  () => { revisarRed(); cargar(); });
+window.addEventListener('offline', revisarRed);
+window.addEventListener('resize', () => { if(datos) conectarSensores(); });
+
+(async () => {
+  revisarRed();
+  await cargarPredios();
+  await cargar();
+  setInterval(cargar, 300000);
+})();
+</script>
+</body>
+</html>

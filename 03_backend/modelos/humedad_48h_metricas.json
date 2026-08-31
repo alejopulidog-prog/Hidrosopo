@@ -1,0 +1,35 @@
+{
+  "n_registros": 25062,
+  "horizonte_horas": 48,
+  "mae_cv": 1.058,
+  "mae_cv_std": 0.257,
+  "r2_cv": -0.124,
+  "objetivo": "delta_humedad",
+  "mae_entrenamiento": 0.747,
+  "mae_nivel_absoluto": 0.747,
+  "r2_nivel_absoluto": 0.895,
+  "mae_linea_base_persistencia": 1.068,
+  "mejora_vs_linea_base_pct": 0.9,
+  "r2_entrenamiento": 0.429,
+  "importancia_variables": {
+    "lluvia_pronosticada_48h": 0.2628,
+    "lluvia_pronosticada_24h": 0.2324,
+    "profundidad_cm": 0.1665,
+    "humedad_actual": 0.1616,
+    "et0_acumulada_24h": 0.1132,
+    "humedad_lag_6h": 0.029,
+    "delta_humedad_6h": 0.018,
+    "humedad_lag_24h": 0.0071,
+    "temp_suelo": 0.0063,
+    "lluvia_acumulada_24h": 0.0031,
+    "temp_aire": 0.0,
+    "hr_aire": 0.0,
+    "hora_sin": 0.0,
+    "hora_cos": 0.0
+  },
+  "entrenado_en": "2026-08-30T18:50:32",
+  "rango_datos": [
+    "2026-09-01 00:00:00",
+    "2026-11-29 23:45:00"
+  ]
+}

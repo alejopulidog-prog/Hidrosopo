@@ -1,0 +1,138 @@
+/* ============================================================
+ *  HidroSopó — GATEWAY (compilar por separado)
+ *  Recibe paquetes LoRa de los nodos y los reenvía al backend por HTTPS.
+ *  Va en la casa de la finca, con alimentación de red.
+ *
+ *  Para usarlo: renombra este archivo a main.cpp en un proyecto
+ *  PlatformIO aparte (o usa build_src_filter).
+ * ============================================================ */
+
+#include <Arduino.h>
+#include <WiFi.h>
+#include <WiFiClientSecure.h>
+#include <HTTPClient.h>
+#include <RadioLib.h>
+#include <Preferences.h>
+
+#define WIFI_SSID     "RedDeLaFinca"
+#define WIFI_PASS     "clave"
+#define BACKEND_URL   "https://tu-backend.onrender.com/api/v1/telemetria"
+#define GATEWAY_ID    "GW-SOPO-01"
+
+#define LORA_FREQ 915.0
+#define LORA_BW   125.0
+#define LORA_SF   9
+#define LORA_CR   5
+
+#define PIN_LORA_CS 8
+#define PIN_LORA_DIO1 14
+#define PIN_LORA_RST 12
+#define PIN_LORA_BUSY 13
+
+#define MAX_COLA 400
+
+SX1262 radio = new Module(PIN_LORA_CS, PIN_LORA_DIO1, PIN_LORA_RST, PIN_LORA_BUSY);
+Preferences prefs;
+
+volatile bool paqueteRecibido = false;
+void IRAM_ATTR onRecepcion() { paqueteRecibido = true; }
+
+// ---------- Cola persistente en NVS ----------
+void encolar(const String &p) {
+  prefs.begin("cola", false);
+  uint16_t n = prefs.getUShort("n", 0);
+  if (n < MAX_COLA) {
+    prefs.putString(String(n).c_str(), p);
+    prefs.putUShort("n", n + 1);
+  }
+  prefs.end();
+}
+
+bool postear(const String &payload) {
+  if (WiFi.status() != WL_CONNECTED) return false;
+  WiFiClientSecure cli;
+  cli.setInsecure();
+  HTTPClient http;
+  http.begin(cli, BACKEND_URL);
+  http.addHeader("Content-Type", "application/json");
+  http.addHeader("X-Gateway-Id", GATEWAY_ID);
+  http.setTimeout(20000);
+  int cod = http.POST(payload);
+  http.end();
+  Serial.printf("[HTTP] %d\n", cod);
+  return cod >= 200 && cod < 300;
+}
+
+void drenarCola() {
+  prefs.begin("cola", false);
+  uint16_t n = prefs.getUShort("n", 0);
+  if (n == 0) { prefs.end(); return; }
+  uint16_t ok = 0;
+  for (uint16_t i = 0; i < n; i++) {
+    String p = prefs.getString(String(i).c_str(), "");
+    if (p.isEmpty() || postear(p)) { ok++; delay(200); }
+    else break;
+  }
+  if (ok == n) prefs.clear();
+  else {
+    uint16_t k = 0;
+    for (uint16_t i = ok; i < n; i++)
+      prefs.putString(String(k++).c_str(), prefs.getString(String(i).c_str(), ""));
+    prefs.putUShort("n", k);
+  }
+  prefs.end();
+  if (ok) Serial.printf("[COLA] drenados %d\n", ok);
+}
+
+void setup() {
+  Serial.begin(115200);
+  delay(200);
+  Serial.println(F("\n== HidroSopo Gateway =="));
+
+  WiFi.mode(WIFI_STA);
+  WiFi.setAutoReconnect(true);
+  WiFi.begin(WIFI_SSID, WIFI_PASS);
+
+  int st = radio.begin(LORA_FREQ, LORA_BW, LORA_SF, LORA_CR,
+                       RADIOLIB_SX126X_SYNC_WORD_PRIVATE, 20);
+  if (st != RADIOLIB_ERR_NONE) {
+    Serial.printf("[FATAL] LoRa init %d\n", st);
+    while (true) delay(1000);
+  }
+  radio.setPacketReceivedAction(onRecepcion);
+  radio.startReceive();
+  Serial.println(F("[OK] escuchando LoRa 915 MHz"));
+}
+
+uint32_t ultimoDrenaje = 0;
+
+void loop() {
+  if (paqueteRecibido) {
+    paqueteRecibido = false;
+    String datos;
+    int st = radio.readData(datos);
+    if (st == RADIOLIB_ERR_NONE) {
+      float rssi = radio.getRSSI();
+      float snr  = radio.getSNR();
+      Serial.printf("[RX] %s  RSSI:%.0f SNR:%.1f\n", datos.c_str(), rssi, snr);
+
+      // ACK inmediato para que el nodo pueda dormir tranquilo
+      radio.transmit("OK");
+      radio.startReceive();
+
+      // Enriquecer con métricas de enlace antes de reenviar
+      datos.replace("}", ",\"rssi\":" + String((int)rssi) +
+                         ",\"snr\":" + String(snr, 1) + "}");
+
+      if (!postear(datos)) encolar(datos);
+    } else {
+      radio.startReceive();
+    }
+  }
+
+  if (millis() - ultimoDrenaje > 60000) {
+    ultimoDrenaje = millis();
+    drenarCola();
+  }
+  delay(10);
+}
