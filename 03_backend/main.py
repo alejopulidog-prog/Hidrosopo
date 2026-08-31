@@ -491,7 +491,87 @@ def predios(db: Session = Depends(get_db)):
              "tiene_concesion": p.tiene_concesion}
             for p in db.query(Predio).all()]
 
+@app.put("/api/v1/predios/{predio_id}")
+def actualizar_predio(
+    predio_id: int,
+    payload: dict,
+    db: Session = Depends(get_db)
+):
+    """Actualiza los parámetros configurables de un predio."""
 
+    predio = db.query(Predio).filter(Predio.id == predio_id).first()
+
+    if not predio:
+        raise HTTPException(404, f"Predio {predio_id} no encontrado")
+
+    campos_permitidos = {
+        "nombre",
+        "propietario",
+        "documento",
+        "telefono",
+        "vereda",
+        "latitud",
+        "longitud",
+        "altitud_m",
+        "area_predio_ha",
+        "area_regada_ha",
+        "perfil_cultivo",
+        "tipo_suelo",
+        "sistema_riego",
+        "caudal_disponible_lps",
+        "area_por_turno_ha",
+        "turnos_para_cubrir",
+        "fecha_siembra",
+        "fecha_ultimo_pastoreo",
+        "tiene_concesion",
+        "permiso_captacion",
+        "resolucion_concesion",
+        "caudal_concesionado_lps",
+        "fuente_hidrica",
+        "tipo_captacion",
+        "altura_bombeo_m",
+        "eficiencia_bomba",
+        "tipo_energia",
+        "costo_kwh",
+        "consumo_diesel_lph",
+        "costo_diesel_litro",
+        "tarifa_agua_m3",
+        "tasa_uso_agua_m3",
+        "inversion_sistema_cop",
+        "capacidad_campo_pct",
+        "punto_marchitez_pct",
+        "consentimiento_firmado",
+        "fecha_consentimiento",
+    }
+
+    for campo, valor in payload.items():
+        if campo in campos_permitidos:
+            setattr(predio, campo, valor)
+
+    db.commit()
+    db.refresh(predio)
+
+    return {
+        "ok": True,
+        "predio": {
+            "id": predio.id,
+            "nombre": predio.nombre,
+            "area_predio_ha": predio.area_predio_ha,
+            "area_regada_ha": predio.area_regada_ha,
+            "perfil_cultivo": predio.perfil_cultivo,
+            "tipo_suelo": predio.tipo_suelo,
+            "sistema_riego": predio.sistema_riego,
+            "caudal_disponible_lps": predio.caudal_disponible_lps,
+            "altura_bombeo_m": predio.altura_bombeo_m,
+            "eficiencia_bomba": predio.eficiencia_bomba,
+            "tipo_energia": predio.tipo_energia,
+            "costo_kwh": predio.costo_kwh,
+            "fecha_ultimo_pastoreo": (
+                predio.fecha_ultimo_pastoreo.isoformat()
+                if predio.fecha_ultimo_pastoreo else None
+            ),
+        }
+    }
 @app.get("/api/v1/predios/{predio_id}/series")
 def series(predio_id: int, horas: int = 168, db: Session = Depends(get_db)):
     """Serie temporal para las gráficas del dashboard. 168 h = 7 días."""
