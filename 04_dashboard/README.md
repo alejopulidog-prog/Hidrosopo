@@ -125,3 +125,78 @@ Los colores están todos en las variables CSS al inicio del archivo:
 El corte de suelo se dibuja en la función `dibujarSuelo()`. Las profundidades de los
 sensores están en el arreglo de esa función; si instalas a otras profundidades,
 cámbialas ahí y en `SUELO.y()`.
+
+
+---
+
+## Versión 2 — la app por tipo de predio (ago 2026)
+
+### La escena cambia con el predio
+
+El héroe ya no es solo el corte de suelo: arriba está lo que se ve desde el camino
+y abajo lo que solo ven los sensores, en el mismo dibujo. Todo es SVG generado con
+los datos, no fotos: pesa nada, funciona sin señal y se puede animar.
+
+| Tipo | Qué se dibuja | Cómo se le habla | Raíz |
+|---|---|---|---|
+| `pastoreo` | Kikuyo, vacas, cerca eléctrica de la franja | "la franja" | 40 cm |
+| `papa` | Caballones aporcados, mata con flor | "el lote" | 45 cm |
+| `hortalizas` | Camas levantadas con acolchado y lechugas | "la cama" | 25 cm |
+| `flores` | La nave con su cubierta, camas de rosa | "la nave" | 30 cm |
+
+El cielo responde a la hora (amanecer, día, atardecer, noche), a las nubes del
+pronóstico y a la lluvia del día que se esté viendo. Al mover el deslizador de
+días, la planta se marchita y amarillea en vivo.
+
+Para agregar un tipo nuevo: se añade una entrada en `TIPOS` (colores, vocabulario,
+profundidad de raíz, nota de la gráfica) y una rama en `plantas()`. Nada más.
+
+### El backend manda, el teléfono responde si no hay señal
+
+`agente.py` y `costos.py` están portados a JavaScript dentro de la app. Cuando hay
+conexión, la conversación va al servidor como siempre. Cuando no la hay, responde
+el agente local con la última lectura descargada, y lo dice explícitamente en vez
+de fingir que está en línea. Las mismas intenciones: registrar riego (con sector y
+varias bombas), ahorro, lluvia, pastoreo o cosecha, costo del riego, medición de
+caudal con balde y cronómetro, reporte de daño y discrepancia.
+
+### Qué campos espera del backend
+
+Además de lo de siempre, la app usa si vienen:
+
+- `predio.tipo` — uno de `pastoreo`, `papa`, `hortalizas`, `flores` (si falta, asume pastoreo)
+- `predio.sectores[]` — `{orden, nombre, area_ha, caudal_lps}`
+- `predio.energia`, `paga_agua`, `tarifa_agua_m3`, `altura_bombeo_m`, `costo_kwh`,
+  `costo_diesel_litro`, `consumo_diesel_lph` — para calcular el costo en el teléfono
+- `ciclo` — `{titulo, texto, pct, izq, der, estado}` para la franja o la etapa del cultivo
+- `cuarta` — `{etiqueta, datos[], ejes[], objetivo}` para la cuarta gráfica
+
+Si el backend no los manda, la app cae a los datos de prueba de los cuatro predios
+y lo avisa arriba.
+
+### Hora del predio, no del teléfono
+
+La app se rige por `America/Bogota`, no por el reloj del aparato: el sol, el riego
+y el corte del día pasan en Sopó. Arriba del `<script>` hay tres interruptores:
+
+```javascript
+const TZ = 'America/Bogota';
+const RELOJ_DEL_PREDIO = true;   // false = usa el reloj del teléfono
+const TS_SIN_ZONA_ES_UTC = true; // cómo leer marcas de tiempo sin zona
+```
+
+`TS_SIN_ZONA_ES_UTC` importa: si el backend serializa con `datetime.utcnow()` sin
+zona, déjelo en `true`. Si guarda hora local de Colombia sin zona, póngalo en
+`false`. **Lo correcto es que el backend mande la zona** (`2026-08-31T07:29:00-05:00`)
+y entonces este interruptor deja de importar: la app respeta el offset que venga.
+
+### Otros cambios
+
+- Dictado por voz en es-CO donde el navegador lo soporte
+- Atajo desde el ícono de la app directo a la conversación (`?charla=1`)
+- El service worker pasó a `hidrosopo-v2` y sirve la app con red primero: una
+  versión nueva entra sin que el productor tenga que desinstalar nada
+- Las cifras se despliegan y explican qué significan al tocarlas
+- El rango de fechas del informe se calcula con el día de Sopó. Antes salía de
+  `toISOString()`, que da el día en UTC: después de las 7 p.m. en Colombia el
+  informe se pedía con un día corrido

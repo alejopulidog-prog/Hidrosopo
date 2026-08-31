@@ -2,7 +2,7 @@
  * Permite que la app abra sin señal y muestre la última recomendación conocida.
  * En una finca de Sopó la señal se cae. Sin esto, la app se vuelve una pantalla en blanco.
  */
-const CACHE = 'hidrosopo-v1';
+const CACHE = 'hidrosopo-v2';
 const ESTATICOS = [
   './', './index.html', './manifest.json',
   './iconos/icono-192.png', './iconos/icono-512.png',
@@ -43,7 +43,25 @@ self.addEventListener('fetch', e => {
     return;
   }
 
-  // Archivos de la app: caché primero, es más rápido.
+  // La app en sí: red primero, para que una versión nueva entre sin
+  // que el productor tenga que desinstalar nada. Si no hay señal,
+  // se sirve la copia guardada.
+  const esLaApp = e.request.mode === 'navigate' ||
+                  url.endsWith('/') || url.includes('index.html');
+  if (esLaApp) {
+    e.respondWith(
+      fetch(e.request)
+        .then(r => {
+          const copia = r.clone();
+          caches.open(CACHE).then(c => c.put(e.request, copia));
+          return r;
+        })
+        .catch(() => caches.match(e.request).then(r => r || caches.match('./index.html')))
+    );
+    return;
+  }
+
+  // Lo demás (íconos, librerías): caché primero, es más rápido.
   e.respondWith(
     caches.match(e.request).then(r => r || fetch(e.request))
   );

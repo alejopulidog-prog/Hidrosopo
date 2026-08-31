@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>HidroSopó</title>
-<meta name="theme-color" content="#3A2E23">
+<meta name="theme-color" id="metaTema" content="#2A2117">
 <meta name="description" content="Cuánta agua tiene su tierra hoy, y si necesita regar. Sopó, Cundinamarca.">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="iconos/apple-touch-icon.png">
@@ -14,250 +14,408 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
 <style>
+/* ══════════════════════════════════════════════════════════════
+   HidroSopó · hoja de estilo
+   Los colores salen de los materiales reales: el andisol de la
+   Sabana, el kikuyo, el agua, el plástico de los invernaderos.
+   Cada tipo de predio reescribe cuatro variables y con eso cambia
+   toda la piel de la app: escena, gráficas y acentos.
+   ══════════════════════════════════════════════════════════════ */
 :root{
-  /* Colores tomados de los materiales reales: andisol de la Sabana, kikuyo, agua */
-  --tierra-honda:#3A2E23;
+  --tierra-honda:#2A2117;
   --tierra-media:#54412D;
   --tierra-viva:#6E5637;
-  --pasto:#7A9B3E;
-  --pasto-seco:#B8A052;
   --agua:#2E7EA6;
   --agua-clara:#5AA8C9;
-  --cielo:#EBF0EE;
-  --carbon:#1A1F1C;
-  --humo:#5C6660;
-  --arcilla:#C4622D;
+  --papel:#FFFDFA;
+  --lienzo:#EFF1EC;
+  --carbon:#17130F;
+  --humo:#6A6961;
+  --linea:#E2E2DA;
   --alarma:#A83E30;
-  --linea:#D3DAD6;
-  --papel:#FFFFFF;
+  --arcilla:#C4622D;
+
+  /* Las cuatro que cambian por tipo de predio */
+  --acento:#7A9B3E;
+  --acento-hondo:#4E6626;
+  --acento-tenue:#EDF2E1;
+  --cielo-alto:#BCD4DE;
+  --cielo-bajo:#E6EFEA;
 
   --sans:"Inter",system-ui,-apple-system,sans-serif;
   --display:"Bricolage Grotesque","Inter",system-ui,sans-serif;
+  --rad:14px;
+  --sombra:0 1px 2px rgba(23,19,15,.04), 0 8px 24px -12px rgba(23,19,15,.18);
+}
+
+body[data-tipo="pastoreo"]{
+  --acento:#6F9438; --acento-hondo:#42601F; --acento-tenue:#ECF2DF;
+  --cielo-alto:#A9C6D6; --cielo-bajo:#E8F0E6;
+}
+body[data-tipo="papa"]{
+  --acento:#7A5AA6; --acento-hondo:#4E3673; --acento-tenue:#EFEAF6;
+  --cielo-alto:#B2C4D8; --cielo-bajo:#EDECE6;
+}
+body[data-tipo="hortalizas"]{
+  --acento:#2F8C6B; --acento-hondo:#1D5C46; --acento-tenue:#E4F1EB;
+  --cielo-alto:#B7D2D2; --cielo-bajo:#EAF1EC;
+}
+body[data-tipo="flores"]{
+  --acento:#B23A5E; --acento-hondo:#7C1F3C; --acento-tenue:#F8E7EC;
+  --cielo-alto:#C7CFD9; --cielo-bajo:#F0EDEA;
 }
 
 *{box-sizing:border-box;margin:0;padding:0}
 html{-webkit-text-size-adjust:100%}
 body{
   font-family:var(--sans);
-  background:var(--cielo);
+  background:var(--lienzo);
   color:var(--carbon);
   line-height:1.5;
   -webkit-font-smoothing:antialiased;
   overflow-x:hidden;
+  overscroll-behavior-y:none;
 }
-button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
-/* El atributo hidden pone display:none desde la hoja del navegador, pero
-   cualquier regla de autor con display lo vence (.aviso usa flex). Sin esto,
-   los elementos "ocultos" se siguen viendo. */
+button,select,input{font:inherit;color:inherit}
+button{cursor:pointer;border:none;background:none}
 [hidden]{display:none !important}
-:focus-visible{outline:2.5px solid var(--agua);outline-offset:3px;border-radius:4px}
+:focus-visible{outline:2.5px solid var(--acento-hondo);outline-offset:3px;border-radius:6px}
+::selection{background:var(--acento-tenue)}
 
-.envoltura{max-width:600px;margin:0 auto;background:var(--papel);min-height:100vh}
-@media(min-width:601px){ .envoltura{box-shadow:0 0 60px rgba(58,46,35,.10)} }
+.envoltura{
+  max-width:620px;margin:0 auto;background:var(--papel);min-height:100vh;
+  padding-bottom:calc(84px + env(safe-area-inset-bottom));
+  position:relative;
+}
+@media(min-width:621px){ .envoltura{box-shadow:0 0 80px rgba(42,33,23,.13)} }
 
-/* ---------- Encabezado ---------- */
+/* ---------- Encabezado y selector de predio ---------- */
 .cabecera{
-  display:flex;justify-content:space-between;align-items:baseline;
-  padding:1.1rem 1.25rem .9rem;
-  padding-top:calc(1.1rem + env(safe-area-inset-top));
+  padding:.9rem 1.1rem .55rem;
+  padding-top:calc(.9rem + env(safe-area-inset-top));
+  display:flex;align-items:center;justify-content:space-between;gap:1rem;
 }
-.finca{font-family:var(--display);font-size:1.15rem;font-weight:600;letter-spacing:-.02em}
-.pulso{display:flex;align-items:center;gap:.4rem;font-size:.78rem;color:var(--humo)}
-.pulso i{width:7px;height:7px;border-radius:50%;background:var(--pasto);flex:none}
-.pulso.frio i{background:var(--humo)}
+.marca-app{display:flex;align-items:center;gap:.55rem}
+.marca-app svg{width:24px;height:24px;flex:none}
+.marca-app b{font-family:var(--display);font-size:1.02rem;font-weight:600;letter-spacing:-.025em}
+.pulso{display:flex;align-items:center;gap:.4rem;font-size:.74rem;color:var(--humo);white-space:nowrap}
+.pulso i{width:7px;height:7px;border-radius:50%;background:var(--acento);flex:none}
+.pulso.vivo i{animation:latir 2.6s ease-in-out infinite}
+.pulso.frio i{background:#B0AFA6;animation:none}
+@keyframes latir{0%,100%{box-shadow:0 0 0 0 rgba(122,155,62,.5)}70%{box-shadow:0 0 0 7px rgba(122,155,62,0)}}
 
-/* ---------- Héroe: el corte de suelo ---------- */
-.corte{position:relative;background:var(--tierra-honda);line-height:0}
-.corte svg{width:100%;height:auto;display:block;touch-action:manipulation}
+.predios{
+  display:flex;gap:.5rem;overflow-x:auto;padding:.15rem 1.1rem .85rem;
+  scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;
+}
+.predios::-webkit-scrollbar{display:none}
+.ficha{
+  scroll-snap-align:start;flex:none;display:flex;align-items:center;gap:.5rem;
+  padding:.42rem .8rem .42rem .45rem;border-radius:999px;
+  border:1.5px solid var(--linea);background:var(--papel);
+  transition:border-color .18s ease, background .18s ease, transform .18s ease;
+}
+.ficha:active{transform:scale(.97)}
+.ficha .mini{width:26px;height:26px;border-radius:50%;flex:none;overflow:hidden;background:var(--lienzo)}
+.ficha .mini svg{display:block;width:100%;height:100%}
+.ficha span{font-size:.85rem;font-weight:500;white-space:nowrap}
+.ficha small{display:block;font-size:.68rem;color:var(--humo);font-weight:400}
+.ficha[aria-current="true"]{border-color:var(--acento-hondo);background:var(--acento-tenue)}
+
+/* ---------- Avisos ---------- */
+.aviso{
+  display:flex;align-items:center;gap:.7rem;justify-content:space-between;
+  margin:0 1.1rem .7rem;padding:.6rem .8rem;border-radius:10px;
+  font-size:.83rem;line-height:1.35;
+}
+.aviso.instalar{background:var(--tierra-honda);color:#F5EFE6}
+.aviso.instalar button{background:#F5EFE6;color:var(--tierra-honda);padding:.32rem .8rem;border-radius:99px;font-size:.8rem;font-weight:600}
+.aviso.offline{background:#FBF0DC;color:#6B4E17}
+.aviso.demo{background:var(--acento-tenue);color:var(--acento-hondo);font-weight:500}
+.aviso.demo b{font-weight:700}
+
+/* ---------- Carga ---------- */
+.cargando{padding:4.5rem 1.1rem;text-align:center;color:var(--humo);font-size:.9rem}
+.gota{
+  width:16px;height:16px;margin:0 auto 1rem;background:var(--agua);
+  border-radius:0 50% 50% 50%;transform:rotate(45deg);animation:caer 1.25s ease-in-out infinite;
+}
+@keyframes caer{0%,100%{transform:rotate(45deg) translateY(0);opacity:.45}50%{transform:rotate(45deg) translateY(-9px);opacity:1}}
+
+/* ---------- Escena: el héroe ---------- */
+.escena{position:relative;background:var(--tierra-honda);line-height:0;overflow:hidden}
+.escena svg{width:100%;height:auto;display:block;touch-action:manipulation}
+.escena::after{
+  content:"";position:absolute;inset:0;pointer-events:none;opacity:.16;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='r'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/></filter><rect width='140' height='140' filter='url(%23r)' opacity='.5'/></svg>");
+  mix-blend-mode:overlay;
+}
 .sensor-tocable{cursor:pointer}
-.sensor-tocable:hover .aro{r:16}
-.aro{transition:r .18s ease}
+.sensor-tocable .aro{transition:r .2s cubic-bezier(.34,1.56,.64,1)}
+.sensor-tocable:hover .aro,.sensor-tocable.activo .aro{r:18}
 
-.globo{
-  position:absolute;background:rgba(26,31,28,.94);color:#fff;
-  padding:.5rem .7rem;border-radius:8px;font-size:.8rem;line-height:1.35;
-  pointer-events:none;opacity:0;transition:opacity .16s ease;
-  white-space:nowrap;transform:translate(-50%,-115%);z-index:5;
+.tarjeta-sensor{
+  position:absolute;z-index:6;background:rgba(20,16,12,.93);color:#fff;
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  padding:.6rem .75rem;border-radius:12px;font-size:.78rem;line-height:1.4;
+  pointer-events:none;opacity:0;transform:translate(-50%,-118%) scale(.94);
+  transition:opacity .18s ease, transform .18s cubic-bezier(.34,1.4,.64,1);
+  white-space:nowrap;box-shadow:0 10px 30px -10px rgba(0,0,0,.7);
 }
-.globo.ver{opacity:1}
-.globo b{font-family:var(--display);font-size:1rem;display:block;font-weight:600}
+.tarjeta-sensor.ver{opacity:1;transform:translate(-50%,-118%) scale(1)}
+.tarjeta-sensor b{font-family:var(--display);font-size:1.15rem;display:block;font-weight:600;letter-spacing:-.02em}
+.tarjeta-sensor em{font-style:normal;color:#B9B4AA;display:block;margin-top:.15rem}
+
+.escena-pie{
+  position:absolute;left:0;right:0;bottom:0;display:flex;gap:.45rem;
+  padding:.7rem .8rem;pointer-events:none;
+}
+.chip-escena{
+  background:rgba(20,16,12,.55);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+  color:#EFE9DF;font-size:.7rem;line-height:1;padding:.35rem .55rem;border-radius:99px;
+  display:flex;align-items:center;gap:.3rem;letter-spacing:.01em;
+}
 
 /* ---------- Veredicto ---------- */
-.veredicto{padding:1.5rem 1.25rem 1.25rem;border-bottom:1px solid var(--linea)}
-.marca{display:block;width:100%;height:4px;border-radius:2px;background:var(--pasto);margin-bottom:1rem}
-.marca.regar{background:var(--arcilla)}
-.marca.critica{background:var(--alarma)}
-.marca.preparar{background:var(--pasto-seco)}
+.veredicto{padding:1.45rem 1.1rem 1.2rem}
+.marca{display:block;width:46px;height:4px;border-radius:2px;background:var(--acento);margin-bottom:.9rem}
+.marca.regar{background:var(--arcilla);width:74px}
+.marca.critica{background:var(--alarma);width:100px}
+.marca.preparar{background:#C8A63E;width:60px}
 .veredicto h1{
-  font-family:var(--display);font-size:clamp(1.9rem,7vw,2.5rem);
-  font-weight:800;letter-spacing:-.035em;line-height:1.08;margin-bottom:.5rem;
+  font-family:var(--display);font-size:clamp(1.95rem,7.4vw,2.6rem);
+  font-weight:800;letter-spacing:-.04em;line-height:1.05;margin-bottom:.5rem;
+  text-wrap:balance;
 }
-.veredicto p{color:var(--humo);font-size:.98rem;max-width:44ch}
+.veredicto p{color:var(--humo);font-size:.97rem;max-width:46ch}
 
 /* ---------- Acción de riego ---------- */
-.accion{padding:1.25rem;background:var(--tierra-honda);color:#F2EDE6;border-bottom:1px solid var(--linea)}
-.accion .fila{display:flex;gap:1.75rem;flex-wrap:wrap}
-.accion .dato span{display:block;font-size:.78rem;color:#B9AC9B;margin-bottom:.1rem}
+.accion{
+  margin:0 1.1rem 1.1rem;padding:1.05rem 1.1rem;border-radius:var(--rad);
+  background:linear-gradient(155deg,var(--tierra-media),var(--tierra-honda));
+  color:#F3EDE4;box-shadow:var(--sombra);
+}
+.accion .fila{display:flex;gap:1.5rem;flex-wrap:wrap}
+.accion .dato span{display:block;font-size:.74rem;color:#B9AC9B;margin-bottom:.12rem}
 .accion .dato strong{
-  font-family:var(--display);font-size:2rem;font-weight:600;
-  letter-spacing:-.03em;font-variant-numeric:tabular-nums;
+  font-family:var(--display);font-size:1.85rem;font-weight:600;
+  letter-spacing:-.035em;font-variant-numeric:tabular-nums;
 }
 .accion .nota{
-  margin-top:1rem;padding-top:.9rem;border-top:1px solid rgba(242,237,230,.18);
-  font-size:.88rem;color:#D6C9B8;max-width:48ch;
+  margin-top:.9rem;padding-top:.8rem;border-top:1px solid rgba(243,237,228,.18);
+  font-size:.85rem;color:#D6C9B8;max-width:50ch;
 }
+.accion .listo{
+  margin-top:.85rem;background:#F3EDE4;color:var(--tierra-honda);
+  padding:.55rem 1rem;border-radius:99px;font-size:.85rem;font-weight:600;
+}
+
+/* ---------- Bloques ---------- */
+.bloque{margin:0 1.1rem 1.1rem;padding:1.1rem;background:var(--papel);border:1px solid var(--linea);border-radius:var(--rad)}
+.bloque h2{font-family:var(--display);font-size:1.06rem;font-weight:600;letter-spacing:-.02em}
+.bloque .sub{font-size:.83rem;color:var(--humo);margin-top:.1rem}
 
 /* ---------- Deslizador de proyección ---------- */
-.futuro{padding:1.35rem 1.25rem;border-bottom:1px solid var(--linea)}
-.futuro h2{font-family:var(--display);font-size:1.05rem;font-weight:600;letter-spacing:-.015em;margin-bottom:.15rem}
-.futuro .sub{font-size:.85rem;color:var(--humo);margin-bottom:1rem}
-
-.pista{margin:0 2px .6rem}
-input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:34px;background:transparent;cursor:grab;display:block}
+.pista{margin:1rem 2px .5rem}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:36px;background:transparent;cursor:grab;display:block}
 input[type=range]:active{cursor:grabbing}
-input[type=range]::-webkit-slider-runnable-track{
-  height:6px;border-radius:3px;
-  background:linear-gradient(90deg,var(--agua) 0%,var(--pasto-seco) 55%,var(--arcilla) 100%);
-}
-input[type=range]::-moz-range-track{
-  height:6px;border-radius:3px;
-  background:linear-gradient(90deg,var(--agua) 0%,var(--pasto-seco) 55%,var(--arcilla) 100%);
-}
+input[type=range]::-webkit-slider-runnable-track{height:6px;border-radius:3px;background:linear-gradient(90deg,var(--agua) 0%,#C8A63E 58%,var(--arcilla) 100%)}
+input[type=range]::-moz-range-track{height:6px;border-radius:3px;background:linear-gradient(90deg,var(--agua) 0%,#C8A63E 58%,var(--arcilla) 100%)}
 input[type=range]::-webkit-slider-thumb{
   -webkit-appearance:none;width:30px;height:30px;border-radius:50%;
   background:var(--papel);border:3.5px solid var(--carbon);margin-top:-12px;
-  box-shadow:0 2px 8px rgba(26,31,28,.28);
+  box-shadow:0 3px 10px rgba(23,19,15,.3);
 }
-input[type=range]::-moz-range-thumb{
-  width:30px;height:30px;border-radius:50%;background:var(--papel);
-  border:3.5px solid var(--carbon);box-shadow:0 2px 8px rgba(26,31,28,.28);
-}
-.dias{display:flex;justify-content:space-between;font-size:.72rem;color:var(--humo);padding:0 4px}
-.dias span{flex:1;text-align:center}
-.dias span:first-child{text-align:left}
-.dias span:last-child{text-align:right}
+input[type=range]::-moz-range-thumb{width:30px;height:30px;border-radius:50%;background:var(--papel);border:3.5px solid var(--carbon);box-shadow:0 3px 10px rgba(23,19,15,.3)}
+.dias{display:flex;justify-content:space-between;font-size:.71rem;color:var(--humo);padding:0 3px}
+.dias span{flex:1;text-align:center;transition:color .15s ease}
 .dias span.activo{color:var(--carbon);font-weight:600}
-
-.lectura{display:flex;align-items:baseline;gap:.6rem;margin-top:1rem;padding:.85rem 1rem;background:var(--cielo);border-radius:10px}
-.lectura b{font-family:var(--display);font-size:2.1rem;font-weight:600;letter-spacing:-.035em;font-variant-numeric:tabular-nums;line-height:1}
-.lectura em{font-style:normal;font-size:.88rem;color:var(--humo)}
-.gota-lluvia{color:var(--agua);font-size:.85rem;margin-top:.55rem;display:block}
+.lectura{display:flex;align-items:baseline;gap:.5rem;margin-top:.55rem;flex-wrap:wrap}
+.lectura b{font-family:var(--display);font-size:2.1rem;font-weight:600;letter-spacing:-.035em;font-variant-numeric:tabular-nums}
+.lectura em{font-style:normal;color:var(--humo);font-size:.9rem}
+.gota-lluvia{display:block;margin-top:.4rem;font-size:.83rem;color:var(--agua)}
 
 /* ---------- Cifras ---------- */
-.cifras{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--linea)}
-.cifra{padding:1.05rem 1.25rem;border-right:1px solid var(--linea)}
-.cifra:nth-child(2n){border-right:none}
-.cifra:nth-child(-n+2){border-bottom:1px solid var(--linea)}
-.cifra span{display:block;font-size:.78rem;color:var(--humo);margin-bottom:.15rem}
-.cifra strong{font-family:var(--display);font-size:1.55rem;font-weight:600;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
-.cifra small{display:block;font-size:.76rem;color:var(--humo);margin-top:.1rem}
+.cifras{display:grid;grid-template-columns:1fr 1fr;gap:.55rem;margin:0 1.1rem 1.1rem}
+.cifra{
+  text-align:left;padding:.8rem .85rem;border:1px solid var(--linea);border-radius:var(--rad);
+  background:var(--papel);position:relative;overflow:hidden;transition:border-color .16s ease;
+}
+.cifra:active{border-color:var(--acento-hondo)}
+.cifra span{display:block;font-size:.75rem;color:var(--humo);margin-bottom:.15rem}
+.cifra strong{font-family:var(--display);font-size:1.5rem;font-weight:600;letter-spacing:-.03em;font-variant-numeric:tabular-nums;display:block}
+.cifra small{display:block;font-size:.72rem;color:var(--humo);margin-top:.1rem;line-height:1.35}
+.cifra .explicacion{display:none;font-size:.78rem;color:var(--carbon);margin-top:.35rem;line-height:1.4}
+.cifra.abierta .explicacion{display:block}
+.cifra.abierta{background:var(--acento-tenue);border-color:var(--acento)}
 
-/* ---------- Pastoreo ---------- */
-.pastoreo{padding:1.35rem 1.25rem;border-bottom:1px solid var(--linea)}
-.pastoreo h2{font-family:var(--display);font-size:1.05rem;font-weight:600;margin-bottom:.5rem}
-.pastoreo p{font-size:.93rem;color:var(--humo);margin-bottom:1rem;max-width:46ch}
-.crecer{height:12px;background:var(--cielo);border-radius:6px;overflow:hidden}
-.crecer i{display:block;height:100%;background:var(--pasto);transition:width .6s cubic-bezier(.32,.72,0,1)}
-.crecer.sobremaduro i{background:var(--pasto-seco)}
+/* ---------- Ahorro ---------- */
+.ahorro .cifra-grande{
+  font-family:var(--display);font-size:clamp(2.3rem,10vw,3.2rem);font-weight:800;
+  letter-spacing:-.045em;line-height:1;margin:.6rem 0 .3rem;font-variant-numeric:tabular-nums;
+  color:var(--acento-hondo);
+}
+.ahorro .contexto{font-size:.9rem;color:var(--humo);max-width:44ch}
+.partidas{margin-top:.9rem;border-top:1px solid var(--linea)}
+.partida{display:flex;justify-content:space-between;gap:1rem;padding:.55rem 0;border-bottom:1px solid var(--linea);font-size:.87rem}
+.partida span{color:var(--humo)}
+.partida b{font-variant-numeric:tabular-nums;font-weight:600}
+.partida.suma{border-bottom:none}
+.partida.suma span,.partida.suma b{color:var(--carbon);font-weight:700}
+.pie-nota{font-size:.78rem;color:var(--humo);margin-top:.7rem;line-height:1.45}
+
+/* ---------- Franja / etapa del cultivo ---------- */
+.crecer{height:9px;border-radius:99px;background:var(--lienzo);overflow:hidden;margin-top:.85rem}
+.crecer i{display:block;height:100%;background:var(--acento);border-radius:99px;transition:width .7s cubic-bezier(.32,.72,0,1)}
+.crecer.listo i{background:var(--acento-hondo)}
+.crecer.sobrepastoreado i,.crecer.tarde i{background:var(--arcilla)}
 .crecer-pie{display:flex;justify-content:space-between;font-size:.76rem;color:var(--humo);margin-top:.4rem;gap:1rem}
 
 /* ---------- Gráficas ---------- */
-.graficas{padding:1.35rem 1.25rem 2rem}
-.pestanas{display:flex;gap:.4rem;margin-bottom:1.1rem;flex-wrap:wrap}
-.pestanas button{padding:.45rem .85rem;border-radius:999px;font-size:.86rem;background:var(--cielo);color:var(--humo);transition:background .15s,color .15s}
-.pestanas button[aria-selected=true]{background:var(--carbon);color:#fff}
-.lienzo{position:relative;height:250px}
-.lienzo[hidden]{display:none}
-
-/* ---------- Lo que se ahorró ---------- */
-.ahorro{padding:1.5rem 1.25rem;background:var(--tierra-honda);color:#F2EDE6;border-bottom:1px solid var(--linea)}
-.ahorro h2{font-family:var(--display);font-size:1.05rem;font-weight:600;margin-bottom:1.1rem;color:#D6C9B8}
-.ahorro .cifra-grande{
-  font-family:var(--display);font-size:clamp(2.6rem,11vw,3.4rem);font-weight:800;
-  letter-spacing:-.04em;line-height:1;font-variant-numeric:tabular-nums;
+.pestanas{display:flex;gap:.3rem;padding:.25rem;background:var(--lienzo);border-radius:99px;margin-bottom:.9rem}
+.pestanas button{
+  flex:1;padding:.42rem .3rem;border-radius:99px;font-size:.8rem;font-weight:500;color:var(--humo);
+  transition:background .18s ease,color .18s ease;white-space:nowrap;
 }
-.ahorro .contexto{font-size:.9rem;color:#B9AC9B;margin-top:.35rem;max-width:40ch}
-.ahorro .partidas{margin-top:1.3rem;padding-top:1.1rem;border-top:1px solid rgba(242,237,230,.18)}
-.partida{display:flex;justify-content:space-between;align-items:baseline;gap:1rem;padding:.45rem 0;font-size:.92rem}
-.partida span{color:#B9AC9B}
-.partida b{font-variant-numeric:tabular-nums;font-weight:600}
-.partida.suma{border-top:1px solid rgba(242,237,230,.18);margin-top:.4rem;padding-top:.7rem;font-size:1rem}
-.ahorro .pie-nota{margin-top:1.1rem;font-size:.8rem;color:#9C9184;line-height:1.5}
+.pestanas button[aria-selected="true"]{background:var(--papel);color:var(--carbon);font-weight:600;box-shadow:0 1px 3px rgba(23,19,15,.1)}
+.lienzo{height:225px;position:relative}
+.lienzo-nota{font-size:.76rem;color:var(--humo);margin-top:.65rem;line-height:1.45}
+
+/* ---------- Barra inferior ---------- */
+.barra-abajo{
+  position:fixed;left:0;right:0;bottom:0;z-index:20;
+  display:flex;gap:.55rem;justify-content:center;
+  padding:.6rem 1.1rem calc(.6rem + env(safe-area-inset-bottom));
+  background:linear-gradient(to top,var(--papel) 68%,rgba(255,253,250,0));
+  pointer-events:none;
+}
+.barra-abajo > *{pointer-events:auto}
+.barra-abajo .principal{
+  flex:1;max-width:400px;display:flex;align-items:center;justify-content:center;gap:.5rem;
+  background:var(--carbon);color:var(--papel);padding:.85rem 1rem;border-radius:99px;
+  font-size:.95rem;font-weight:600;box-shadow:0 8px 24px -8px rgba(23,19,15,.5);
+  transition:transform .16s ease;
+}
+.barra-abajo .principal:active{transform:scale(.975)}
+.barra-abajo .secundario{
+  width:52px;flex:none;display:grid;place-items:center;background:var(--papel);
+  border:1.5px solid var(--linea);border-radius:99px;font-size:1.1rem;
+}
 
 /* ---------- Conversación ---------- */
-.charla{border-bottom:1px solid var(--linea)}
+.velo{position:fixed;inset:0;background:rgba(23,19,15,.45);z-index:30;opacity:0;transition:opacity .22s ease}
+.velo.ver{opacity:1}
+.charla{
+  position:fixed;left:0;right:0;bottom:0;z-index:31;max-width:620px;margin:0 auto;
+  background:var(--papel);border-radius:20px 20px 0 0;height:min(88vh,780px);
+  display:flex;flex-direction:column;transform:translateY(101%);
+  transition:transform .3s cubic-bezier(.32,.72,0,1);box-shadow:0 -12px 44px -16px rgba(23,19,15,.5);
+}
+.charla.abierta{transform:translateY(0)}
 .charla-cabeza{
-  display:flex;justify-content:space-between;align-items:center;
-  padding:1.15rem 1.25rem;cursor:pointer;width:100%;text-align:left;
+  display:flex;align-items:center;gap:.75rem;padding:1rem 1.1rem .8rem;border-bottom:1px solid var(--linea);
 }
-.charla-cabeza h2{font-family:var(--display);font-size:1.05rem;font-weight:600;letter-spacing:-.015em}
-.charla-cabeza small{display:block;font-size:.82rem;color:var(--humo);font-weight:400;margin-top:.1rem}
-.charla-cabeza .flecha{color:var(--humo);font-size:1.3rem;line-height:1;transition:transform .22s ease}
-.charla[data-abierta=si] .flecha{transform:rotate(180deg)}
+.charla-cabeza .agarre{position:absolute;top:.5rem;left:50%;transform:translateX(-50%);width:38px;height:4px;border-radius:99px;background:var(--linea)}
+.charla-cabeza .avatar{width:36px;height:36px;border-radius:50%;flex:none;background:var(--acento-tenue);display:grid;place-items:center}
+.charla-cabeza .avatar svg{width:21px;height:21px}
+.charla-cabeza h2{font-family:var(--display);font-size:1rem;font-weight:600;letter-spacing:-.02em}
+.charla-cabeza small{display:block;font-size:.75rem;color:var(--humo)}
+.charla-cabeza .cerrar{margin-left:auto;font-size:1.5rem;line-height:1;color:var(--humo);padding:.2rem .5rem}
 
-.hilo{padding:0 1.25rem;max-height:340px;overflow-y:auto;scroll-behavior:smooth}
+.hilo{flex:1;overflow-y:auto;padding:1rem 1.1rem;display:flex;flex-direction:column;gap:.6rem;-webkit-overflow-scrolling:touch}
 .burbuja{
-  max-width:85%;padding:.7rem .9rem;border-radius:14px;
-  margin-bottom:.6rem;font-size:.92rem;line-height:1.45;white-space:pre-line;
+  max-width:86%;padding:.65rem .85rem;border-radius:16px;font-size:.92rem;line-height:1.48;
+  white-space:pre-wrap;word-break:break-word;animation:entra .26s cubic-bezier(.32,.72,0,1);
 }
-.burbuja.productor{background:var(--carbon);color:#F2EDE6;margin-left:auto;border-bottom-right-radius:4px}
-.burbuja.sistema{background:var(--cielo);border-bottom-left-radius:4px}
-.burbuja.pensando{color:var(--humo);font-style:italic}
+@keyframes entra{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+.burbuja.sistema{background:var(--lienzo);border-bottom-left-radius:5px;align-self:flex-start}
+.burbuja.productor{background:var(--carbon);color:var(--papel);border-bottom-right-radius:5px;align-self:flex-end}
+.burbuja.pensando{display:flex;gap:4px;align-items:center;padding:.8rem .9rem}
+.burbuja.pensando i{width:6px;height:6px;border-radius:50%;background:var(--humo);animation:pensar 1.25s ease-in-out infinite}
+.burbuja.pensando i:nth-child(2){animation-delay:.16s}
+.burbuja.pensando i:nth-child(3){animation-delay:.32s}
+@keyframes pensar{0%,60%,100%{opacity:.28;transform:translateY(0)}30%{opacity:1;transform:translateY(-4px)}}
 
-.sugerencias{display:flex;gap:.4rem;overflow-x:auto;padding:.5rem 1.25rem .25rem;scrollbar-width:none}
+.ficha-chat{
+  align-self:flex-start;max-width:88%;background:var(--papel);border:1px solid var(--linea);
+  border-radius:16px;border-bottom-left-radius:5px;padding:.8rem .9rem;
+  animation:entra .26s cubic-bezier(.32,.72,0,1);
+}
+.ficha-chat h4{font-family:var(--display);font-size:.85rem;font-weight:600;color:var(--humo);margin-bottom:.5rem;letter-spacing:-.01em}
+.ficha-chat .par{display:flex;justify-content:space-between;gap:1rem;font-size:.87rem;padding:.26rem 0}
+.ficha-chat .par b{font-variant-numeric:tabular-nums}
+.ficha-chat .medidor{height:7px;border-radius:99px;background:var(--lienzo);margin:.55rem 0 .3rem;overflow:hidden;position:relative}
+.ficha-chat .medidor i{display:block;height:100%;background:var(--acento);border-radius:99px}
+.ficha-chat .medidor u{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--carbon);text-decoration:none}
+.ficha-chat .medidor-pie{display:flex;justify-content:space-between;font-size:.72rem;color:var(--humo)}
+
+.sugerencias{display:flex;gap:.42rem;overflow-x:auto;padding:.55rem 1.1rem;scrollbar-width:none;border-top:1px solid var(--linea)}
 .sugerencias::-webkit-scrollbar{display:none}
 .sugerencias button{
-  white-space:nowrap;padding:.4rem .8rem;border-radius:999px;
-  background:var(--cielo);font-size:.83rem;color:var(--carbon);flex:none;
+  flex:none;border:1.5px solid var(--linea);border-radius:99px;padding:.42rem .8rem;
+  font-size:.83rem;background:var(--papel);white-space:nowrap;transition:background .15s ease;
 }
-.sugerencias button:hover{background:#DFE6E2}
+.sugerencias button:active{background:var(--acento-tenue);border-color:var(--acento)}
 
-.escribir{display:flex;gap:.5rem;padding:.75rem 1.25rem 1.25rem}
-.escribir input{
-  flex:1;font:inherit;font-size:1rem;padding:.7rem .9rem;
-  border:1.5px solid var(--linea);border-radius:999px;background:var(--papel);color:var(--carbon);
+.escribir{display:flex;gap:.5rem;align-items:flex-end;padding:.6rem 1.1rem calc(.85rem + env(safe-area-inset-bottom));border-top:1px solid var(--linea)}
+.escribir textarea{
+  flex:1;border:1.5px solid var(--linea);border-radius:20px;padding:.6rem .9rem;
+  font-size:.95rem;background:var(--papel);resize:none;max-height:110px;line-height:1.4;
+  font-family:var(--sans);
 }
-.escribir input:focus{outline:none;border-color:var(--agua)}
-.escribir button{
-  width:44px;height:44px;border-radius:50%;background:var(--carbon);color:#fff;
-  display:grid;place-items:center;flex:none;font-size:1.1rem;
-}
-.escribir button:disabled{opacity:.4;cursor:default}
+.escribir textarea:focus{outline:none;border-color:var(--acento)}
+.escribir button{width:42px;height:42px;flex:none;border-radius:50%;display:grid;place-items:center}
+.escribir .enviar{background:var(--carbon);color:var(--papel);font-size:1.1rem}
+.escribir .voz{background:var(--lienzo);font-size:1.05rem}
+.escribir .voz.grabando{background:var(--alarma);color:#fff;animation:latir-voz 1.4s ease-in-out infinite}
+@keyframes latir-voz{0%,100%{box-shadow:0 0 0 0 rgba(168,62,48,.5)}70%{box-shadow:0 0 0 10px rgba(168,62,48,0)}}
 
-/* ---------- Avisos ---------- */
-.aviso{margin:0;padding:.85rem 1.25rem;font-size:.86rem;display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;border-bottom:1px solid var(--linea)}
-.aviso.instalar{background:var(--carbon);color:#F2EDE6;border-bottom:none}
-.aviso.instalar button{background:#F2EDE6;color:var(--carbon);padding:.45rem .9rem;border-radius:999px;font-weight:600;font-size:.84rem;flex:none}
-.aviso.offline{background:#EEF3F6;color:#265D78}
-.aviso.demo{background:#FBF3E9;color:#7A5320}
+/* ---------- Aviso flotante ---------- */
+.saludo-flotante{
+  position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(8px);
+  z-index:19;background:var(--carbon);color:var(--papel);padding:.65rem .95rem;border-radius:14px;
+  font-size:.86rem;max-width:min(440px,calc(100% - 2.2rem));box-shadow:0 12px 30px -12px rgba(23,19,15,.6);
+  opacity:0;pointer-events:none;transition:opacity .3s ease,transform .3s cubic-bezier(.32,.72,0,1);
+}
+.saludo-flotante.ver{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto}
 
 /* ---------- Pie ---------- */
-.pie{padding:1.75rem 1.25rem;padding-bottom:calc(1.75rem + env(safe-area-inset-bottom));font-size:.78rem;color:var(--humo);text-align:center;line-height:1.6}
-.pie .barra{display:flex;gap:.5rem;justify-content:center;margin-bottom:1rem;flex-wrap:wrap}
-.pie select,.pie button.enlace{font-size:.82rem;padding:.4rem .8rem;border-radius:999px;background:var(--cielo);border:none;color:var(--carbon);cursor:pointer}
+.pie{padding:1.4rem 1.1rem 2rem;font-size:.76rem;color:var(--humo);line-height:1.6;border-top:1px solid var(--linea);margin-top:.4rem}
+.pie .enlace{color:var(--acento-hondo);text-decoration:underline;text-underline-offset:3px;font-size:.8rem}
 
-/* ---------- Carga ---------- */
-.cargando{padding:5rem 1.25rem;text-align:center;color:var(--humo)}
-.cargando .gota{width:34px;height:34px;margin:0 auto 1rem;border-radius:50% 50% 50% 0;background:var(--agua);transform:rotate(-45deg);animation:latir 1.5s ease-in-out infinite}
-@keyframes latir{0%,100%{opacity:.35;transform:rotate(-45deg) scale(.85)}50%{opacity:1;transform:rotate(-45deg) scale(1)}}
+.chorro{animation-name:caer-gota;animation-timing-function:linear;animation-iteration-count:infinite;opacity:.45}
+@keyframes caer-gota{
+  0%{transform:translateY(-24px);opacity:0}
+  12%{opacity:.62}
+  85%{opacity:.5}
+  100%{transform:translateY(215px);opacity:0}
+}
 
 @media(prefers-reduced-motion:reduce){
-  *,*::before,*::after{animation-duration:.01ms !important;transition-duration:.01ms !important}
+  *{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important}
 }
 </style>
 </head>
-<body>
+<body data-tipo="pastoreo">
 
 <div class="envoltura">
 
   <header class="cabecera">
-    <span class="finca" id="nombreFinca">HidroSopó</span>
-    <span class="pulso" id="pulso"><i></i><span id="pulsoTexto">conectando</span></span>
+    <span class="marca-app">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 2.5c3.6 4.3 6.2 7.8 6.2 11a6.2 6.2 0 1 1-12.4 0c0-3.2 2.6-6.7 6.2-11z" fill="var(--agua)"/>
+        <path d="M8.6 14.4c0 2.2 1.5 3.7 3.4 3.9" stroke="#fff" stroke-width="1.4" fill="none" stroke-linecap="round" opacity=".8"/>
+      </svg>
+      <b>HidroSopó</b>
+    </span>
+    <span class="pulso vivo" id="pulso"><i></i><span id="pulsoTexto">conectando</span></span>
   </header>
+
+  <nav class="predios" id="predios" aria-label="Sus predios"></nav>
 
   <div class="aviso instalar" id="avisoInstalar" hidden>
     <span id="textoInstalar">Instale la app para abrirla sin señal.</span>
@@ -267,18 +425,19 @@ input[type=range]::-moz-range-thumb{
     <span>Sin señal. Esta es la última información que llegó <b id="edadDatos"></b>.</span>
   </div>
   <div class="aviso demo" id="avisoDemo" hidden>
-    <span>Datos de ejemplo. El servidor no responde todavía.</span>
+    <span><b>Datos de prueba.</b> Así se verá cuando los sensores estén en el predio.</span>
   </div>
 
   <div id="cargando" class="cargando"><div class="gota"></div>Leyendo los sensores</div>
 
   <main id="app" hidden>
 
-    <section class="corte" id="corte" aria-label="Corte del suelo con la humedad medida">
-      <svg id="svgSuelo" viewBox="0 0 400 430" role="img" aria-labelledby="tituloSuelo">
-        <title id="tituloSuelo">Corte del suelo</title>
+    <section class="escena" id="escena" aria-label="El predio y el corte del suelo">
+      <svg id="svgEscena" viewBox="0 0 400 520" role="img" aria-labelledby="tituloEscena">
+        <title id="tituloEscena">Corte del predio</title>
       </svg>
-      <div class="globo" id="globo"></div>
+      <div class="tarjeta-sensor" id="tarjetaSensor"></div>
+      <div class="escena-pie" id="escenaPie"></div>
     </section>
 
     <section class="veredicto">
@@ -294,9 +453,10 @@ input[type=range]::-moz-range-thumb{
         <div class="dato"><span>Lámina</span><strong id="aLamina">—</strong></div>
       </div>
       <p class="nota" id="aNota"></p>
+      <button class="listo" id="btnYaRegue">Ya regué, anótelo</button>
     </section>
 
-    <section class="futuro">
+    <section class="bloque">
       <h2>Si no riega, ¿qué pasa?</h2>
       <p class="sub">Deslice para ver cómo se seca la tierra día por día.</p>
       <div class="pista">
@@ -310,7 +470,9 @@ input[type=range]::-moz-range-thumb{
       <span class="gota-lluvia" id="proyLluvia"></span>
     </section>
 
-    <section class="ahorro" id="ahorro" hidden>
+    <section class="cifras" id="cifras"></section>
+
+    <section class="bloque ahorro" id="ahorro" hidden>
       <h2>Lo que lleva ahorrado</h2>
       <div class="cifra-grande" id="ahorroPesos">—</div>
       <p class="contexto" id="ahorroContexto"></p>
@@ -318,53 +480,27 @@ input[type=range]::-moz-range-thumb{
       <p class="pie-nota" id="ahorroNota"></p>
     </section>
 
-    <section class="charla" id="charla" data-abierta="no">
-      <button class="charla-cabeza" id="charlaCabeza" aria-expanded="false" aria-controls="charlaCuerpo">
-        <span>
-          <h2>Cuénteme</h2>
-          <small>Dígame cuánto regó o pregúnteme lo que sea</small>
-        </span>
-        <span class="flecha" aria-hidden="true">⌄</span>
-      </button>
-      <div id="charlaCuerpo" hidden>
-        <div class="hilo" id="hilo"></div>
-        <div class="sugerencias" id="sugerencias"></div>
-        <form class="escribir" id="formChat">
-          <input id="entradaChat" placeholder="Regué 40 minutos…" autocomplete="off"
-                 enterkeyhint="send" aria-label="Escriba su mensaje">
-          <button type="submit" aria-label="Enviar">→</button>
-        </form>
-      </div>
-    </section>
-
-    <section class="cifras" id="cifras"></section>
-
-    <section class="pastoreo" id="pastoreo" hidden>
-      <h2>La franja</h2>
-      <p id="pastoreoTexto"></p>
+    <section class="bloque" id="ciclo" hidden>
+      <h2 id="cicloTitulo">La franja</h2>
+      <p class="sub" id="cicloTexto"></p>
       <div class="crecer" id="crecerBarra"><i style="width:0%"></i></div>
       <div class="crecer-pie">
-        <span id="pastoreoDias"></span>
-        <span id="pastoreoAltura"></span>
+        <span id="cicloIzq"></span>
+        <span id="cicloDer"></span>
       </div>
     </section>
 
-    <section class="graficas">
-      <div class="pestanas" role="tablist">
-        <button role="tab" aria-selected="true"  data-g="gHumedad">Humedad</button>
-        <button role="tab" aria-selected="false" data-g="gClima">Clima</button>
-        <button role="tab" aria-selected="false" data-g="gConsumo">Consumo</button>
-      </div>
+    <section class="bloque">
+      <div class="pestanas" role="tablist" id="pestanas"></div>
       <div class="lienzo"><canvas id="gHumedad"></canvas></div>
       <div class="lienzo" hidden><canvas id="gClima"></canvas></div>
       <div class="lienzo" hidden><canvas id="gConsumo"></canvas></div>
+      <div class="lienzo" hidden><canvas id="gCiclo"></canvas></div>
+      <p class="lienzo-nota" id="notaGrafica"></p>
     </section>
 
     <footer class="pie">
-      <div class="barra">
-        <select id="selPredio" aria-label="Predio"></select>
-        <button class="enlace" id="btnReporte">Descargar informe</button>
-      </div>
+      <button class="enlace" id="btnReporte">Descargar el informe de los últimos 30 días</button><br><br>
       Las recomendaciones son una ayuda. La decisión de regar siempre es suya.<br>
       Proyecto de Ciencia, Tecnología e Innovación · Municipio de Sopó
     </footer>
@@ -372,185 +508,700 @@ input[type=range]::-moz-range-thumb{
   </main>
 </div>
 
+<div class="barra-abajo" id="barraAbajo" hidden>
+  <button class="principal" id="btnCharla">
+    <svg viewBox="0 0 24 24" width="19" height="19" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M20 15a3 3 0 0 1-3 3H8l-4 3V6a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3z"/>
+    </svg>
+    <span id="btnCharlaTexto">Cuénteme</span>
+  </button>
+  <button class="secundario" id="btnRefrescar" aria-label="Actualizar lecturas">↻</button>
+</div>
+
+<div class="saludo-flotante" id="saludoFlotante" role="status"></div>
+
+<div class="velo" id="velo" hidden></div>
+
+<section class="charla" id="charla" role="dialog" aria-modal="true" aria-label="Conversación con el sistema" hidden>
+  <header class="charla-cabeza">
+    <span class="agarre"></span>
+    <span class="avatar">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 3c3 3.6 5 6.5 5 9a5 5 0 0 1-10 0c0-2.5 2-5.4 5-9z" fill="var(--acento-hondo)"/>
+      </svg>
+    </span>
+    <span>
+      <h2 id="charlaTitulo">Cuénteme</h2>
+      <small id="charlaSub">Dígame cuánto regó o pregúnteme lo que sea</small>
+    </span>
+    <button class="cerrar" id="charlaCerrar" aria-label="Cerrar la conversación">×</button>
+  </header>
+  <div class="hilo" id="hilo"></div>
+  <div class="sugerencias" id="sugerencias"></div>
+  <form class="escribir" id="formChat">
+    <button type="button" class="voz" id="btnVoz" aria-label="Dictar" hidden>🎙</button>
+    <textarea id="entradaChat" rows="1" placeholder="Regué 40 minutos…" enterkeyhint="send" aria-label="Escriba su mensaje"></textarea>
+    <button type="submit" class="enviar" aria-label="Enviar">↑</button>
+  </form>
+</section>
 <script>
 'use strict';
-const API = localStorage.getItem('hidrosopo_api') || 'http://localhost:8000';
+const API = localStorage.getItem('hidrosopo_api') || 'https://hidrosopo.onrender.com';
+
+/* ── Hora y fecha ────────────────────────────────────────────────
+   El predio está en Sopó y ahí es donde pasan las cosas: el sol, el
+   riego, el corte del día. Por eso la app se rige por la hora de
+   Bogotá y no por la del teléfono, que puede estar mal puesto o
+   pertenecer a alguien que está mirando la finca desde otro lado.
+   RELOJ_DEL_PREDIO=false la devuelve al reloj del aparato.
+
+   TS_SIN_ZONA_ES_UTC: si el backend serializa las marcas de tiempo
+   sin zona (lo que sale de datetime.utcnow()), se leen como UTC.
+   Si su backend guarda hora local de Colombia sin zona, póngalo en
+   false. La forma correcta de no tener que decidir esto es que el
+   backend mande la zona: 2026-08-31T07:29:00-05:00.
+   ─────────────────────────────────────────────────────────────── */
+const TZ = 'America/Bogota';
+const RELOJ_DEL_PREDIO = true;
+const TS_SIN_ZONA_ES_UTC = true;
+const zona = () => RELOJ_DEL_PREDIO ? TZ : undefined;
+
+function horaDelPredio(d = new Date()){
+  if(!RELOJ_DEL_PREDIO) return d.getHours();
+  try{
+    const p = new Intl.DateTimeFormat('es-CO', {timeZone:TZ, hour:'numeric', hourCycle:'h23'}).formatToParts(d);
+    const h = p.find(x => x.type === 'hour');
+    return h ? (+h.value % 24) : d.getHours();
+  }catch(e){ return d.getHours(); }
+}
+
+/* Una marca de tiempo sin zona no dice nada por sí sola: hay que
+   decidir cómo leerla, y decidirlo en un solo lugar. */
+function leerFecha(ts){
+  if(ts instanceof Date) return ts;
+  if(typeof ts === 'number') return new Date(ts);
+  const s = String(ts);
+  const traeZona = /[zZ]$|[+-]\d{2}:?\d{2}$/.test(s);
+  return new Date(traeZona ? s : (TS_SIN_ZONA_ES_UTC ? s + 'Z' : s));
+}
+
+/* AAAA-MM-DD del día que es en el predio. toISOString() da el día
+   en UTC, y después de las 7 p.m. en Colombia eso ya es mañana:
+   el informe salía con un día corrido. */
+function fechaISO(d = new Date()){
+  try{ return new Intl.DateTimeFormat('en-CA', {timeZone:zona()}).format(d); }
+  catch(e){ return d.toISOString().slice(0,10); }
+}
+
+function fechaLarga(ts, opciones){
+  try{ return leerFecha(ts).toLocaleString('es-CO', {timeZone:zona(), ...opciones}); }
+  catch(e){ return leerFecha(ts).toLocaleString('es-CO', opciones); }
+}
 const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
 const fmt = (n, d = 1) => (n == null || isNaN(n)) ? '—' : Number(n).toFixed(d);
+const cop = v => '$' + Math.round(v).toLocaleString('es-CO');
+const suave = () => !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const vibrar = ms => { try{ navigator.vibrate && navigator.vibrate(ms); }catch(e){} };
 
-let predioId = 1, datos = null, graficas = {}, modoDemo = false, primeraCarga = true;
+let predioId = 1, datos = null, predioActual = null, graficas = {},
+    modoDemo = false, primeraCarga = true, series = null, diaVisto = 0;
 
-/* ══════════════════════════════════════════════════════════
-   EL CORTE DE SUELO
-   Se dibuja en SVG desde cero. Muestra el pasto arriba (que se
-   pone amarillo y se encoge con el estrés), los tres horizontes
-   del suelo con su saturación real, los sensores a su
-   profundidad, las raíces y la línea del umbral de riego.
-   ══════════════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════════════
+   LOS TIPOS DE PREDIO
+   No es decoración: un ganadero, un papicultor y un floricultor
+   miran cosas distintas y hablan distinto. El tipo cambia la
+   escena, el vocabulario, la profundidad de raíz y los colores
+   de las gráficas.
+   ══════════════════════════════════════════════════════════════ */
 
-const SUELO = {
-  W: 400, H: 430, superficieY: 96, fondoY: 415,
-  y(cm){ return this.superficieY + (cm / 60) * (this.fondoY - this.superficieY); }
+const TIPOS = {
+  pastoreo:{
+    etiqueta:'Pastoreo', cultivo:'Kikuyo', raiz_cm:40,
+    turno:'la franja', turnos:'las franjas',
+    color:'#6F9438', hondo:'#42601F', hoja:'#7FA646', flor:null,
+    cieloAlto:'#A9C6D6', cieloBajo:'#E8F0E6',
+    cuartaPestana:'Pasto',
+    nota:'El pasto se mide en grados-día: la suma de calor que necesita para volver a tener hoja y reservas.',
+  },
+  papa:{
+    etiqueta:'Papa', cultivo:'Papa parda', raiz_cm:45,
+    turno:'el lote', turnos:'los lotes',
+    color:'#7A5AA6', hondo:'#4E3673', hoja:'#4F7A3A', flor:'#D8CDE8',
+    cieloAlto:'#B2C4D8', cieloBajo:'#EDECE6',
+    cuartaPestana:'Etapa',
+    nota:'El Kc dice cuánta agua pide el cultivo según la etapa. En tuberización es cuando más pesa quedarse corto.',
+  },
+  hortalizas:{
+    etiqueta:'Hortalizas', cultivo:'Lechuga y espinaca', raiz_cm:25,
+    turno:'la cama', turnos:'las camas',
+    color:'#2F8C6B', hondo:'#1D5C46', hoja:'#59A87C', flor:null,
+    cieloAlto:'#B7D2D2', cieloBajo:'#EAF1EC',
+    cuartaPestana:'Etapa',
+    nota:'La raíz de la hortaliza es corta: el agua útil está en los primeros 25 cm y se acaba rápido.',
+  },
+  flores:{
+    etiqueta:'Flores', cultivo:'Rosa bajo invernadero', raiz_cm:30,
+    turno:'la nave', turnos:'las naves',
+    color:'#B23A5E', hondo:'#7C1F3C', hoja:'#3E6B45', flor:'#D9557A',
+    cieloAlto:'#C7CFD9', cieloBajo:'#F0EDEA',
+    cuartaPestana:'Ciclo',
+    nota:'Bajo plástico no entra lluvia: toda el agua que recibe la planta es la que usted le pone.',
+  }
+};
+const T = () => TIPOS[(predioActual && predioActual.tipo) || 'pastoreo'];
+
+/* ══════════════════════════════════════════════════════════════
+   LA ESCENA
+   Arriba lo que se ve desde el camino; abajo lo que solo ven los
+   sensores. Es el mismo dibujo: el suelo del corte es el suelo
+   que pisan las vacas.
+   ══════════════════════════════════════════════════════════════ */
+
+const S = {
+  W:400, H:520, cieloH:150, superficieY:196, fondoY:505,
+  y(cm){ return this.superficieY + (cm/60) * (this.fondoY - this.superficieY); }
 };
 
 function mezclar(a, b, t){
-  const p = c => [parseInt(c.slice(1,3),16), parseInt(c.slice(3,5),16), parseInt(c.slice(5,7),16)];
+  // Acepta hex y rgb(): el resultado de una mezcla se vuelve a mezclar
+  // (hoja → oscura → clara) y sin esto quedaba en NaN, o sea negro.
+  const p = c => {
+    if(c[0] === '#') return [parseInt(c.slice(1,3),16), parseInt(c.slice(3,5),16), parseInt(c.slice(5,7),16)];
+    const n = c.match(/\d+/g) || [0,0,0];
+    return [+n[0], +n[1], +n[2]];
+  };
   const [r1,g1,b1] = p(a), [r2,g2,b2] = p(b);
   const k = Math.max(0, Math.min(1, t));
-  const m = (x,y) => Math.round(x + (y - x) * k);
+  const m = (x,y) => Math.round(x + (y-x)*k);
   return `rgb(${m(r1,r2)},${m(g1,g2)},${m(b1,b2)})`;
 }
+const SECO = {'#6E5637':'#A08862', '#54412D':'#8A7052', '#2A2117':'#5A4A38'};
+const colorTierra = (pct, base) => mezclar(SECO[base] || '#A08862', base, pct/100);
+const rnd = s => { const x = Math.sin(s*127.1)*43758.5453; return x - Math.floor(x); };
 
-/* La tierra seca se ve clara y polvorienta; la húmeda, oscura y saturada. */
-const SECO = { '#6E5637':'#A08862', '#54412D':'#8A7052', '#3A2E23':'#5E4C38' };
-const colorTierra = (pct, base) => mezclar(SECO[base] || '#A08862', base, pct / 100);
+/* ---------- Cielo: hora del día y lluvia ---------- */
+function cielo(hora, lluviaMm, nublado){
+  const t = TIPOS[(predioActual && predioActual.tipo) || 'pastoreo'];
+  let alto = t.cieloAlto, bajo = t.cieloBajo, astro = '', luz = 1;
 
-function dibujarSuelo(humedades, pctAgua, umbralPct, coefEstres){
-  const S = SUELO;
-  const estres = 1 - Math.max(0, Math.min(1, coefEstres ?? 1));
-  const colorPasto = mezclar('#7A9B3E', '#B8A052', estres);
-  const altoPasto = 40 - estres * 16;
-
-  const h = [
-    humedades[0] ?? 25,
-    humedades[1] ?? humedades[0] ?? 24,
-    humedades[2] ?? humedades[1] ?? 23
-  ];
-  const sat = v => Math.max(0, Math.min(100, (v / 40) * 100));
-
-  let svg = `<rect x="0" y="0" width="${S.W}" height="${S.superficieY}" fill="#EBF0EE"/>`;
-
-  // Pasto: matas dibujadas una por una, con variación
-  for(let x = -6; x < S.W + 10; x += 7){
-    const alt = altoPasto * (0.62 + Math.abs(Math.sin(x * 0.83)) * 0.5);
-    const inc = Math.sin(x * 0.31) * 5;
-    svg += `<path d="M${x},${S.superficieY} q${(inc*0.5).toFixed(1)},${(-alt*0.6).toFixed(1)} ${inc.toFixed(1)},${(-alt).toFixed(1)}" stroke="${colorPasto}" stroke-width="2.6" fill="none" stroke-linecap="round"/>`;
+  if(hora < 6 || hora >= 19){            // noche
+    alto = '#1B2733'; bajo = '#3B4552'; luz = .35;
+  }else if(hora < 8){                     // amanecer
+    alto = mezclar('#5C6E86', t.cieloAlto, .45); bajo = '#F0D5B8'; luz = .7;
+  }else if(hora >= 17){                   // atardecer
+    alto = mezclar('#7D7796', t.cieloAlto, .35); bajo = '#F2C79C'; luz = .75;
   }
+  if(lluviaMm > 0.5){ alto = mezclar(alto,'#6E757C',.55); bajo = mezclar(bajo,'#A9AEB2',.5); luz *= .82; }
+  else if(nublado){ alto = mezclar(alto,'#8E979B',.3); bajo = mezclar(bajo,'#C6CBC8',.3); }
+
+  let g = `<defs><linearGradient id="gCielo" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="${alto}"/><stop offset="100%" stop-color="${bajo}"/></linearGradient>
+    <linearGradient id="gAgua" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#5AA8C9"/><stop offset="100%" stop-color="#2E7EA6"/></linearGradient>
+    <clipPath id="recorteCielo"><rect x="0" y="0" width="${S.W}" height="${S.superficieY}"/></clipPath></defs>`;
+  g += `<rect x="0" y="0" width="${S.W}" height="${S.superficieY}" fill="url(#gCielo)"/>`;
+
+  // Sol o luna, sobre un arco según la hora
+  const noche = (hora < 6 || hora >= 19);
+  const p = Math.max(0, Math.min(1, (hora - 5.5) / 13));
+  const ax = 42 + p*300, ay = 108 - Math.sin(p*Math.PI)*72;
+  if(noche){
+    astro = `<circle cx="326" cy="40" r="15" fill="#E8E5DC" opacity=".9"/>
+             <circle cx="319" cy="35" r="15" fill="${alto}"/>`;
+  }else if(lluviaMm <= 0.5){
+    astro = `<circle cx="${ax.toFixed(0)}" cy="${ay.toFixed(0)}" r="20" fill="#F6E2A8" opacity=".32"/>
+             <circle cx="${ax.toFixed(0)}" cy="${ay.toFixed(0)}" r="12.5" fill="#F7DC8E"/>`;
+  }
+  g += astro;
+
+  // Nubes: más y más grises cuando hay lluvia
+  const nubes = lluviaMm > 4 ? 4 : lluviaMm > 0.5 ? 3 : nublado ? 2 : 1;
+  const tono = lluviaMm > 0.5 ? '#9AA0A4' : '#FFFFFF';
+  for(let i = 0; i < nubes; i++){
+    const cx = 40 + rnd(i+3)*300, cy = 34 + rnd(i+9)*52, e = .8 + rnd(i+5)*.7;
+    g += `<g opacity="${(0.5 + rnd(i)*0.32).toFixed(2)}" fill="${tono}" transform="translate(${cx.toFixed(0)},${cy.toFixed(0)}) scale(${e.toFixed(2)})">
+      <ellipse cx="0" cy="0" rx="30" ry="12"/><ellipse cx="-16" cy="4" rx="18" ry="9"/><ellipse cx="17" cy="3" rx="21" ry="10"/></g>`;
+  }
+
+  // Los cerros de la Sabana, siempre al fondo
+  g += `<path d="M0,146 C30,140 44,118 72,122 C96,126 108,104 134,110 C158,116 176,132 200,128
+        C228,124 244,106 272,112 C296,117 318,134 344,130 C368,126 384,138 400,142
+        L400,${S.superficieY} L0,${S.superficieY} Z"
+        fill="${mezclar('#5E6E64', bajo, .5)}" opacity=".92"/>`;
+  g += `<path d="M0,152 C48,146 84,134 128,140 C176,146 214,136 258,142 C302,148 344,140 400,148
+        L400,${S.superficieY} L0,${S.superficieY} Z"
+        fill="${mezclar('#4E5C54', bajo, .66)}" opacity=".9"/>`;
+  g += `<path d="M0,${S.superficieY-42} C70,${S.superficieY-56} 150,${S.superficieY-34} 220,${S.superficieY-46} C290,${S.superficieY-56} 350,${S.superficieY-36} 400,${S.superficieY-44} L400,${S.superficieY} L0,${S.superficieY} Z"
+        fill="${mezclar('#6F8A5E', bajo, .28)}" opacity=".95"/>`;
+
+  // Lluvia: cada gota cae por su lado, así el bucle no da saltos
+  if(lluviaMm > 0.5 && suave()){
+    let hilos = '';
+    const n = Math.min(44, 12 + Math.round(lluviaMm*2.2));
+    for(let i = 0; i < n; i++){
+      const x = rnd(i+31)*S.W, l = 7 + rnd(i+13)*9;
+      const dur = (0.85 + rnd(i+5)*0.5).toFixed(2), esp = (-rnd(i+19)*1.4).toFixed(2);
+      hilos += `<line class="chorro" x1="${x.toFixed(0)}" y1="0" x2="${(x-2.5).toFixed(0)}" y2="${l.toFixed(0)}"
+                 stroke="#CFE3EE" stroke-width="1.1" style="animation-duration:${dur}s;animation-delay:${esp}s"/>`;
+    }
+    g += `<g clip-path="url(#recorteCielo)">${hilos}</g>`;
+  }
+  return {svg:g, luz};
+}
+
+/* ---------- Lo que crece encima ---------- */
+
+function hojaOval(cx, cy, rx, ry, ang, color){
+  return `<ellipse cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" rx="${rx.toFixed(1)}" ry="${ry.toFixed(1)}"
+          fill="${color}" transform="rotate(${ang.toFixed(0)} ${cx.toFixed(1)} ${cy.toFixed(1)})"/>`;
+}
+
+function plantas(tipo, estres, luz){
+  const t = TIPOS[tipo] || TIPOS.pastoreo;
+  const Y = S.superficieY;
+  const hoja = mezclar(t.hoja, '#C6B25C', estres);        // amarillea con el estrés
+  const clara = mezclar(hoja, '#FFFFFF', .2);
+  const oscura = mezclar(hoja, '#1A2410', .3);
+  const tallo = mezclar(t.hoja, '#7A6B3A', estres);
+  const caida = estres * 14;                              // se agacha
+  let g = '';
+
+  if(tipo === 'pastoreo'){
+    const alto = 32 - estres*14;
+    const mata = (x, escala, color) => {
+      const a = alto*escala*(0.62 + Math.abs(Math.sin(x*0.83))*0.5);
+      const inc = Math.sin(x*0.31)*4 + caida*0.6;
+      return `<path d="M${x},${Y} q${(inc*0.5).toFixed(1)},${(-a*0.6).toFixed(1)} ${inc.toFixed(1)},${(-a).toFixed(1)}"
+              stroke="${color}" stroke-width="2.4" fill="none" stroke-linecap="round"/>`;
+    };
+    // Fondo de pasto
+    for(let x = -6; x < S.W+10; x += 7) g += mata(x, .82, oscura);
+    // La cerca que parte la franja: lo que hace que esto sea pastoreo rotacional
+    g += `<g stroke="#6B5A44" stroke-width="2" stroke-linecap="round" opacity=".85">
+            <line x1="262" y1="${Y-1}" x2="262" y2="${Y-40}"/>
+            <line x1="330" y1="${Y-1}" x2="330" y2="${Y-37}"/>
+            <line x1="396" y1="${Y-1}" x2="396" y2="${Y-35}"/></g>
+          <g stroke="#D8D2C4" stroke-width=".9" opacity=".65">
+            <line x1="258" y1="${Y-33}" x2="400" y2="${Y-30}"/>
+            <line x1="258" y1="${Y-20}" x2="400" y2="${Y-18}"/></g>`;
+    // Las vacas van encima del pasto de fondo, no debajo
+    g += vaca(104, Y-4, 1, luz) + vaca(176, Y+1, .84, luz) + vaca(44, Y+3, .72, luz);
+    // Pasto de adelante: aterriza a los animales sin taparlas
+    for(let x = -8; x < S.W+10; x += 6) g += mata(x + 3, .5, x % 13 === 0 ? clara : hoja);
+  }
+
+  else if(tipo === 'papa'){
+    for(let i = 0; i < 5; i++){
+      const cx = 18 + i*86, w = 72;
+      // Caballón: la papa siempre va aporcada
+      g += `<path d="M${cx-4},${Y+6} q${w/2},${-19} ${w},0 Z" fill="${mezclar('#6E5637','#95815F',.4)}"/>
+            <path d="M${cx-4},${Y+6} q${w/2},${-19} ${w},0" fill="none" stroke="${mezclar('#6E5637','#C0AC88',.5)}" stroke-width="1.2" opacity=".7"/>`;
+      const alto = 42 - estres*18, base = cx + w/2;
+      for(let k = -1; k <= 1; k++){
+        const px = base + k*20, h = alto*(k === 0 ? 1 : .82), sesgo = caida*(k === 0 ? .5 : k);
+        g += `<path d="M${px},${Y-4} C${px-2},${(Y-h*0.45).toFixed(1)} ${(px+sesgo*0.6).toFixed(1)},${(Y-h*0.75).toFixed(1)} ${(px+sesgo).toFixed(1)},${(Y-h).toFixed(1)}"
+              stroke="${tallo}" stroke-width="1.5" fill="none" stroke-linecap="round"/>`;
+        for(let j = 0; j < 4; j++){
+          const p = (j+1)/4.6;
+          const hx = px + sesgo*p, hy = Y - 6 - h*p;
+          g += hojaOval(hx-7.5, hy, 7.5, 4.2, -24 + estres*22, j%2 ? hoja : oscura);
+          g += hojaOval(hx+7.5, hy+1.5, 7.5, 4.2, 24 - estres*22, j%2 ? oscura : hoja);
+        }
+        g += hojaOval(px+sesgo, Y-6-h, 6, 3.6, 0, clara);
+        if(k === 0 && estres < .5){
+          const fy = Y - h - 7;
+          g += `<circle cx="${(px+sesgo-4).toFixed(1)}" cy="${fy.toFixed(1)}" r="3" fill="#F2EFF7"/>
+                <circle cx="${(px+sesgo+4).toFixed(1)}" cy="${(fy-2).toFixed(1)}" r="3" fill="${t.flor}"/>
+                <circle cx="${(px+sesgo).toFixed(1)}" cy="${(fy-5).toFixed(1)}" r="2.6" fill="#F2EFF7"/>`;
+        }
+      }
+    }
+  }
+
+  else if(tipo === 'hortalizas'){
+    for(let i = 0; i < 4; i++){
+      const x0 = 4 + i*101, w = 92;
+      // Cama levantada con su acolchado
+      g += `<path d="M${x0},${Y+4} v-9 q0,-4 5,-4 h${w-10} q5,0 5,4 v9 Z" fill="${mezclar('#54412D','#7C6B54',.35)}"/>
+            <rect x="${x0+2}" y="${Y-10}" width="${w-4}" height="3.5" rx="1.8" fill="#CBD0C9" opacity=".6"/>`;
+      for(let k = 0; k < 3; k++){
+        const cx = x0 + 18 + k*28, cy = Y - 17, r = 13.5 - estres*5;
+        g += `<g transform="translate(${cx},${cy}) rotate(${(estres*8).toFixed(0)})">`;
+        for(let a = 0; a < 8; a++){
+          const ang = a*45;
+          g += `<g transform="rotate(${ang})">${hojaOval(0, -r*0.42, r*0.42, r*0.62, 0, a%2 ? oscura : hoja)}</g>`;
+        }
+        for(let a = 0; a < 5; a++){
+          const ang = a*72 + 30;
+          g += `<g transform="rotate(${ang})">${hojaOval(0, -r*0.22, r*0.3, r*0.36, 0, clara)}</g>`;
+        }
+        g += `<circle cx="0" cy="0" r="${(r*0.16).toFixed(1)}" fill="${mezclar(clara,'#FFFFFF',.4)}"/></g>`;
+      }
+    }
+  }
+
+  else if(tipo === 'flores'){
+    const techo = Y - 74, alero = Y - 54;
+    // La nave: columnas, arco y cubierta. Debajo de esto no llueve.
+    g += `<path d="M-8,${Y} L-8,${alero} Q200,${techo - 10} 408,${alero} L408,${Y} Z" fill="#F7F6F1" opacity=".2"/>`;
+    for(let i = 0; i < 6; i++){
+      const x = -8 + i*83;
+      g += `<line x1="${x}" y1="${Y}" x2="${x}" y2="${(alero + Math.abs(200-x)*0.055).toFixed(1)}" stroke="#EFEDE7" stroke-width="1.6" opacity=".65"/>`;
+    }
+    g += `<path d="M-8,${alero} Q200,${techo - 10} 408,${alero}" fill="none" stroke="#FAF9F5" stroke-width="2.6" opacity=".85"/>
+          <path d="M-8,${alero + 8} Q200,${techo - 3} 408,${alero + 8}" fill="none" stroke="#FAF9F5" stroke-width="1" opacity=".4"/>`;
+    // Camas de rosas, en su cama levantada
+    for(let i = 0; i < 5; i++){
+      const cx = 26 + i*88, alto = 40 - estres*12;
+      g += `<path d="M${cx-20},${Y+3} h40 v-6 q0,-3 -4,-3 h-32 q-4,0 -4,3 Z" fill="${mezclar('#54412D','#7C6B54',.3)}"/>`;
+      [-9, 0, 9].forEach((dx, k) => {
+        const h = alto*(k === 1 ? 1 : .8), px = cx + dx, sesgo = caida*(k-1)*0.6;
+        g += `<path d="M${px},${Y-6} C${px-2},${(Y-h*0.5).toFixed(1)} ${(px+sesgo).toFixed(1)},${(Y-h*0.8).toFixed(1)} ${(px+sesgo).toFixed(1)},${(Y-h).toFixed(1)}"
+              stroke="${tallo}" stroke-width="1.5" fill="none" stroke-linecap="round"/>`;
+        for(let j = 0; j < 3; j++){
+          const p = (j+1)/3.8, hx = px + sesgo*p, hy = Y - 8 - h*p;
+          g += hojaOval(hx-6, hy, 6, 3.4, -28, j%2 ? hoja : oscura);
+          g += hojaOval(hx+6, hy+1, 6, 3.4, 28, j%2 ? oscura : hoja);
+        }
+        const bx = px + sesgo, by = Y - h - 3;
+        const flor = mezclar(t.flor, '#9C9384', estres*0.7);
+        g += `<circle cx="${bx.toFixed(1)}" cy="${by.toFixed(1)}" r="5" fill="${flor}"/>
+              <circle cx="${bx.toFixed(1)}" cy="${(by-1).toFixed(1)}" r="3" fill="${mezclar(flor,'#FFFFFF',.28)}"/>
+              <circle cx="${bx.toFixed(1)}" cy="${(by-1.5).toFixed(1)}" r="1.3" fill="${mezclar(flor,'#3A1020',.35)}"/>`;
+      });
+    }
+  }
+
+  return g;
+}
+
+function vaca(x, y, e, luz){
+  const c = luz < .6 ? '#D8D4CC' : '#FBFAF6';
+  return `<g transform="translate(${x},${y}) scale(${e})" opacity="${luz < .6 ? .8 : 1}">
+    <path d="M-22,-16 q4,-9 13,-9 h20 q9,0 12,9 v10 q0,4 -4,4 h-2 l-1,8 h-4 l-1,-8 h-13 l-1,8 h-4 l-1,-8 h-2 q-4,0 -4,-4 z" fill="${c}"/>
+    <path d="M-9,-25 q7,-2 12,3 q-6,4 -12,-3z" fill="#2E2A24" opacity=".72"/>
+    <path d="M8,-19 q7,1 9,7 q-7,2 -9,-7z" fill="#2E2A24" opacity=".62"/>
+    <path d="M-22,-16 q-6,-2 -8,-8 q6,-1 9,3" fill="${c}"/>
+    <circle cx="-27" cy="-24" r="4.6" fill="${c}"/><circle cx="-28.5" cy="-25" r="1" fill="#2E2A24"/>
+  </g>`;
+}
+
+/* ---------- El dibujo completo ---------- */
+
+function dibujar(o){
+  const t = TIPOS[o.tipo] || TIPOS.pastoreo;
+  const estres = 1 - Math.max(0, Math.min(1, o.ks ?? 1));
+  const h = [o.humedades[0] ?? 25, o.humedades[1] ?? o.humedades[0] ?? 24, o.humedades[2] ?? 23];
+  const sat = v => Math.max(0, Math.min(100, (v/40)*100));
+
+  const c = cielo(o.hora, o.lluvia, o.nublado);
+  let svg = c.svg;
+  svg += plantas(o.tipo, estres, c.luz);
 
   // Horizontes del suelo
   [{d:0,h2:22,base:'#6E5637',v:h[0]},
    {d:22,h2:38,base:'#54412D',v:h[1]},
-   {d:38,h2:60,base:'#3A2E23',v:h[2]}].forEach(c => {
-    const y0 = S.y(c.d), y1 = S.y(c.h2);
-    svg += `<rect x="0" y="${y0.toFixed(1)}" width="${S.W}" height="${(y1-y0).toFixed(1)}" fill="${colorTierra(sat(c.v), c.base)}"/>`;
-    if(c.d > 0)   // frontera entre horizontes, como se ve en una calicata real
-      svg += `<line x1="0" y1="${y0.toFixed(1)}" x2="${S.W}" y2="${y0.toFixed(1)}" stroke="#241C14" stroke-width="1" opacity="0.30"/>`;
+   {d:38,h2:60,base:'#2A2117',v:h[2]}].forEach(cc => {
+    const y0 = S.y(cc.d), y1 = S.y(cc.h2);
+    svg += `<rect x="0" y="${y0.toFixed(1)}" width="${S.W}" height="${(y1-y0).toFixed(1)}" fill="${colorTierra(sat(cc.v), cc.base)}"/>`;
+    if(cc.d > 0)
+      svg += `<line x1="0" y1="${y0.toFixed(1)}" x2="${S.W}" y2="${y0.toFixed(1)}" stroke="#191308" stroke-width="1" opacity=".3"/>`;
   });
 
-  // Textura de granos y piedritas
-  for(let i = 0; i < 130; i++){
-    const x = (i * 61.8) % S.W;
-    const y = S.superficieY + ((i * 97.3) % (S.fondoY - S.superficieY));
-    const r = 0.7 + ((i * 13) % 10) / 9;
-    svg += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(1)}" fill="#241C14" opacity="${(0.07 + (i % 5) * 0.03).toFixed(2)}"/>`;
+  // Granos y piedritas
+  for(let i = 0; i < 150; i++){
+    const x = (i*61.8) % S.W;
+    const y = S.superficieY + ((i*97.3) % (S.fondoY - S.superficieY));
+    const r = 0.7 + ((i*13)%10)/9;
+    svg += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(1)}" fill="#191308" opacity="${(0.06+(i%5)*0.03).toFixed(2)}"/>`;
   }
 
-  // Raíces
-  svg += `<g opacity="0.42" stroke="${mezclar('#E8DCC4','#C9B896',estres)}" fill="none" stroke-linecap="round">`;
-  [70, 155, 245, 330].forEach((x, i) => {
-    const prof = S.y(38 + (i % 2) * 9);
-    svg += `<path d="M${x},${S.superficieY} C${x-9},${S.superficieY+55} ${x+11},${(prof-58).toFixed(1)} ${x+3},${prof.toFixed(1)}" stroke-width="2.1"/>`;
+  // Raíces, hasta donde llega cada cultivo
+  const profRaiz = t.raiz_cm;
+  svg += `<g opacity=".45" stroke="${mezclar('#E8DCC4','#C0AC88',estres)}" fill="none" stroke-linecap="round">`;
+  [58, 148, 246, 342].forEach((x, i) => {
+    const prof = S.y(profRaiz - (i%2)*6);
+    svg += `<path d="M${x},${S.superficieY} C${x-9},${S.superficieY+50} ${x+11},${(prof-52).toFixed(1)} ${x+3},${prof.toFixed(1)}" stroke-width="2.1"/>`;
     for(let k = 1; k <= 3; k++){
-      const yr = S.superficieY + (prof - S.superficieY) * (k / 4);
-      const lado = k % 2 ? 1 : -1;
-      svg += `<path d="M${x + lado*2},${yr.toFixed(1)} q${lado*16},9 ${lado*26},4" stroke-width="1.2"/>`;
+      const yr = S.superficieY + (prof - S.superficieY)*(k/4), lado = k%2 ? 1 : -1;
+      svg += `<path d="M${x+lado*2},${yr.toFixed(1)} q${lado*16},9 ${lado*26},4" stroke-width="1.2"/>`;
     }
   });
   svg += `</g>`;
+  svg += `<line x1="0" y1="${S.superficieY}" x2="${S.W}" y2="${S.superficieY}" stroke="#1F1810" stroke-width="1.6" opacity=".5"/>`;
 
-  svg += `<line x1="0" y1="${S.superficieY}" x2="${S.W}" y2="${S.superficieY}" stroke="#2A2118" stroke-width="1.6" opacity="0.55"/>`;
+  // Hasta dónde llega la raíz. Si cae encima de la línea del umbral,
+  // el rótulo se sube para que las dos se puedan leer.
+  const yR = S.y(profRaiz);
+  const yUm = o.umbral != null ? S.superficieY + (1 - o.umbral/100)*(S.fondoY - S.superficieY) : null;
+  const choca = yUm != null && Math.abs(yR - yUm) < 16;
+  svg += `<line x1="52" y1="${yR.toFixed(1)}" x2="252" y2="${yR.toFixed(1)}" stroke="#E8DCC4" stroke-width="1" stroke-dasharray="3 4" opacity=".38"/>
+          <text x="52" y="${(yR - (choca ? 16 : 6)).toFixed(1)}" font-family="Inter,sans-serif" font-size="9.5" fill="#E8DCC4" opacity=".62">hasta aquí llega la raíz</text>`;
 
   // Umbral de riego
-  if(umbralPct != null){
-    const yU = S.superficieY + (1 - umbralPct/100) * (S.fondoY - S.superficieY);
-    svg += `<line x1="0" y1="${yU.toFixed(1)}" x2="${S.W}" y2="${yU.toFixed(1)}" stroke="#E8B23C" stroke-width="1.6" stroke-dasharray="7 5" opacity="0.85"/>
-            <text x="52" y="${(yU-7).toFixed(1)}" font-family="Inter,sans-serif" font-size="10.5" fill="#E8B23C">de aquí para abajo, hay que regar</text>`;
+  if(o.umbral != null){
+    const yU = S.superficieY + (1 - o.umbral/100)*(S.fondoY - S.superficieY);
+    svg += `<line x1="0" y1="${yU.toFixed(1)}" x2="${S.W}" y2="${yU.toFixed(1)}" stroke="#E8B23C" stroke-width="1.6" stroke-dasharray="7 5" opacity=".85"/>
+            <text x="56" y="${(yU-7).toFixed(1)}" font-family="Inter,sans-serif" font-size="10.5" fill="#E8B23C">de aquí para abajo, hay que regar</text>`;
   }
 
   // Reserva de agua
-  const xR = 26, wR = 15, topR = S.y(4), botR = S.y(52);
-  const altoR = botR - topR;
-  const lleno = altoR * Math.max(0, Math.min(1, pctAgua / 100));
-  svg += `<rect x="${xR}" y="${topR.toFixed(1)}" width="${wR}" height="${altoR.toFixed(1)}" rx="7.5" fill="#1A1310" opacity="0.34"/>
-          <rect id="reservaAgua" x="${xR}" y="${(botR-lleno).toFixed(1)}" width="${wR}" height="${lleno.toFixed(1)}" rx="7.5" fill="url(#degradadoAgua)"/>
-          <rect x="${xR}" y="${topR.toFixed(1)}" width="${wR}" height="${altoR.toFixed(1)}" rx="7.5" fill="none" stroke="#EBF0EE" stroke-width="1.2" opacity="0.42"/>
-          <text x="${xR + wR/2}" y="${(topR-11).toFixed(1)}" text-anchor="middle" font-family="Inter,sans-serif" font-size="10.5" fill="#C4B7A6">reserva</text>`;
+  const xR = 26, wR = 15, topR = S.y(4), botR = S.y(52), altoR = botR - topR;
+  const lleno = altoR * Math.max(0, Math.min(1, o.pctAgua/100));
+  svg += `<rect x="${xR}" y="${topR.toFixed(1)}" width="${wR}" height="${altoR.toFixed(1)}" rx="7.5" fill="#0F0B07" opacity=".36"/>
+          <rect id="reservaAgua" x="${xR}" y="${(botR-lleno).toFixed(1)}" width="${wR}" height="${lleno.toFixed(1)}" rx="7.5" fill="url(#gAgua)"/>
+          <rect x="${xR}" y="${topR.toFixed(1)}" width="${wR}" height="${altoR.toFixed(1)}" rx="7.5" fill="none" stroke="#EBF0EE" stroke-width="1.2" opacity=".42"/>
+          <text x="${xR+wR/2}" y="${(topR-10).toFixed(1)}" text-anchor="middle" font-family="Inter,sans-serif" font-size="10" fill="#C4B7A6">reserva</text>`;
 
   // Sensores
   const xS = 300;
-  [{cm:15,v:h[0]},{cm:30,v:h[1]},{cm:45,v:h[2]}].forEach((s, i) => {
+  [{cm:15,v:h[0]},{cm:30,v:h[1]},{cm:45,v:h[2]}].forEach(s => {
     const y = S.y(s.cm);
-    svg += `<g class="sensor-tocable" data-cm="${s.cm}" data-v="${s.v.toFixed(1)}" data-x="${xS}" data-y="${y.toFixed(0)}">
-              <line x1="${xS-58}" y1="${y.toFixed(1)}" x2="${xS-16}" y2="${y.toFixed(1)}" stroke="#EBF0EE" stroke-width="1.1" opacity="0.4"/>
-              <circle class="aro" cx="${xS}" cy="${y.toFixed(1)}" r="13" fill="#EBF0EE" opacity="0.16"/>
-              <circle cx="${xS}" cy="${y.toFixed(1)}" r="7" fill="${mezclar('#B8A052','#5AA8C9', sat(s.v)/100)}" stroke="#EBF0EE" stroke-width="1.8"/>
-              <text x="${xS+21}" y="${(y-2).toFixed(1)}" font-family="Bricolage Grotesque,sans-serif" font-size="16" font-weight="600" fill="#F2EDE6">${s.v.toFixed(0)}%</text>
-              <text x="${xS+21}" y="${(y+13).toFixed(1)}" font-family="Inter,sans-serif" font-size="10.5" fill="#C4B7A6">${s.cm} cm</text>
-            </g>`;
+    svg += `<g class="sensor-tocable" data-cm="${s.cm}" data-v="${s.v.toFixed(1)}" data-x="${xS}" data-y="${y.toFixed(0)}" tabindex="0" role="button"
+              aria-label="Sensor a ${s.cm} centímetros: ${s.v.toFixed(0)} por ciento de humedad">
+      <line x1="${xS-58}" y1="${y.toFixed(1)}" x2="${xS-16}" y2="${y.toFixed(1)}" stroke="#EBF0EE" stroke-width="1.1" opacity=".38"/>
+      <circle class="aro" cx="${xS}" cy="${y.toFixed(1)}" r="13" fill="#EBF0EE" opacity=".16"/>
+      <circle cx="${xS}" cy="${y.toFixed(1)}" r="7" fill="${mezclar('#B8A052','#5AA8C9', sat(s.v)/100)}" stroke="#EBF0EE" stroke-width="1.8"/>
+      <text x="${xS+21}" y="${(y-2).toFixed(1)}" font-family="Bricolage Grotesque,sans-serif" font-size="16" font-weight="600" fill="#F4EFE6">${s.v.toFixed(0)}%</text>
+      <text x="${xS+21}" y="${(y+13).toFixed(1)}" font-family="Inter,sans-serif" font-size="10.5" fill="#C4B7A6">${s.cm} cm</text>
+    </g>`;
   });
 
-  const defs = `<defs><linearGradient id="degradadoAgua" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#5AA8C9"/><stop offset="100%" stop-color="#2E7EA6"/>
-    </linearGradient></defs>`;
+  $('#svgEscena').innerHTML =
+    `<title id="tituloEscena">${t.cultivo}: ${fmt(o.pctAgua,0)}% del agua disponible</title>` + svg;
 
-  $('#svgSuelo').innerHTML =
-    `<title id="tituloSuelo">Corte del suelo: ${fmt(pctAgua, 0)}% de agua disponible</title>` + defs + svg;
-
-  // Una sola secuencia de carga: el agua sube. Después nada se mueve solo.
-  if(primeraCarga && !window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+  // Una sola secuencia al abrir: el agua sube. Después nada se mueve solo.
+  if(primeraCarga && suave()){
     const r = document.getElementById('reservaAgua');
     if(r){
       r.setAttribute('y', botR); r.setAttribute('height', 0);
       requestAnimationFrame(() => {
-        r.style.transition = 'y 1s cubic-bezier(.32,.72,0,1), height 1s cubic-bezier(.32,.72,0,1)';
+        r.style.transition = 'y 1.1s cubic-bezier(.32,.72,0,1), height 1.1s cubic-bezier(.32,.72,0,1)';
         r.setAttribute('y', botR - lleno); r.setAttribute('height', lleno);
       });
     }
     primeraCarga = false;
   }
-
   conectarSensores();
 }
 
 function conectarSensores(){
-  const globo = $('#globo'), corte = $('#corte');
-  document.querySelectorAll('.sensor-tocable').forEach(g => {
+  const card = $('#tarjetaSensor'), esc = $('#escena');
+  $$('.sensor-tocable').forEach(g => {
     const mostrar = () => {
-      const esc = corte.getBoundingClientRect().width / SUELO.W;
-      globo.innerHTML = `<b>${g.dataset.v}% de humedad</b>a ${g.dataset.cm} cm de profundidad`;
-      globo.style.left = (g.dataset.x * esc) + 'px';
-      globo.style.top  = (g.dataset.y * esc) + 'px';
-      globo.classList.add('ver');
-      clearTimeout(globo._t);
-      globo._t = setTimeout(() => globo.classList.remove('ver'), 2600);
+      const k = esc.getBoundingClientRect().width / S.W;
+      const v = +g.dataset.v, cm = +g.dataset.cm;
+      const lectura = v > 30 ? 'la tierra está húmeda ahí' : v > 22 ? 'humedad normal' : 'ahí ya está seca';
+      card.innerHTML = `<b>${v.toFixed(1)}% de humedad</b><em>a ${cm} cm · ${lectura}</em>`;
+      card.style.left = (g.dataset.x * k) + 'px';
+      card.style.top  = (g.dataset.y * k) + 'px';
+      card.classList.add('ver');
+      $$('.sensor-tocable').forEach(o => o.classList.remove('activo'));
+      g.classList.add('activo');
+      clearTimeout(card._t);
+      card._t = setTimeout(() => { card.classList.remove('ver'); g.classList.remove('activo'); }, 3000);
+      vibrar(8);
     };
     g.onclick = mostrar;
+    g.onkeydown = e => { if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); mostrar(); } };
     g.onmouseenter = mostrar;
-    g.onmouseleave = () => globo.classList.remove('ver');
+    g.onmouseleave = () => { card.classList.remove('ver'); g.classList.remove('activo'); };
   });
 }
 
-/* ══════════════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════════════════
+   DATOS DE PRUEBA
+   Cuatro predios reales de lo que hay en Sopó: leche, papa,
+   hortaliza y flor bajo plástico. Cada uno con una situación
+   distinta, para que se vea cómo responde el sistema en cada caso.
+   Cuando el backend conteste, estos datos se reemplazan solos.
+   ══════════════════════════════════════════════════════════════ */
+
+const DEMO = [
+{
+  id:1, nombre:'La Esperanza', tipo:'pastoreo', vereda:'Vereda Meusa',
+  area_ha:12, area_turno_ha:0.4, caudal_lps:6.5, sistema:'aspersión',
+  energia:'electrica', paga_agua:false, altura_bombeo_m:28, costo_kwh:850,
+  sectores:[{orden:1,nombre:'franja de arriba',area_ha:0.4,caudal_lps:6.5},
+            {orden:2,nombre:'franja del río',area_ha:0.5,caudal_lps:5.2}],
+  decision:{accion:'esperar', urgencia:'baja',
+    razon:'La tierra llegó al punto de regar, pero se esperan 18 mm de lluvia en dos días. Regar hoy sería botar el agua.'},
+  estado_suelo:{humedad_ponderada_pct:23.4, lecturas_por_profundidad:[24.8,23.1,21.9],
+    pct_agua_disponible:46, agotamiento_mm:38.7, agua_facilmente_disponible_mm:39.6,
+    agua_disponible_total_mm:72, coef_estres_ks:1.0},
+  clima:{etc_hoy_mm:3.12, kc_actual:1.0, lluvia_proxima_7d_mm:24.5,
+    lluvia_por_dia_mm:[0,11.2,6.8,0,2.1,4.4,0]},
+  proyeccion:{trayectoria:[46,38,58,63,54,48,41]},
+  riego:null,
+  ciclo:{titulo:'La franja', estado:'en_recuperacion', pct:83,
+    texto:'La franja va bien. Le faltan unos 6 días para que el pasto tenga la altura y las reservas que necesita.',
+    izq:'29 días de descanso, faltan 6', der:'entrar a 25 cm, dejar 8'},
+  ahorro:{m3:54.6, dias:30, pct:21, kwh:12.2, cop_agua:0, cop_energia:10374, anual_cop:126218},
+  cuarta:{etiqueta:'Grados-día acumulados', datos:[0,52,108,163,214,268,312,348], objetivo:420,
+    ejes:['sem 1','sem 2','sem 3','sem 4','sem 5','sem 6','sem 7','hoy']},
+},
+{
+  id:2, nombre:'El Retiro', tipo:'papa', vereda:'Vereda Aposentos',
+  area_ha:3.2, area_turno_ha:0.8, caudal_lps:9, sistema:'aspersión',
+  energia:'electrica', paga_agua:true, tarifa_agua_m3:1700, altura_bombeo_m:35, costo_kwh:850,
+  sectores:[{orden:1,nombre:'lote de la casa',area_ha:0.8,caudal_lps:9},
+            {orden:2,nombre:'lote de abajo',area_ha:0.9,caudal_lps:8.4}],
+  decision:{accion:'regar', urgencia:'media',
+    razon:'El suelo pasó el punto de riego y la papa está en tuberización, que es cuando más castiga la falta de agua. No hay lluvia en cinco días.'},
+  estado_suelo:{humedad_ponderada_pct:19.2, lecturas_por_profundidad:[18.4,19.5,20.1],
+    pct_agua_disponible:28, agotamiento_mm:52.6, agua_facilmente_disponible_mm:40.8,
+    agua_disponible_total_mm:73, coef_estres_ks:0.88},
+  clima:{etc_hoy_mm:4.34, kc_actual:1.15, lluvia_proxima_7d_mm:3.2,
+    lluvia_por_dia_mm:[0,0,0,0,0,3.2,0]},
+  proyeccion:{trayectoria:[28,21,15,10,6,12,8]},
+  riego:{minutos:112, volumen_m3:60.5, lamina_bruta_mm:7.6, sistema:'Aspersión',
+    fraccionar_en_pasadas:false, pasadas_sugeridas:1},
+  ciclo:{titulo:'Etapa del cultivo', estado:'listo', pct:62,
+    texto:'Día 78 desde la siembra: plena tuberización. En esta etapa el cultivo pide más agua que en cualquier otra.',
+    izq:'78 de 125 días', der:'Kc 1,15'},
+  ahorro:{m3:118.4, dias:30, pct:26, kwh:29.4, cop_agua:201280, cop_energia:24990, anual_cop:2752955},
+  cuarta:{etiqueta:'Kc del cultivo', datos:[0.5,0.5,0.75,1.05,1.15,1.15,0.95,0.75], objetivo:null,
+    ejes:['0','20','40','60','78','95','110','125']},
+},
+{
+  id:3, nombre:'La Huerta', tipo:'hortalizas', vereda:'Vereda Pueblo Viejo',
+  area_ha:0.9, area_turno_ha:0.25, caudal_lps:2.2, sistema:'goteo',
+  energia:'diesel', paga_agua:false, altura_bombeo_m:22, costo_diesel_litro:13400, consumo_diesel_lph:1.6,
+  sectores:[{orden:1,nombre:'camas del invernadero',area_ha:0.25,caudal_lps:2.2},
+            {orden:2,nombre:'camas de afuera',area_ha:0.3,caudal_lps:1.8}],
+  decision:{accion:'preparar', urgencia:'baja',
+    razon:'Todavía hay agua, pero la lechuga tiene raíz corta y se le acaba rápido. Mañana en la tarde ya toca.'},
+  estado_suelo:{humedad_ponderada_pct:26.1, lecturas_por_profundidad:[27.4,25.8,24.2],
+    pct_agua_disponible:54, agotamiento_mm:19.3, agua_facilmente_disponible_mm:24.5,
+    agua_disponible_total_mm:42, coef_estres_ks:1.0},
+  clima:{etc_hoy_mm:2.86, kc_actual:0.95, lluvia_proxima_7d_mm:8.1,
+    lluvia_por_dia_mm:[0,0,2.4,0,5.7,0,0]},
+  proyeccion:{trayectoria:[54,41,29,34,22,44,33]},
+  riego:null,
+  ciclo:{titulo:'Las camas', estado:'listo', pct:71,
+    texto:'La cama 3 va en el día 41 de 58. Cosecha estimada para la segunda semana del mes entrante.',
+    izq:'41 de 58 días', der:'cosecha en 17 días'},
+  ahorro:{m3:31.2, dias:30, pct:18, kwh:0, litros_diesel:9.4, cop_agua:0, cop_energia:125960, anual_cop:1532530},
+  cuarta:{etiqueta:'Kc de la cama', datos:[0.7,0.85,0.95,1.0,1.0,0.95], objetivo:null,
+    ejes:['día 1','día 15','día 30','día 41','día 50','día 58']},
+},
+{
+  id:4, nombre:'Los Rosales', tipo:'flores', vereda:'Vereda Hato Grande',
+  area_ha:1.4, area_turno_ha:0.35, caudal_lps:4, sistema:'goteo',
+  energia:'electrica', paga_agua:true, tarifa_agua_m3:2100, altura_bombeo_m:18, costo_kwh:920,
+  sectores:[{orden:1,nombre:'nave 1',area_ha:0.35,caudal_lps:4},
+            {orden:2,nombre:'nave 2',area_ha:0.35,caudal_lps:3.8},
+            {orden:3,nombre:'nave 3',area_ha:0.4,caudal_lps:4.2}],
+  decision:{accion:'regar', urgencia:'critica',
+    razon:'La planta ya está en estrés: cerró estomas y dejó de crecer. Bajo plástico no le va a llover encima. Riegue hoy mismo.'},
+  estado_suelo:{humedad_ponderada_pct:15.8, lecturas_por_profundidad:[14.2,15.9,17.4],
+    pct_agua_disponible:12, agotamiento_mm:44.9, agua_facilmente_disponible_mm:27.2,
+    agua_disponible_total_mm:51, coef_estres_ks:0.54},
+  clima:{etc_hoy_mm:3.68, kc_actual:1.05, lluvia_proxima_7d_mm:0,
+    lluvia_por_dia_mm:[0,0,0,0,0,0,0]},
+  proyeccion:{trayectoria:[12,7,3,0,0,0,0]},
+  riego:{minutos:74, volumen_m3:17.8, lamina_bruta_mm:5.1, sistema:'Goteo',
+    fraccionar_en_pasadas:false, pasadas_sugeridas:1},
+  ciclo:{titulo:'El ciclo de corte', estado:'tarde', pct:88,
+    texto:'Semana 9 del ciclo. Los botones ya están abriendo: un golpe de sequía ahora se ve en el tallo que se corta.',
+    izq:'semana 9 de 10', der:'corte en 6 días'},
+  ahorro:{m3:96.3, dias:30, pct:23, kwh:11.4, cop_agua:202230, cop_energia:10488, anual_cop:2588309},
+  cuarta:{etiqueta:'Agua aplicada por nave (m³)', datos:[14.2,16.8,15.1,17.4,13.9,18.2,16.1], objetivo:null,
+    ejes:['sem 3','sem 4','sem 5','sem 6','sem 7','sem 8','sem 9']},
+}];
+
+/* Series de sensores y consumo, coherentes con el estado de cada predio */
+function seriesDemo(p){
+  const ahora = Date.now(), suelo = [], consumo = [];
+  const base0 = p.estado_suelo.humedad_ponderada_pct;
+  for(let i = 168; i >= 0; i--){
+    const t = new Date(ahora - i*3600e3), hh = horaDelPredio(t) + t.getMinutes()/60;
+    const dias = i/24;
+    const riegos = Math.sin(i/38)*1.6;
+    const base = base0 + dias*0.55 + riegos;
+    suelo.push({ts:t.toISOString(),
+      h1:+(base + 1.3 + 1.1*Math.sin(hh/3.8) + rnd(i)*.5).toFixed(2),
+      h2:+(base + rnd(i+7)*.4).toFixed(2),
+      h3:+(base - 1.2 + rnd(i+3)*.3).toFixed(2),
+      ta:+(12.5 + 6.4*Math.sin((hh-9)/24*6.283) + rnd(i+11)).toFixed(1),
+      lluvia:(i % 47 === 0) ? +(rnd(i)*7).toFixed(1) : 0});
+  }
+  for(let d = 29; d >= 0; d--){
+    const antes = d > 14;
+    const esc = p.area_turno_ha * 14;
+    consumo.push({fecha:fechaISO(new Date(ahora - d*864e5)),
+      m3:+((antes ? esc*1.32 : esc) * (0.8 + rnd(d+p.id)*0.5)).toFixed(2)});
+  }
+  return {suelo, consumo};
+}
+
+function armarDemo(p){
+  const tr = p.proyeccion.trayectoria.map((pc,i) => ({dia:i, pct_agua_disponible:pc}));
+  return {
+    predio:{id:p.id, nombre:p.nombre, tipo:p.tipo, vereda:p.vereda, cultivo:TIPOS[p.tipo].cultivo,
+            area_ha:p.area_ha, area_turno_ha:p.area_turno_ha, caudal_lps:p.caudal_lps,
+            sistema:p.sistema, sectores:p.sectores, energia:p.energia, paga_agua:p.paga_agua,
+            tarifa_agua_m3:p.tarifa_agua_m3, altura_bombeo_m:p.altura_bombeo_m,
+            costo_kwh:p.costo_kwh, costo_diesel_litro:p.costo_diesel_litro, consumo_diesel_lph:p.consumo_diesel_lph},
+    decision:p.decision, estado_suelo:p.estado_suelo, clima:p.clima,
+    proyeccion:{trayectoria:tr}, riego:p.riego, ciclo:p.ciclo, cuarta:p.cuarta, ahorro:p.ahorro
+  };
+}
+
+/* ══════════════════════════════════════════════════════════════
    PINTAR
-   ══════════════════════════════════════════════════════════ */
+   ══════════════════════════════════════════════════════════════ */
 
 const TITULARES = {
-  regar:'Hay que regar hoy',
-  esperar:'Hoy no riegue',
-  preparar:'Todavía no, pero prepárese',
-  no_regar:'La tierra está bien'
+  regar:'Hay que regar hoy', esperar:'Hoy no riegue',
+  preparar:'Todavía no, pero prepárese', no_regar:'La tierra está bien'
 };
+
+function pintarFichas(lista){
+  $('#predios').innerHTML = lista.map(p => {
+    const t = TIPOS[p.tipo] || TIPOS.pastoreo;
+    return `<button class="ficha" data-id="${p.id}" aria-current="${p.id === predioId}">
+      <span class="mini">${miniatura(p.tipo)}</span>
+      <span>${p.nombre}<small>${t.etiqueta}${p.area_ha ? ' · ' + p.area_ha + ' ha' : ''}</small></span>
+    </button>`;
+  }).join('');
+  $$('.ficha').forEach(b => b.onclick = () => {
+    if(+b.dataset.id === predioId) return;
+    predioId = +b.dataset.id; primeraCarga = true; vibrar(10); cargar();
+  });
+}
+
+function miniatura(tipo){
+  const t = TIPOS[tipo] || TIPOS.pastoreo;
+  const fondo = `<rect width="26" height="26" fill="${t.cieloBajo}"/><rect y="15" width="26" height="11" fill="#6E5637"/>`;
+  const dibujo = {
+    pastoreo:`<path d="M2,15 q4,-6 8,0 q4,-6 8,0 q4,-6 8,0" stroke="${t.color}" stroke-width="2.4" fill="none"/>`,
+    papa:`<path d="M5,15 q3,-7 6,0 M15,15 q3,-7 6,0" stroke="${t.hoja}" stroke-width="2.2" fill="none"/><circle cx="8" cy="7" r="2" fill="${t.color}"/><circle cx="18" cy="7" r="2" fill="${t.color}"/>`,
+    hortalizas:`<circle cx="8" cy="12" r="4" fill="${t.hoja}"/><circle cx="18" cy="12" r="4" fill="${t.hondo}"/>`,
+    flores:`<path d="M4,15 q9,-11 18,0" stroke="#FFF" stroke-width="1.6" fill="none" opacity=".8"/><circle cx="9" cy="12" r="2.6" fill="${t.color}"/><circle cx="17" cy="11" r="2.6" fill="${t.color}"/>`
+  }[tipo] || '';
+  return `<svg viewBox="0 0 26 26">${fondo}${dibujo}</svg>`;
+}
 
 function pintar(r){
   datos = r;
+  predioActual = r.predio || {};
+  const tipo = predioActual.tipo || 'pastoreo';
+  const t = TIPOS[tipo] || TIPOS.pastoreo;
+  document.body.dataset.tipo = tipo;
+  $('#metaTema').setAttribute('content', t.hondo);
+
   const d = r.decision, e = r.estado_suelo, c = r.clima;
-
-  $('#nombreFinca').textContent = (r.predio && r.predio.nombre) || 'HidroSopó';
-
   const umbral = e.agua_disponible_total_mm > 0
-    ? 100 * (1 - e.agua_facilmente_disponible_mm / e.agua_disponible_total_mm) : null;
+    ? 100*(1 - e.agua_facilmente_disponible_mm/e.agua_disponible_total_mm) : null;
 
-  dibujarSuelo(e.lecturas_por_profundidad || [], e.pct_agua_disponible, umbral, e.coef_estres_ks);
+  diaVisto = 0;
+  dibujar({tipo, humedades:e.lecturas_por_profundidad || [], pctAgua:e.pct_agua_disponible,
+           umbral, ks:e.coef_estres_ks, hora:horaDelPredio(),
+           lluvia:(c.lluvia_por_dia_mm || [])[0] || 0, nublado:(c.lluvia_proxima_7d_mm||0) > 5});
+
+  pintarChips(0);
 
   $('#titular').textContent = TITULARES[d.accion] || d.accion;
   $('#razon').textContent = d.razon;
@@ -566,26 +1217,39 @@ function pintar(r){
     $('#aLamina').textContent  = fmt(r.riego.lamina_bruta_mm) + ' mm';
     $('#aNota').textContent = r.riego.fraccionar_en_pasadas
       ? `Divida el riego en ${r.riego.pasadas_sugeridas} pasadas, con descanso entre ellas. De un solo golpe la tierra no alcanza a absorber y el agua se escurre.`
-      : `Con su sistema de ${(r.riego.sistema || '').toLowerCase()} y el caudal que tiene.`;
+      : `En ${t.turno}, con su sistema de ${(r.riego.sistema||'').toLowerCase()} y el caudal que tiene.`;
   } else acc.hidden = true;
 
-  $('#cifras').innerHTML = `
-    <div class="cifra"><span>Agua disponible</span>
-      <strong>${fmt(e.pct_agua_disponible, 0)}%</strong>
-      <small>${fmt(e.agotamiento_mm)} mm le faltan</small></div>
-    <div class="cifra"><span>Gasto del cultivo hoy</span>
-      <strong>${fmt(c.etc_hoy_mm, 1)} mm</strong>
-      <small>lo que se evapora y transpira</small></div>
-    <div class="cifra"><span>Lluvia en 7 días</span>
-      <strong>${fmt(c.lluvia_proxima_7d_mm, 0)} mm</strong>
-      <small>según el pronóstico</small></div>
-    <div class="cifra"><span>Humedad de la tierra</span>
-      <strong>${fmt(e.humedad_ponderada_pct)}%</strong>
-      <small>promedio de los tres sensores</small></div>`;
+  $('#cifras').innerHTML = [
+    ['Agua disponible', fmt(e.pct_agua_disponible,0)+'%', fmt(e.agotamiento_mm)+' mm le faltan',
+     'Es cuánta de la reserva que la raíz puede tomar sigue ahí. Al llegar a cero la planta deja de crecer.'],
+    ['Gasto de hoy', fmt(c.etc_hoy_mm,1)+' mm', 'lo que se evapora y transpira',
+     'El agua que el cultivo gastó hoy por el sol y el viento. Es lo que hay que reponer para no perder terreno.'],
+    ['Lluvia en 7 días', fmt(c.lluvia_proxima_7d_mm,0)+' mm',
+     tipo === 'flores' ? 'no entra bajo el plástico' : 'según el pronóstico',
+     tipo === 'flores'
+       ? 'Bajo invernadero la lluvia no cuenta: sirve para el tanque, no para la planta.'
+       : 'Pronóstico del municipio. 10 mm de lluvia equivalen a 100 m³ por hectárea.'],
+    ['Humedad de la tierra', fmt(e.humedad_ponderada_pct)+'%', 'promedio de los tres sensores',
+     'Promedio ponderado de los sensores a 15, 30 y 45 cm. Toque el suelo del dibujo para ver cada uno.']
+  ].map(([tit,val,sub,exp]) => `<button class="cifra"><span>${tit}</span><strong>${val}</strong><small>${sub}</small><em class="explicacion">${exp}</em></button>`).join('');
+  $$('.cifra').forEach(b => b.onclick = () => { b.classList.toggle('abierta'); vibrar(6); });
 
   pintarFuturo(r);
-  pintarAhorro();
-  pintarPastoreo(r.pastoreo);
+  pintarAhorro(r);
+  pintarCiclo(r.ciclo);
+}
+
+function pintarChips(dia){
+  const c = datos.clima, s = series && series.suelo;
+  const temp = s && s.length ? s[s.length-1].ta : null;
+  const ll = (c.lluvia_por_dia_mm || [])[dia] || 0;
+  const t = T();
+  $('#escenaPie').innerHTML = [
+    temp != null ? `<span class="chip-escena">${fmt(temp,0)}°C</span>` : '',
+    `<span class="chip-escena">${ll > 0.5 ? fmt(ll,1)+' mm de lluvia' : 'sin lluvia'}</span>`,
+    `<span class="chip-escena">${t.cultivo}</span>`
+  ].join('');
 }
 
 function pintarFuturo(r){
@@ -595,233 +1259,746 @@ function pintarFuturo(r){
   rango.max = tr.length - 1;
 
   const nombres = ['hoy','mañana','en 2 días','en 3 días','en 4 días','en 5 días','en 6 días'];
-  $('#etiquetasDias').innerHTML = tr.map((_, i) =>
-    `<span data-i="${i}">${i === 0 ? 'Hoy' : '+' + i}</span>`).join('');
+  $('#etiquetasDias').innerHTML = tr.map((_,i) => `<span data-i="${i}">${i===0?'Hoy':'+'+i}</span>`).join('');
 
-  const e = r.estado_suelo;
+  const e = r.estado_suelo, tipo = (r.predio && r.predio.tipo) || 'pastoreo';
   const umbral = e.agua_disponible_total_mm > 0
-    ? 100 * (1 - e.agua_facilmente_disponible_mm / e.agua_disponible_total_mm) : null;
+    ? 100*(1 - e.agua_facilmente_disponible_mm/e.agua_disponible_total_mm) : null;
 
   const actualizar = () => {
     const i = +rango.value, t = tr[i];
     if(!t) return;
-
-    $('#proyPct').textContent = fmt(t.pct_agua_disponible, 0) + '%';
+    diaVisto = i;
+    $('#proyPct').textContent = fmt(t.pct_agua_disponible,0) + '%';
     $('#proyTexto').textContent = i === 0
       ? 'de agua le queda a la tierra hoy'
       : `de agua le quedaría ${nombres[i]}, si no riega`;
 
     const ll = (r.clima.lluvia_por_dia_mm || [])[i] || 0;
-    $('#proyLluvia').textContent = ll > 0.5 ? `Se esperan ${fmt(ll)} mm de lluvia ese día.` : '';
+    $('#proyLluvia').textContent = ll > 0.5
+      ? (tipo === 'flores' ? `Ese día llueve ${fmt(ll)} mm afuera, pero adentro no entra.`
+                           : `Se esperan ${fmt(ll)} mm de lluvia ese día.`)
+      : '';
 
-    // El suelo se seca en vivo mientras el usuario desliza
     const base = Math.max(1, e.pct_agua_disponible);
     const factor = t.pct_agua_disponible / base;
-    const ks = (umbral != null && t.pct_agua_disponible < (100 - umbral)) ? 0.55 : 1.0;
-    dibujarSuelo((e.lecturas_por_profundidad || []).map(h => h * factor),
-                 t.pct_agua_disponible, umbral, ks);
-
-    document.querySelectorAll('#etiquetasDias span').forEach(s =>
-      s.classList.toggle('activo', +s.dataset.i === i));
+    const ks = (umbral != null && t.pct_agua_disponible < (100 - umbral))
+      ? Math.max(0.25, t.pct_agua_disponible/(100-umbral)) : 1.0;
+    dibujar({tipo, humedades:(e.lecturas_por_profundidad||[]).map(h => h*factor),
+             pctAgua:t.pct_agua_disponible, umbral, ks,
+             hora: i === 0 ? horaDelPredio() : 13,
+             lluvia:ll, nublado:ll > 0});
+    pintarChips(i);
+    $$('#etiquetasDias span').forEach(s => s.classList.toggle('activo', +s.dataset.i === i));
   };
 
   rango.oninput = actualizar;
+  rango.onchange = () => vibrar(6);
   rango.value = 0;
   actualizar();
 }
 
-const cop = v => '$' + Math.round(v).toLocaleString('es-CO');
-
-async function pintarAhorro(){
-  const sec = $('#ahorro');
-  let d;
-  if(modoDemo){
-    d = {ahorro:{m3:54.6, cop:35343, cop_agua:33390, cop_energia:1953, kwh:12.2, paga_agua:true},
-         proyeccion_anual:{cop:430006},
-         equivalencias:['55 tanques de mil litros','5.5 carrotanques de 10 m³'],
-         detalle_volumen:{dias:30, ahorro_pct:21}};
-  }else{
-    try{ d = await pedir(`/api/v1/predios/${predioId}/costo-agua`); }
-    catch{ sec.hidden = true; return; }
-  }
-
-  const a = d.ahorro;
-  if(!a || a.m3 <= 0){
-    // Sin línea base todavía: es más honesto no mostrar nada que inventar una cifra
-    sec.hidden = true;
-    return;
-  }
+function pintarAhorro(r){
+  const sec = $('#ahorro'), a = r.ahorro;
+  if(!a || !a.m3 || a.m3 <= 0){ sec.hidden = true; return; }   // sin línea base, no se inventa cifra
   sec.hidden = false;
+  const total = (a.cop_agua || 0) + (a.cop_energia || 0);
 
-  const dias = (d.detalle_volumen && d.detalle_volumen.dias) || 30;
-  const pct  = (d.detalle_volumen && d.detalle_volumen.ahorro_pct) || 0;
-
-  $('#ahorroPesos').textContent = cop(a.cop);
+  $('#ahorroPesos').textContent = cop(total);
   $('#ahorroContexto').textContent =
-    `en ${dias} días. Son ${a.m3.toFixed(1)} m³ de agua que no gastó, un ${Math.round(pct)}% menos que antes.`;
+    `en ${a.dias} días. Son ${a.m3.toFixed(1)} m³ de agua que no gastó, un ${Math.round(a.pct)}% menos que antes.`;
 
-  // Las dos partidas van separadas: el agua y la energía son plata
-  // de bolsillos distintos, y en muchas fincas una de las dos es cero.
   const filas = [];
-  if(a.paga_agua)
-    filas.push(`<div class="partida"><span>Factura del agua</span><b>${cop(a.cop_agua)}</b></div>`);
+  if(a.cop_agua > 0) filas.push(`<div class="partida"><span>Factura del agua</span><b>${cop(a.cop_agua)}</b></div>`);
+  else filas.push(`<div class="partida"><span>Agua · de fuente propia</span><b>$0</b></div>`);
   if(a.cop_energia > 0){
-    const unidad = a.litros_diesel != null
-      ? `${a.litros_diesel.toFixed(1)} L de ACPM`
-      : `${a.kwh.toFixed(0)} kWh`;
-    const etiqueta = a.litros_diesel != null ? 'Combustible' : 'Factura de la luz';
+    const unidad = a.litros_diesel != null ? `${a.litros_diesel.toFixed(1)} L de ACPM (${(a.litros_diesel/3.785).toFixed(1)} gal)` : `${a.kwh.toFixed(0)} kWh`;
+    const etiqueta = a.litros_diesel != null ? 'Combustible de la bomba' : 'Factura de la luz';
     filas.push(`<div class="partida"><span>${etiqueta} · ${unidad}</span><b>${cop(a.cop_energia)}</b></div>`);
   }
-  if(filas.length > 1)
-    filas.push(`<div class="partida suma"><span>Total</span><b>${cop(a.cop)}</b></div>`);
-  if(d.proyeccion_anual && d.proyeccion_anual.cop > 0)
-    filas.push(`<div class="partida"><span>A este ritmo, en un año</span><b>${cop(d.proyeccion_anual.cop)}</b></div>`);
+  filas.push(`<div class="partida suma"><span>Total</span><b>${cop(total)}</b></div>`);
+  if(a.anual_cop > 0) filas.push(`<div class="partida"><span>A este ritmo, en un año</span><b>${cop(a.anual_cop)}</b></div>`);
   $('#ahorroPartidas').innerHTML = filas.join('');
 
-  const eq = (d.equivalencias || [])[0];
-  $('#ahorroNota').textContent = (eq ? 'Equivale a ' + eq + '. ' : '')
-    + 'En época de lluvias se riega menos, así que el ahorro cambia con la temporada.';
+  const tanques = Math.round(a.m3);
+  $('#ahorroNota').textContent =
+    `Equivale a ${tanques} tanques de mil litros. ` +
+    (a.cop_agua > 0 ? '' : 'El agua es suya, así que el ahorro está en lo que cuesta bombearla. ') +
+    'En época de lluvias se riega menos, así que el ahorro cambia con la temporada.';
 }
 
-function pintarPastoreo(p){
-  const sec = $('#pastoreo');
-  if(!p || p.estado === 'sin_datos'){ sec.hidden = true; return; }
+function pintarCiclo(c){
+  const sec = $('#ciclo');
+  if(!c){ sec.hidden = true; return; }
   sec.hidden = false;
-  $('#pastoreoTexto').textContent = p.mensaje;
+  $('#cicloTitulo').textContent = c.titulo;
+  $('#cicloTexto').textContent = c.texto;
   const barra = $('#crecerBarra');
-  barra.className = 'crecer ' + p.estado;
-  barra.querySelector('i').style.width = Math.min(100, p.pct_recuperacion || 0) + '%';
-  const faltan = Math.max(0, (p.dias_descanso_recomendado || 0) - (p.dias_descanso_actual || 0));
-  $('#pastoreoDias').textContent = `${p.dias_descanso_actual} días de descanso, faltan ${faltan}`;
-  $('#pastoreoAltura').textContent = `entrar a ${p.altura_objetivo_cm} cm, dejar ${p.altura_residual_cm}`;
+  barra.className = 'crecer ' + (c.estado || '');
+  requestAnimationFrame(() => barra.querySelector('i').style.width = Math.min(100, c.pct || 0) + '%');
+  $('#cicloIzq').textContent = c.izq || '';
+  $('#cicloDer').textContent = c.der || '';
 }
 
-/* ══════════════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════════════════
    GRÁFICAS
-   ══════════════════════════════════════════════════════════ */
+   ══════════════════════════════════════════════════════════════ */
 
-const COMUN = {
-  responsive:true, maintainAspectRatio:false,
-  interaction:{mode:'index', intersect:false},
-  plugins:{legend:{labels:{font:{family:'Inter',size:11}, boxWidth:10, usePointStyle:true}}},
-  scales:{x:{ticks:{maxTicksLimit:6, font:{family:'Inter',size:10}}, grid:{display:false}}}
-};
+function comun(){
+  return {
+    responsive:true, maintainAspectRatio:false,
+    interaction:{mode:'index', intersect:false},
+    plugins:{
+      legend:{labels:{font:{family:'Inter',size:11}, boxWidth:8, usePointStyle:true, pointStyle:'circle', padding:14}},
+      tooltip:{backgroundColor:'#17130F', padding:10, cornerRadius:10, titleFont:{family:'Inter',size:11},
+               bodyFont:{family:'Inter',size:12}, displayColors:true, boxPadding:4}
+    },
+    scales:{x:{ticks:{maxTicksLimit:6, font:{family:'Inter',size:10}, color:'#6A6961'}, grid:{display:false},
+               border:{color:'#E2E2DA'}},
+            y:{ticks:{font:{family:'Inter',size:10}, color:'#6A6961'},
+               grid:{color:'#EFF1EC'}, border:{display:false}}}
+  };
+}
+
+function relleno(ctx, color){
+  const g = ctx.createLinearGradient(0, 0, 0, 220);
+  g.addColorStop(0, color + '38'); g.addColorStop(1, color + '00');
+  return g;
+}
 
 function grafica(id, cfg){
   if(graficas[id]) graficas[id].destroy();
   graficas[id] = new Chart(document.getElementById(id), cfg);
 }
 
-function pintarGraficas(s, consumo){
-  const et = s.suelo.map(x => new Date(x.ts).toLocaleString('es-CO',
-    {day:'2-digit', month:'short', hour:'2-digit'}));
+function pintarGraficas(s, consumo, r){
+  const t = TIPOS[(r.predio && r.predio.tipo) || 'pastoreo'];
+  const et = s.suelo.map(x => fechaLarga(x.ts, {day:'2-digit', month:'short', hour:'2-digit'}));
+  const ctx = document.getElementById('gHumedad').getContext('2d');
 
   grafica('gHumedad', {
     type:'line',
     data:{labels:et, datasets:[
-      {label:'15 cm', data:s.suelo.map(x=>x.h1), borderColor:'#2E7EA6', borderWidth:2, pointRadius:0, tension:.32},
-      {label:'30 cm', data:s.suelo.map(x=>x.h2), borderColor:'#7A9B3E', borderWidth:2, pointRadius:0, tension:.32},
-      {label:'45 cm', data:s.suelo.map(x=>x.h3), borderColor:'#8A7052', borderWidth:2, pointRadius:0, tension:.32}]},
-    options:{...COMUN, scales:{...COMUN.scales,
-      y:{title:{display:true, text:'humedad (%)', font:{family:'Inter',size:11}}}}}
+      {label:'15 cm', data:s.suelo.map(x=>x.h1), borderColor:'#2E7EA6', backgroundColor:relleno(ctx,'#2E7EA6'), fill:true, borderWidth:2, pointRadius:0, tension:.34},
+      {label:'30 cm', data:s.suelo.map(x=>x.h2), borderColor:t.color, borderWidth:2, pointRadius:0, tension:.34},
+      {label:'45 cm', data:s.suelo.map(x=>x.h3), borderColor:'#8A7052', borderWidth:2, pointRadius:0, borderDash:[5,4], tension:.34}]},
+    options:{...comun(), scales:{...comun().scales,
+      y:{...comun().scales.y, title:{display:true, text:'humedad (%)', font:{family:'Inter',size:11}, color:'#6A6961'}}}}
   });
 
   grafica('gClima', {
     data:{labels:et, datasets:[
-      {type:'bar', label:'Lluvia (mm)', data:s.suelo.map(x=>x.lluvia), backgroundColor:'#2E7EA6', yAxisID:'y1'},
-      {type:'line', label:'Temperatura (°C)', data:s.suelo.map(x=>x.ta), borderColor:'#C4622D', borderWidth:2, pointRadius:0, tension:.32, yAxisID:'y'}]},
-    options:{...COMUN, scales:{...COMUN.scales,
-      y:{position:'left', title:{display:true, text:'°C', font:{family:'Inter',size:11}}},
-      y1:{position:'right', beginAtZero:true, grid:{drawOnChartArea:false},
-          title:{display:true, text:'mm', font:{family:'Inter',size:11}}}}}
+      {type:'bar', label:'Lluvia (mm)', data:s.suelo.map(x=>x.lluvia), backgroundColor:'#5AA8C9', borderRadius:3, yAxisID:'y1'},
+      {type:'line', label:'Temperatura (°C)', data:s.suelo.map(x=>x.ta), borderColor:'#C4622D', borderWidth:2, pointRadius:0, tension:.34, yAxisID:'y'}]},
+    options:{...comun(), scales:{...comun().scales,
+      y:{...comun().scales.y, position:'left', title:{display:true, text:'°C', font:{family:'Inter',size:11}, color:'#6A6961'}},
+      y1:{position:'right', beginAtZero:true, grid:{drawOnChartArea:false}, border:{display:false},
+          ticks:{font:{family:'Inter',size:10}, color:'#6A6961'},
+          title:{display:true, text:'mm', font:{family:'Inter',size:11}, color:'#6A6961'}}}}
   });
 
+  const mitad = Math.floor(consumo.length/2);
   grafica('gConsumo', {
     type:'bar',
     data:{labels:consumo.map(x=>x.fecha.slice(5)), datasets:[
-      {label:'Agua usada (m³)', data:consumo.map(x=>x.m3), backgroundColor:'#5AA8C9'}]},
-    options:{...COMUN, scales:{...COMUN.scales,
-      y:{beginAtZero:true, title:{display:true, text:'m³ por día', font:{family:'Inter',size:11}}}}}
+      {label:'Agua usada (m³)', data:consumo.map(x=>x.m3),
+       backgroundColor:consumo.map((_,i) => i < mitad ? '#C9C4B6' : t.color), borderRadius:4}]},
+    options:{...comun(), plugins:{...comun().plugins, legend:{display:false}},
+      scales:{...comun().scales, y:{...comun().scales.y, beginAtZero:true,
+        title:{display:true, text:'m³ por día', font:{family:'Inter',size:11}, color:'#6A6961'}}}}
+  });
+
+  const q = r.cuarta;
+  if(q){
+    const esBarra = /m³/.test(q.etiqueta);
+    const ctx4 = document.getElementById('gCiclo').getContext('2d');
+    const sets = [{type:esBarra?'bar':'line', label:q.etiqueta, data:q.datos, borderColor:t.hondo,
+                   backgroundColor:esBarra ? t.color : relleno(ctx4, t.color), fill:!esBarra,
+                   borderWidth:2.4, pointRadius:esBarra?0:3, pointBackgroundColor:t.hondo, borderRadius:4, tension:.3}];
+    if(q.objetivo) sets.push({type:'line', label:'objetivo', data:q.datos.map(() => q.objetivo),
+                              borderColor:'#C4622D', borderWidth:1.6, borderDash:[6,5], pointRadius:0});
+    grafica('gCiclo', {data:{labels:q.ejes, datasets:sets},
+      options:{...comun(), scales:{...comun().scales, y:{...comun().scales.y, beginAtZero:true}}}});
+  }
+
+  $('#notaGrafica').textContent = t.nota;
+}
+
+function pintarPestanas(){
+  const t = T();
+  const defs = [['Humedad','gHumedad'],['Clima','gClima'],['Consumo','gConsumo'],[t.cuartaPestana,'gCiclo']];
+  $('#pestanas').innerHTML = defs.map(([n,g],i) =>
+    `<button role="tab" aria-selected="${i===0}" data-g="${g}">${n}</button>`).join('');
+  $$('#pestanas button').forEach((b,i) => b.onclick = () => {
+    $$('#pestanas button').forEach(x => x.setAttribute('aria-selected','false'));
+    b.setAttribute('aria-selected','true');
+    $$('.lienzo').forEach((l,k) => l.hidden = (k !== i));
+    if(graficas[b.dataset.g]) graficas[b.dataset.g].resize();
+    vibrar(5);
   });
 }
 
-document.querySelectorAll('.pestanas button').forEach((b, i) => {
-  b.onclick = () => {
-    document.querySelectorAll('.pestanas button').forEach(x => x.setAttribute('aria-selected','false'));
-    b.setAttribute('aria-selected','true');
-    document.querySelectorAll('.lienzo').forEach((l, k) => l.hidden = (k !== i));
-    if(graficas[b.dataset.g]) graficas[b.dataset.g].resize();
-  };
-});
+/* ══════════════════════════════════════════════════════════════
+   EL AGENTE
+   Es el mismo agente híbrido del servidor (03_backend/agente.py),
+   traído al teléfono: entiende la intención con reglas, hace la
+   cuenta sobre los datos que tiene, y responde con plantilla.
+   El número nunca sale de una adivinanza del modelo: sale de la
+   cuenta. Cuando hay señal manda el servidor; cuando no la hay,
+   responde este, con la última lectura que alcanzó a bajar.
+   ══════════════════════════════════════════════════════════════ */
 
-/* ══════════════════════════════════════════════════════════
-   DATOS
-   ══════════════════════════════════════════════════════════ */
+const NUMEROS = {un:1,una:1,dos:2,tres:3,cuatro:4,cinco:5,seis:6,siete:7,ocho:8,
+                nueve:9,diez:10,quince:15,veinte:20,treinta:30,cuarenta:40,sesenta:60,media:0.5};
 
-async function pedir(ruta){
-  const r = await fetch(API + ruta);
-  if(!r.ok) throw new Error(r.status);
-  return r.json();
+const norm = s => (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+                    .replace(/\s+/g,' ').trim();
+
+function extraerNumero(t){
+  const m = /(\d+(?:[.,]\d+)?)/.exec(t);
+  if(m) return parseFloat(m[1].replace(',','.'));
+  for(const p in NUMEROS) if(new RegExp('\\b'+p+'\\b').test(t)) return NUMEROS[p];
+  return null;
 }
 
-function ejemplo(){
-  const ahora = Date.now(), suelo = [], consumo = [];
-  for(let i = 168; i >= 0; i--){
-    const t = new Date(ahora - i*3600e3), hh = 6 + t.getHours() + t.getMinutes()/60;
-    const base = 27 - (i % 62) * 0.085;
-    suelo.push({ts:t.toISOString(),
-      h1:+(base + 1.4*Math.sin(hh/3.8) + Math.random()*.35).toFixed(2),
-      h2:+(base - 1.1 + Math.random()*.28).toFixed(2),
-      h3:+(base - 2.3 + Math.random()*.22).toFixed(2),
-      ta:+(13 + 6*Math.sin((hh-9)/24*6.283) + Math.random()).toFixed(1),
-      lluvia:(i % 43 === 0) ? +(Math.random()*6).toFixed(1) : 0});
+function extraerMinutos(texto){
+  const t = norm(texto);
+  if(/\bhora y media\b/.test(t)) return 90;
+  if(/\bmedia hora\b/.test(t)) return 30;
+  let m = /(\d+(?:[.,]\d+)?)\s*(h|hr|hrs|hora|horas)\b/.exec(t);
+  if(m) return parseFloat(m[1].replace(',','.'))*60;
+  m = /\b(un|una|dos|tres|cuatro|cinco|seis|siete|ocho)\s+horas?\b/.exec(t);
+  if(m) return NUMEROS[m[1]]*60;
+  m = /(\d+(?:[.,]\d+)?)\s*(m|min|mins|minuto|minutos)\b/.exec(t);
+  if(m) return parseFloat(m[1].replace(',','.'));
+  m = /\b(un|una|dos|tres|cuatro|cinco|diez|quince|veinte|treinta|cuarenta|sesenta)\s+minutos?\b/.exec(t);
+  if(m) return NUMEROS[m[1]];
+  if(/\b(regue|riegue|puse|prendi|eche)\b/.test(t)){
+    const n = extraerNumero(t);
+    if(n && n >= 1 && n <= 600) return n;
   }
-  for(let d = 29; d >= 0; d--)
-    consumo.push({fecha:new Date(ahora - d*864e5).toISOString().slice(0,10),
-      m3:+(d > 14 ? 5.4 + Math.random()*2.8 : 3.3 + Math.random()*1.8).toFixed(2)});
+  return null;
+}
 
-  return {series:{suelo}, consumo, reco:{
-    predio:{nombre:'Finca La Esperanza'}, modo:'pastoreo',
-    decision:{accion:'esperar', urgencia:'baja',
-      razon:'La tierra llegó al punto de regar, pero se esperan 18 mm de lluvia en dos días. Regar hoy sería botar el agua.'},
-    estado_suelo:{humedad_ponderada_pct:23.4, lecturas_por_profundidad:[24.8, 23.1, 21.9],
-      pct_agua_disponible:46, agotamiento_mm:38.7, agua_facilmente_disponible_mm:39.6,
-      agua_disponible_total_mm:72.0, coef_estres_ks:1.0, en_estres:false},
-    clima:{et0_hoy_mm:3.12, etc_hoy_mm:3.12, kc_actual:1.0, lluvia_proxima_7d_mm:24.5,
-      lluvia_por_dia_mm:[0, 11.2, 6.8, 0, 2.1, 4.4, 0], fuente:'pronóstico'},
-    proyeccion:{dias_a_umbral_riego:6, percolacion_total_mm:2.1,
-      trayectoria:[46,38,58,63,54,48,41].map((p,i)=>({dia:i, pct_agua_disponible:p,
-        agotamiento_mm:+(72*(1-p/100)).toFixed(1)}))},
-    riego:null,
-    pastoreo:{estado:'en_recuperacion',
-      mensaje:'La franja va bien. Le faltan unos 6 días para que el pasto tenga la altura y las reservas que necesita.',
-      dias_descanso_actual:29, dias_descanso_recomendado:35,
-      grados_dia_acumulados:348, grados_dia_objetivo:420, pct_recuperacion:83,
-      altura_objetivo_cm:25, altura_residual_cm:8}}};
+const PATRONES = [
+  ['registrar_riego',0.95,[
+    /\b(regue|riegue|ya regue|acabo de regar|termine de regar)\b/,
+    /\b(puse|prendi|encendi)\b.*\b(bomba|motor|manguera|aspersor|goteo)/,
+    /\b(eche|echamos|le eche)\b.*\bagua\b/, /\bestuve regando\b/,
+    /\b(media hora|\d+\s*(?:min|mins|minutos|h|horas?)|(?:un|una|dos|tres)\s+horas?)\b.*\b(sector|potrero|lote|turno|franja|nave|cama)\b/,
+    /\b(sector|potrero|lote|turno|franja|nave|cama)\b.*\b(media hora|\d+\s*(?:min|mins|minutos|h|horas?))\b/]],
+  ['registrar_no_riego',0.9,[
+    /\bno (pude|alcance a|logre|he podido)\b.*\breg(ar|ue|o)\b/, /\bno regue\b/, /\bno he regado\b/,
+    /\bse me paso\b/, /\bno hubo riego\b/]],
+  ['registrar_rutina',0.85,[
+    /\briego\b.*\b(cada|todos los|veces)\b/, /\b(siempre|normalmente|casi siempre)\b.*\briego\b/,
+    /\b(dos|tres|una|1|2|3)\s*veces (al|por) (dia|semana)\b/, /\bcada (\d+|dos|tres|cuatro) dias\b/]],
+  ['consultar_ahorro',0.95,[
+    /\bcuant[oa]s? (agua |)(me |)(he |)ahorr/, /\bahorr/, /\bcuanto llevo ahorrado\b/,
+    /\bcuanta agua (he |)(gastado|usado|consumido)\b/, /\bsirve\b.*\b(esto|el sistema)\b/]],
+  ['consultar_riego',0.9,[
+    /\b(riego|debo regar|toca regar|hay que regar|necesito regar)\b\s*(hoy|ahora|manana|\?|$)/,
+    /\bpuedo (no |)regar\b/, /\bque hago (hoy|con el riego)\b/,
+    /\bcomo (esta|va) (la tierra|el suelo|la humedad)\b/, /\bcuando (toca|debo|hay que) regar\b/]],
+  ['consultar_pastoreo',0.9,[
+    /\b(pastoreo|franja|potrero|meter|entrar)\b.*\b(animales|vacas|ganado|listo|cuando)\b/,
+    /\bcuando (meto|entro|paso) (las |los |)(vacas|animales|ganado)\b/,
+    /\bcomo (esta|va) (el |la |)(pasto|franja|potrero|cultivo|cama|nave)\b/,
+    /\b(cuando|cuanto falta para) (cosech|cort)/]],
+  ['consultar_lluvia',0.85,[/\b(va a |)llover\b/, /\blluvia\b/, /\bpronostico\b/, /\bel clima\b/]],
+  ['consultar_costo',0.9,[
+    /\bcuanto (me |)cuesta\b.*\b(regar|el agua|bombear|la bomba)\b/,
+    /\bcuanto (gasto|gaste) (de |en )(luz|energia|acpm|diesel|gasolina)\b/,
+    /\bcuanto vale\b.*\b(regar|el riego)\b/]],
+  ['reportar_problema',0.85,[
+    /\b(no funciona|esta danado|se dano|no sirve|no marca|no llega)\b/,
+    /\b(se cayo|se movio|golpearon|tumbaron)\b.*\b(sensor|caja|equipo|panel)\b/,
+    /\bhay un problema\b/, /\bfuga\b/, /\bse esta botando\b/]],
+  ['discrepar',0.8,[
+    /\bno (estoy de acuerdo|creo|me parece)\b/,
+    /\b(la tierra|el suelo)\b.*\b(seca|seco|humeda|humedo)\b.*\b(pero|y)\b/,
+    /\beso no (es|esta) (cierto|bien|correcto)\b/, /\byo veo\b.*\bdiferente\b/]],
+  ['medir_caudal',0.95,[
+    /\bmedir\b.*\b(caudal|bomba|cuanta agua)\b/, /\bcuanta agua (da|saca|bota|echa) (la |mi |)bomba\b/,
+    /\bno se (cuanto|cuanta)\b.*\b(bomba|caudal)\b/, /\bcalibrar la bomba\b/]],
+  ['saludo',0.7,[/^(hola|buenas|buenos dias|buenas tardes|que mas|hey|holi)\b/]],
+  ['ayuda',0.9,[/\b(ayuda|que puedo (preguntar|hacer)|como funciona|no entiendo|menu)\b/]],
+];
+
+function entender(mensaje){
+  const t = norm(mensaje);
+  let mejor = {tipo:'desconocido', datos:{}, confianza:0};
+  for(const [tipo, conf, pats] of PATRONES){
+    for(const p of pats){
+      if(p.test(t)){ if(conf > mejor.confianza) mejor = {tipo, datos:{}, confianza:conf}; break; }
+    }
+  }
+  if(mejor.tipo === 'registrar_riego'){
+    mejor.datos.minutos = extraerMinutos(mensaje);
+    let m = /\b(?:sector|potrero|turno|franja|lote|nave|cama)\s*(\d+)\b/.exec(t);
+    if(m) mejor.datos.sector_num = +m[1];
+    if(/\b(las dos|ambas|dos bombas|2 bombas|todas las bombas|los dos motores)\b/.test(t))
+      mejor.datos.bombas = 2;
+    if(/\b(todo|todos los sectores|toda la finca|completo)\b/.test(t)) mejor.datos.todos = true;
+    mejor.datos.cuando = /\bayer\b/.test(t) ? 'ayer' : /\b(antier|anteayer)\b/.test(t) ? 'antier' : 'hoy';
+  }
+  if(mejor.tipo === 'registrar_rutina'){
+    const n = extraerNumero(t);
+    if(/veces (al|por) dia/.test(t)) mejor.datos.frecuencia = `${Math.round(n||1)} vez/veces al día`;
+    else if(/cada \S+ dias/.test(t)) mejor.datos.frecuencia = `cada ${Math.round(n||2)} días`;
+    else if(/veces (a la|por) semana/.test(t)) mejor.datos.frecuencia = `${Math.round(n||1)} vez/veces por semana`;
+  }
+  return mejor;
+}
+
+/* ---------- Costos: el mismo cálculo de 03_backend/costos.py ---------- */
+const KWH_M3_M = 1000*9.81/3.6e6;      // ≈ 0.0027250
+const KWH_POR_LITRO_ACPM = 2.2;
+
+function valorizar(m3, p){
+  p = p || {};
+  const tipo = (p.energia || 'electrica').toLowerCase();
+  const tarifa = p.tarifa_agua_m3 || 0;
+  const copAgua = m3 * tarifa;
+  let copEnergia = 0, kwh = 0, litros = null;
+
+  if(tipo !== 'gravedad'){
+    kwh = KWH_M3_M * Math.max(0, p.altura_bombeo_m || 30) / 0.55 * m3;
+    if(tipo === 'diesel'){
+      if(p.consumo_diesel_lph > 0 && p.caudal_lps > 0){
+        const horas = m3 * 1000 / (p.caudal_lps * 3600);
+        litros = horas * p.consumo_diesel_lph;
+      } else litros = kwh / KWH_POR_LITRO_ACPM;
+      copEnergia = litros * (p.costo_diesel_litro || 13000);
+    } else {
+      copEnergia = kwh * (p.costo_kwh || 850);
+    }
+  }
+  return {cop:copAgua + copEnergia, cop_agua:copAgua, cop_energia:copEnergia,
+          kwh, litros_diesel:litros, paga_agua:tarifa > 0};
+}
+
+/* ---------- Estado de la conversación ---------- */
+let esperando = null, pendiente = {};
+
+function sectoresActivos(){
+  return (predioActual && predioActual.sectores) || [];
+}
+
+function resolverSector(datos){
+  const act = sectoresActivos();
+  if(!act.length) return {elegidos:[], donde:''};
+  if(datos.todos) return {elegidos:act, donde:'toda la finca'};
+  if(datos.sector_num){
+    const e = act.filter(x => x.orden === datos.sector_num);
+    if(e.length) return {elegidos:[e[0]], donde:e[0].nombre};
+  }
+  if(datos.bombas > 1) return {elegidos:act.slice(0, datos.bombas),
+                               donde:act.slice(0, datos.bombas).map(x => x.nombre).join(' y ')};
+  if(act.length === 1) return {elegidos:act, donde:act[0].nombre};
+  return {elegidos:[], donde:'AMBIGUO'};
+}
+
+/* ---------- Las respuestas ---------- */
+
+function respRiego(minutos, info){
+  const t = T();
+  if(minutos == null){
+    esperando = 'minutos_riego';
+    return {texto:'Anoto que regó. ¿Cuántos minutos dejó prendida la bomba? Con ese dato le digo si fue lo justo.',
+            sugerencias:['30 minutos','Una hora','Media hora']};
+  }
+  const {elegidos, donde} = resolverSector(info);
+  if(donde === 'AMBIGUO'){
+    esperando = 'sector_riego'; pendiente = {minutos};
+    const nombres = sectoresActivos().map(x => `${x.orden}) ${x.nombre}`).join(', ');
+    return {texto:`Anoto los ${minutos.toFixed(0)} minutos. ¿En cuál regó? Tengo registrados: ${nombres}. `+
+                  'Dígame el número, o "las dos bombas" si abrió varios a la vez.',
+            sugerencias:sectoresActivos().map(x => 'El ' + x.orden).concat(['Las dos bombas'])};
+  }
+
+  let m3 = 0, mmProm = 0;
+  elegidos.forEach(s => {
+    const areaM2 = (s.area_ha || 0) * 10000;
+    m3 += (s.caudal_lps || 0) * minutos * 60 / 1000;
+    mmProm += areaM2 > 0 ? (s.caudal_lps * minutos * 60) / areaM2 : 0;
+  });
+  const mm = elegidos.length ? mmProm/elegidos.length : 0;
+
+  const partes = [`Anotado: ${minutos.toFixed(0)} minutos${donde ? ' en ' + donde : ''}.`];
+  if(elegidos.length > 1)
+    partes.push(`Con ${elegidos.length} sectores abiertos al tiempo son ${m3.toFixed(1)} m³ en total, unos ${mm.toFixed(1)} mm en cada uno.`);
+  else if(mm > 0)
+    partes.push(`Eso son unos ${mm.toFixed(1)} mm, o sea ${m3.toFixed(1)} m³ de agua.`);
+
+  const v = valorizar(m3, predioActual);
+  if(v.cop > 0){
+    const extra = v.litros_diesel != null ? `${v.litros_diesel.toFixed(1)} L de ACPM` : `${v.kwh.toFixed(1)} kWh`;
+    partes.push(`Bombear esa agua le costó unos ${cop(v.cop)} (${extra}).`);
+  }
+
+  const tasa = minutos > 0 ? mm/(minutos/60) : 0;
+  if(tasa > 0 && tasa < 2)
+    partes.push(`Ojo: ese sector aplica ${tasa.toFixed(1)} mm por hora, que es poco. Para un riego completo necesitaría unas ${(40/tasa).toFixed(0)} horas. Con más aspersores o más presión rendiría mucho mejor.`);
+  else if(tasa > 25)
+    partes.push(`Ese sector aplica ${tasa.toFixed(0)} mm por hora, que es mucho: el suelo no alcanza a absorber y el agua se escurre. Riegue por tiempos más cortos.`);
+
+  const pedia = datos_riego_pedido();
+  let ficha = null;
+  if(pedia){
+    if(mm > pedia*1.35)
+      partes.push(`El suelo pedía ${pedia.toFixed(1)} mm. Aplicó ${(mm-pedia).toFixed(1)} mm de más, y esa agua se va por debajo de la raíz. La próxima, con ${(pedia/mm*minutos).toFixed(0)} minutos alcanza.`);
+    else if(mm < pedia*0.65)
+      partes.push(`El suelo pedía ${pedia.toFixed(1)} mm y usted aplicó ${mm.toFixed(1)}. Quedó corto: la humedad no llega a la raíz profunda. Revise mañana cómo quedó.`);
+    else partes.push('Es prácticamente lo que el suelo pedía. Buen riego.');
+    ficha = {titulo:'Este riego', mm, pedia, m3, minutos, cop:v.cop};
+  } else if(datos && datos.estado_suelo && datos.estado_suelo.agotamiento_mm < 5){
+    partes.push('Ojo: el suelo ya venía con buena humedad. Este riego probablemente no hacía falta.');
+  }
+  partes.push('Mañana vuelvo a medir y le cuento cómo respondió la tierra.');
+  esperando = null; pendiente = {};
+  return {texto:partes.join(' '), ficha, accion:'registrar_riego',
+          sugerencias:['¿Cuánto llevo ahorrado?','¿Va a llover?']};
+}
+
+function datos_riego_pedido(){
+  return datos && datos.riego && datos.riego.lamina_bruta_mm ? datos.riego.lamina_bruta_mm : null;
+}
+
+function respAhorro(){
+  const a = datos && datos.ahorro;
+  if(!a || !a.m3){
+    return {texto:'Todavía no le puedo dar ese número. Para saber cuánto se ahorró tengo que comparar contra cómo regaba antes, y llevo poco tiempo midiendo. En unas semanas se lo tengo.'};
+  }
+  const total = (a.cop_agua||0) + (a.cop_energia||0);
+  const partes = [
+    `En ${a.dias} días ha ahorrado ${a.m3.toFixed(1)} m³ de agua, un ${Math.round(a.pct)}% menos que antes.`,
+    `Son unos ${Math.round(a.m3)} tanques de mil litros.`
+  ];
+  if(total > 0){
+    partes.push(a.cop_agua > 0
+      ? `En plata son ${cop(total)}: ${cop(a.cop_agua)} de agua y ${cop(a.cop_energia)} de bombeo.`
+      : `El agua es suya, así que el ahorro está en la bomba: ${cop(a.cop_energia)} que no gastó en ${a.litros_diesel ? 'ACPM' : 'luz'}.`);
+    if(a.anual_cop) partes.push(`A ese ritmo serían unos ${cop(a.anual_cop)} al año, aunque en lluvias se riega menos.`);
+  }
+  return {texto:partes.join(' '), ficha:{titulo:'El ahorro en plata', ahorro:a},
+          sugerencias:['¿Cuánto cuesta regar hoy?','¿Riego hoy?']};
+}
+
+function respRecomendacion(){
+  const d = datos.decision, e = datos.estado_suelo, t = T();
+  const partes = [d.razon];
+  if(datos.riego)
+    partes.push(`Si riega, con ${datos.riego.minutos.toFixed(0)} minutos en ${t.turno} aplica los ${datos.riego.lamina_bruta_mm.toFixed(1)} mm que pide el suelo.`);
+  partes.push(`Ahorita la tierra tiene ${Math.round(e.pct_agua_disponible)}% del agua que la raíz puede usar.`);
+  return {texto:partes.join(' '), sugerencias:['Regué 40 minutos','¿Va a llover?']};
+}
+
+function respLluvia(){
+  const c = datos.clima, total = c.lluvia_proxima_7d_mm || 0;
+  if(total < 2) return {texto:'No se espera lluvia importante en los próximos siete días. Cuente con regar.'};
+  const nombres = ['hoy','mañana','pasado mañana','en 3 días','en 4 días','en 5 días','en 6 días'];
+  const fuertes = (c.lluvia_por_dia_mm||[]).map((v,i) => v >= 2 ? `${nombres[i]} unos ${v.toFixed(0)} mm` : null).filter(Boolean);
+  const extra = (predioActual.tipo === 'flores')
+    ? ' Eso sí: bajo el plástico esa lluvia no le cae a la planta, solo le llena el tanque.' : '';
+  return {texto:`Se esperan ${total.toFixed(0)} mm en los próximos siete días: ${fuertes.join(', ') || 'repartidos en varios días'}.${extra}`};
+}
+
+function respCiclo(){
+  const c = datos.ciclo;
+  if(!c) return {texto:'Todavía no tengo la fecha del último corte o pastoreo. Dígamela y le llevo la cuenta.'};
+  const extra = predioActual.tipo === 'pastoreo'
+    ? ' Cuando entre, deje 8 cm de residual: si lo pela más, el rebrote se demora el doble.' : '';
+  return {texto:`${c.texto} Va en ${c.pct}% del ciclo. ${c.izq}.${extra}`};
+}
+
+function respCosto(){
+  const r = datos.riego;
+  const m3 = r ? r.volumen_m3 : (predioActual.caudal_lps || 0) * 3600 / 1000;
+  const v = valorizar(m3, predioActual);
+  if(v.cop <= 0)
+    return {texto:'En este predio el agua es de fuente propia y llega por gravedad, así que regar no le cuesta plata: le cuesta tiempo. Lo que sí puede perder es cosecha si riega de menos.'};
+  const unidad = v.litros_diesel != null ? `${v.litros_diesel.toFixed(1)} litros de ACPM` : `${v.kwh.toFixed(1)} kWh`;
+  const base = r ? `El riego que le recomiendo hoy (${m3.toFixed(1)} m³)` : `Una hora de bomba (${m3.toFixed(1)} m³)`;
+  const detalle = v.paga_agua
+    ? `De eso, ${cop(v.cop_agua)} son del agua y ${cop(v.cop_energia)} de bombearla`
+    : `Todo es bombeo: ${unidad}`;
+  return {texto:`${base} le cuesta unos ${cop(v.cop)}. ${detalle}. Los precios los puede ajustar con su factura real.`};
+}
+
+function respProblema(){
+  return {texto:'Anoto el reporte y le llega al técnico. Mientras tanto, no se guíe por ese sensor: '+
+                'las recomendaciones las hago con los otros dos. Si puede, tome una foto del equipo y déjela en la bitácora.',
+          accion:'reportar_problema'};
+}
+
+function respDiscrepar(){
+  return {texto:'Le creo, y me sirve mucho que me lo diga. Usted ve la finca todos los días y el sensor solo ve un punto. '+
+                'Voy a marcar la diferencia para que el técnico revise la calibración: cuando el productor y el sensor no coinciden, '+
+                'casi siempre el que está mal es el sensor. ¿En qué parte del lote lo ve distinto?',
+          accion:'discrepancia'};
+}
+
+function respMedirCaudal(mensaje){
+  if(esperando !== 'segundos_balde'){
+    esperando = 'segundos_balde';
+    return {texto:'Vamos a medirlo, toma dos minutos.\n\n'+
+      '1. Consiga un balde del que sepa los litros (los de pintura son de 20).\n'+
+      '2. Prenda la bomba y deje que salga parejo.\n'+
+      '3. Meta la manguera al balde y tome el tiempo hasta llenarlo.\n\n'+
+      'Dígame cuánto se demoró. Por ejemplo: "20 litros en 8 segundos".',
+      sugerencias:['20 litros en 8 segundos','20 litros en 15 segundos']};
+  }
+  const t = norm(mensaje);
+  const nums = (t.match(/\d+(?:[.,]\d+)?/g) || []).map(x => parseFloat(x.replace(',','.')));
+  let litros = null, seg = null;
+  const ml = /(\d+(?:[.,]\d+)?)\s*(l|lt|lts|litro|litros)\b/.exec(t);
+  if(ml) litros = parseFloat(ml[1].replace(',','.'));
+  const ms = /(\d+(?:[.,]\d+)?)\s*(s|seg|segundo|segundos)\b/.exec(t);
+  if(ms) seg = parseFloat(ms[1].replace(',','.'));
+  if(litros == null && nums.length >= 2) litros = nums[0];
+  if(seg == null && nums.length >= 2) seg = nums[1];
+  if(litros == null || seg == null || seg <= 0)
+    return {texto:'No le entendí los números. Dígamelo así: "20 litros en 8 segundos".'};
+
+  esperando = null;
+  const lps = litros/seg;
+  const area = (predioActual.area_turno_ha || 0) * 10000;
+  const mmHora = area > 0 ? (lps*3600)/area : 0;
+  const partes = [`Su bomba da ${lps.toFixed(2)} litros por segundo, o sea ${(lps*3.6).toFixed(1)} m³ por hora.`];
+  if(mmHora > 0){
+    partes.push(`Sobre ${T().turno} (${predioActual.area_turno_ha} ha) eso son ${mmHora.toFixed(1)} mm por hora.`);
+    partes.push(`Para reponer un riego de 30 mm necesitaría ${(30/mmHora).toFixed(1)} horas.`);
+  }
+  partes.push('Guardo ese caudal y con él calculo los tiempos de aquí en adelante. Vuelva a medirlo si cambia la bomba o el sector.');
+  return {texto:partes.join(' '), accion:'guardar_caudal', ficha:{titulo:'Su bomba', caudal:lps, mmHora}};
+}
+
+function respAyuda(){
+  const t = T();
+  return {texto:'Yo le sirvo para tres cosas:\n\n'+
+    `• Contarme lo que hizo: "regué 40 minutos", "regué ${t.turno} 2", "no pude regar".\n`+
+    '• Preguntarme: si riega hoy, si va a llover, cuánto lleva ahorrado, cuánto le cuesta regar.\n'+
+    '• Reportarme problemas: un sensor caído, una fuga, o que usted ve la tierra distinta a lo que digo.\n\n'+
+    'Hábleme como le hable a un vecino. Yo me entiendo.'};
+}
+
+function respSaludo(){
+  const d = datos.decision, hora = horaDelPredio();
+  const saludo = hora < 12 ? 'Buenos días' : hora < 18 ? 'Buenas tardes' : 'Buenas noches';
+  return {texto:`${saludo}. ${TITULARES[d.accion] || ''}: ${d.razon}`,
+          sugerencias:['Regué 40 minutos','¿Cuánto llevo ahorrado?','¿Va a llover?']};
+}
+
+function responderLocal(mensaje){
+  // Continuaciones: el productor está respondiendo algo que yo le pregunté
+  if(esperando === 'minutos_riego'){
+    const m = extraerMinutos(mensaje);
+    if(m != null){ esperando = null; return respRiego(m, entender(mensaje).datos || {}); }
+  }
+  if(esperando === 'sector_riego'){
+    const t = norm(mensaje);
+    const d = {};
+    const n = /\b(\d+)\b/.exec(t);
+    if(n) d.sector_num = +n[1];
+    if(/\b(las dos|ambas|dos bombas|todas)\b/.test(t)) d.bombas = 2;
+    if(/\b(toda la finca|todo)\b/.test(t)) d.todos = true;
+    if(d.sector_num || d.bombas || d.todos){
+      // Si de paso corrigió el tiempo ("media hora en la franja 2"), manda lo nuevo
+      const min = extraerMinutos(mensaje) ?? pendiente.minutos;
+      esperando = null;
+      return respRiego(min, d);
+    }
+  }
+  if(esperando === 'segundos_balde') return respMedirCaudal(mensaje);
+
+  const i = entender(mensaje);
+  switch(i.tipo){
+    case 'registrar_riego':    return respRiego(i.datos.minutos, i.datos);
+    case 'registrar_no_riego': return {texto:'Anotado, no hubo riego. Eso también me sirve: con lo que midan los sensores mañana le digo qué tanto le pesó.'};
+    case 'registrar_rutina':   return {texto:`Listo, anoto que usted riega ${i.datos.frecuencia || 'con esa rutina'}. Me sirve para comparar con lo que la tierra realmente necesita: puede que unos días le sobre y otros le falte. Ahí es donde está el ahorro.`, accion:'registrar_rutina'};
+    case 'consultar_ahorro':   return respAhorro();
+    case 'consultar_riego':    return respRecomendacion();
+    case 'consultar_lluvia':   return respLluvia();
+    case 'consultar_pastoreo': return respCiclo();
+    case 'consultar_costo':    return respCosto();
+    case 'medir_caudal':       return respMedirCaudal(mensaje);
+    case 'reportar_problema':  return respProblema();
+    case 'discrepar':          return respDiscrepar();
+    case 'saludo':             return respSaludo();
+    case 'ayuda':              return respAyuda();
+    default:
+      return {texto:'No le entendí bien. Puede decirme cuánto regó ("regué 40 minutos"), preguntarme si riega hoy, si va a llover, o cuánto lleva ahorrado.',
+              sugerencias:['¿Riego hoy?','Regué 40 minutos','Ayuda']};
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   LA CONVERSACIÓN EN PANTALLA
+   ══════════════════════════════════════════════════════════════ */
+
+function burbuja(texto, de){
+  const b = document.createElement('div');
+  b.className = 'burbuja ' + de;
+  b.textContent = texto;
+  const h = $('#hilo'); h.appendChild(b); h.scrollTop = h.scrollHeight;
+  return b;
+}
+
+function fichaChat(f){
+  if(!f) return;
+  const el = document.createElement('div');
+  el.className = 'ficha-chat';
+  let html = `<h4>${f.titulo}</h4>`;
+
+  if(f.mm != null){
+    const tope = Math.max(f.mm, f.pedia) * 1.15;
+    html += `<div class="par"><span>Lo que aplicó</span><b>${f.mm.toFixed(1)} mm · ${f.m3.toFixed(1)} m³</b></div>`;
+    html += `<div class="medidor"><i style="width:${Math.min(100,(f.mm/tope)*100).toFixed(0)}%"></i>
+             <u style="left:${Math.min(100,(f.pedia/tope)*100).toFixed(0)}%"></u></div>`;
+    html += `<div class="medidor-pie"><span>0</span><span>el suelo pedía ${f.pedia.toFixed(1)} mm</span></div>`;
+    if(f.cop > 0) html += `<div class="par"><span>Costó bombearla</span><b>${cop(f.cop)}</b></div>`;
+  }
+  if(f.ahorro){
+    const a = f.ahorro;
+    if(a.cop_agua > 0) html += `<div class="par"><span>Agua</span><b>${cop(a.cop_agua)}</b></div>`;
+    else html += `<div class="par"><span>Agua · fuente propia</span><b>$0</b></div>`;
+    html += `<div class="par"><span>${a.litros_diesel ? 'ACPM' : 'Luz'}</span><b>${cop(a.cop_energia)}</b></div>`;
+    html += `<div class="par"><span>En ${a.dias} días</span><b>${a.m3.toFixed(1)} m³</b></div>`;
+  }
+  if(f.caudal){
+    html += `<div class="par"><span>Caudal medido</span><b>${f.caudal.toFixed(2)} L/s</b></div>`;
+    html += `<div class="par"><span>Sobre ${T().turno}</span><b>${f.mmHora.toFixed(1)} mm/hora</b></div>`;
+  }
+  el.innerHTML = html;
+  const h = $('#hilo'); h.appendChild(el); h.scrollTop = h.scrollHeight;
+}
+
+function pintarSugerencias(lista){
+  const t = T();
+  const base = lista || ['Regué 40 minutos', '¿Riego hoy?', '¿Cuánto llevo ahorrado?',
+    predioActual.tipo === 'pastoreo' ? '¿Cuándo meto los animales?' : '¿Cuándo cosecho?',
+    '¿Cuánto cuesta regar?', 'Medir el caudal de mi bomba', 'Se dañó un sensor'];
+  $('#sugerencias').innerHTML = base.map(x => `<button type="button">${x}</button>`).join('');
+  $$('#sugerencias button').forEach(b => b.onclick = () => enviar(b.textContent));
+}
+
+function abrirCharla(prellenado){
+  $('#velo').hidden = false;
+  $('#charla').hidden = false;
+  requestAnimationFrame(() => { $('#velo').classList.add('ver'); $('#charla').classList.add('abierta'); });
+  $('#charlaSub').textContent = predioActual.nombre ? `${predioActual.nombre} · ${T().cultivo}` : '';
+  if(!$('#hilo').children.length){
+    const d = datos.decision;
+    const motivo = d.razon.charAt(0).toLowerCase() + d.razon.slice(1);
+    burbuja(`Buenas. ${TITULARES[d.accion] || ''}: ${motivo}`, 'sistema');
+    burbuja('Cuénteme cuánto regó, o pregúnteme lo que necesite.', 'sistema');
+  }
+  pintarSugerencias();
+  if(prellenado){ $('#entradaChat').value = prellenado; }
+  setTimeout(() => $('#entradaChat').focus(), 220);
+  ocultarSaludo();
+}
+
+function cerrarCharla(){
+  $('#velo').classList.remove('ver');
+  $('#charla').classList.remove('abierta');
+  setTimeout(() => { $('#velo').hidden = true; $('#charla').hidden = true; }, 300);
+}
+
+async function enviar(texto){
+  texto = (texto||'').trim();
+  if(!texto) return;
+  $('#entradaChat').value = '';
+  $('#entradaChat').style.height = 'auto';
+  burbuja(texto, 'productor');
+  vibrar(8);
+
+  const esperar = document.createElement('div');
+  esperar.className = 'burbuja sistema pensando';
+  esperar.innerHTML = '<i></i><i></i><i></i>';
+  $('#hilo').appendChild(esperar);
+  $('#hilo').scrollTop = $('#hilo').scrollHeight;
+
+  let r = null, local = modoDemo;
+  if(!modoDemo){
+    try{
+      r = await fetch(`${API}/api/v1/predios/${predioId}/conversar`, {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({texto, canal:'app'})
+      }).then(x => x.json());
+    }catch(e){ local = true; }
+  }
+
+  const demora = local ? 420 + Math.random()*380 : 0;
+  await new Promise(res => setTimeout(res, demora));
+  esperar.remove();
+
+  if(local){
+    if(!modoDemo) burbuja('Sin señal ahora mismo, le respondo con la última lectura que bajé al teléfono.', 'sistema');
+    const l = responderLocal(texto);
+    burbuja(l.texto, 'sistema');
+    fichaChat(l.ficha);
+    pintarSugerencias(l.sugerencias);
+    if(l.accion === 'registrar_riego') avisar('Riego anotado');
+  }else{
+    burbuja(r.respuesta, 'sistema');
+    pintarSugerencias(r.sugerencias);
+    if(r.accion_ejecutada) setTimeout(cargar, 900);
+  }
+}
+
+/* Aviso flotante: el sistema saluda una vez y se quita solo */
+let saludoT = null;
+function avisar(texto, alTocar){
+  const s = $('#saludoFlotante');
+  s.textContent = texto;
+  s.onclick = alTocar || (() => abrirCharla());
+  s.classList.add('ver');
+  clearTimeout(saludoT);
+  saludoT = setTimeout(ocultarSaludo, 7000);
+}
+function ocultarSaludo(){ $('#saludoFlotante').classList.remove('ver'); }
+
+/* ══════════════════════════════════════════════════════════════
+   DATOS
+   ══════════════════════════════════════════════════════════════ */
+
+async function pedir(ruta){
+  const c = new AbortController();
+  const t = setTimeout(() => c.abort(), 9000);
+  try{
+    const r = await fetch(API + ruta, {signal:c.signal});
+    if(!r.ok) throw new Error(r.status);
+    return await r.json();
+  } finally { clearTimeout(t); }
 }
 
 function marcarPulso(estado, texto){
-  $('#pulso').className = 'pulso' + (estado ? ' ' + estado : '');
+  $('#pulso').className = 'pulso ' + (estado || 'vivo');
   $('#pulsoTexto').textContent = texto;
 }
 
-/* Un solo aviso visible a la vez. Tres apilados tapan el corte de suelo,
-   que es lo que la persona vino a ver. Prioridad: instalar > demo > sin señal. */
 let quiereInstalar = false;
 function ordenarAvisos(){
   const sinDatos = !localStorage.getItem('hidrosopo_ultima');
-  const offline  = !navigator.onLine && !modoDemo && !sinDatos;
+  const offline = !navigator.onLine && !modoDemo && !sinDatos;
   $('#avisoInstalar').hidden = !quiereInstalar;
-  $('#avisoDemo').hidden     = quiereInstalar || !modoDemo;
-  $('#avisoOffline').hidden  = quiereInstalar || modoDemo || !offline;
+  $('#avisoDemo').hidden = quiereInstalar || !modoDemo;
+  $('#avisoOffline').hidden = quiereInstalar || modoDemo || !offline;
   if(offline){
     const t = localStorage.getItem('hidrosopo_ultima');
-    $('#edadDatos').textContent = 'el ' + new Date(+t).toLocaleString('es-CO',
+    $('#edadDatos').textContent = 'el ' + fechaLarga(new Date(+t),
       {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'});
   }
 }
 
 async function cargar(){
+  const hilo = $('#hilo');
+  if(hilo.dataset.predio !== String(predioId)){
+    hilo.innerHTML = ''; hilo.dataset.predio = String(predioId);
+    esperando = null; pendiente = {};
+  }
   try{
     const [reco, s, consumo] = await Promise.all([
       pedir(`/api/v1/predios/${predioId}/recomendacion`),
@@ -830,151 +2007,116 @@ async function cargar(){
     ]);
     modoDemo = false;
     localStorage.setItem('hidrosopo_ultima', Date.now());
-    marcarPulso('', 'al día');
-    ordenarAvisos();
-    pintar(reco);
-    pintarGraficas(s, consumo);
+    localStorage.setItem('hidrosopo_cache_' + predioId, JSON.stringify({reco, s, consumo}));
+    marcarPulso('vivo', 'al día');
+    series = s;
+    pintar(reco); pintarPestanas(); pintarGraficas(s, consumo, reco);
   }catch(err){
-    modoDemo = true;
-    marcarPulso('frio', 'sin conexión');
-    ordenarAvisos();
-    const d = ejemplo();
-    pintar(d.reco);
-    pintarGraficas(d.series, d.consumo);
+    const guardado = localStorage.getItem('hidrosopo_cache_' + predioId);
+    if(guardado && !modoDemo && localStorage.getItem('hidrosopo_ultima')){
+      const {reco, s, consumo} = JSON.parse(guardado);
+      marcarPulso('frio', 'sin señal');
+      series = s; pintar(reco); pintarPestanas(); pintarGraficas(s, consumo, reco);
+    }else{
+      modoDemo = true;
+      marcarPulso('frio', 'datos de prueba');
+      const p = DEMO.find(x => x.id === predioId) || DEMO[0];
+      const r = armarDemo(p);
+      series = seriesDemo(p);
+      pintar(r); pintarPestanas(); pintarGraficas(series, series.consumo, r);
+    }
   }finally{
+    ordenarAvisos();
     $('#cargando').hidden = true;
     $('#app').hidden = false;
+    $('#barraAbajo').hidden = false;
+    $$('.ficha').forEach(b => b.setAttribute('aria-current', String(+b.dataset.id === predioId)));
   }
 }
 
 async function cargarPredios(){
   try{
     const ps = await pedir('/api/v1/predios');
-    $('#selPredio').innerHTML = ps.map(p => `<option value="${p.id}">${p.nombre}</option>`).join('');
-    if(ps.length) predioId = ps[0].id;
+    if(!ps.length) throw new Error('vacío');
+    pintarFichas(ps.map(p => ({id:p.id, nombre:p.nombre, tipo:p.tipo || 'pastoreo', area_ha:p.area_ha})));
+    predioId = ps[0].id;
   }catch{
-    $('#selPredio').innerHTML = '<option>Finca La Esperanza</option>';
+    pintarFichas(DEMO);
+    predioId = DEMO[0].id;
   }
 }
 
-$('#selPredio').onchange = e => { predioId = +e.target.value; primeraCarga = true; cargar(); };
+/* ══════════════════════════════════════════════════════════════
+   CONEXIONES DE LA INTERFAZ
+   ══════════════════════════════════════════════════════════════ */
+
+$('#btnCharla').onclick = () => abrirCharla();
+$('#charlaCerrar').onclick = cerrarCharla;
+$('#velo').onclick = cerrarCharla;
+$('#btnYaRegue').onclick = () => abrirCharla('Regué ');
+$('#btnRefrescar').onclick = () => { vibrar(10); primeraCarga = true; cargar(); };
+$('#formChat').onsubmit = e => { e.preventDefault(); enviar($('#entradaChat').value); };
+
+$('#entradaChat').addEventListener('input', e => {
+  e.target.style.height = 'auto';
+  e.target.style.height = Math.min(110, e.target.scrollHeight) + 'px';
+});
+$('#entradaChat').addEventListener('keydown', e => {
+  if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); enviar(e.target.value); }
+});
+document.addEventListener('keydown', e => { if(e.key === 'Escape') cerrarCharla(); });
+
 $('#btnReporte').onclick = () => {
-  if(modoDemo){ alert('El informe necesita conexión con el servidor.'); return; }
-  const hasta = new Date().toISOString().slice(0,10);
-  const desde = new Date(Date.now() - 30*864e5).toISOString().slice(0,10);
+  if(modoDemo){ avisar('El informe necesita conexión con el servidor.', ocultarSaludo); return; }
+  const hasta = fechaISO();
+  const desde = fechaISO(new Date(Date.now() - 30*864e5));
   window.open(`${API}/api/v1/predios/${predioId}/reporte-pueaa?desde=${desde}&hasta=${hasta}`, '_blank');
 };
 
-/* ══════════════════════════════════════════════════════════
-   CONVERSACIÓN
-   El productor le cuenta cosas al sistema y el sistema aprende
-   de lo que él realmente hace, no solo de lo que miden los sensores.
-   ══════════════════════════════════════════════════════════ */
+/* Dictado: en la finca se habla, no se escribe */
+(function voz(){
+  const R = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!R) return;
+  const btn = $('#btnVoz'); btn.hidden = false;
+  const rec = new R();
+  rec.lang = 'es-CO'; rec.interimResults = true; rec.continuous = false;
+  let activo = false;
+  btn.onclick = () => {
+    if(activo){ rec.stop(); return; }
+    try{ rec.start(); }catch(e){ return; }
+    activo = true; btn.classList.add('grabando'); vibrar(12);
+  };
+  rec.onresult = e => {
+    const t = Array.from(e.results).map(r => r[0].transcript).join('');
+    $('#entradaChat').value = t;
+  };
+  rec.onend = () => {
+    activo = false; btn.classList.remove('grabando');
+    const t = $('#entradaChat').value.trim();
+    if(t) enviar(t);
+  };
+  rec.onerror = () => { activo = false; btn.classList.remove('grabando'); };
+})();
 
-const SUGERENCIAS = [
-  'Regué 40 minutos',
-  '¿Cuánta agua he ahorrado?',
-  '¿Riego hoy?',
-  '¿Va a llover?',
-  '¿Cuándo meto los animales?',
-  'Se dañó un sensor',
-];
-
-function burbuja(texto, de){
-  const b = document.createElement('div');
-  b.className = 'burbuja ' + de;
-  b.textContent = texto;
-  const hilo = $('#hilo');
-  hilo.appendChild(b);
-  hilo.scrollTop = hilo.scrollHeight;
-  return b;
-}
-
-$('#charlaCabeza').onclick = () => {
-  const c = $('#charla'), abierta = c.dataset.abierta === 'si';
-  c.dataset.abierta = abierta ? 'no' : 'si';
-  $('#charlaCuerpo').hidden = abierta;
-  $('#charlaCabeza').setAttribute('aria-expanded', String(!abierta));
-  if(!abierta){
-    if(!$('#hilo').children.length) abrirCharla();
-    setTimeout(() => $('#entradaChat').focus(), 120);
-  }
-};
-
-async function abrirCharla(){
-  $('#sugerencias').innerHTML = SUGERENCIAS
-    .map(t => `<button type="button">${t}</button>`).join('');
-  document.querySelectorAll('#sugerencias button').forEach(b =>
-    b.onclick = () => enviar(b.textContent));
-
-  if(modoDemo){
-    burbuja('Buenas, Jaime. Hoy la tierra está bien de agua. Si quiere, cuénteme cuánto regó y le digo si fue lo justo.', 'sistema');
-    return;
-  }
-  try{
-    const h = await pedir(`/api/v1/predios/${predioId}/conversacion?n=20`);
-    if(h.length) h.forEach(m => burbuja(m.texto, m.de));
-    else burbuja('Buenas. Cuénteme cuánto regó, o pregúnteme lo que necesite.', 'sistema');
-  }catch{
-    burbuja('Buenas. Cuénteme cuánto regó, o pregúnteme lo que necesite.', 'sistema');
-  }
-}
-
-async function enviar(texto){
-  texto = (texto || '').trim();
-  if(!texto) return;
-  $('#entradaChat').value = '';
-  burbuja(texto, 'productor');
-
-  if(modoDemo){
-    burbuja('Esta es una demostración. Cuando el servidor esté conectado, aquí le respondo de verdad.', 'sistema');
-    return;
-  }
-
-  const esperando = burbuja('escribiendo…', 'sistema');
-  esperando.classList.add('pensando');
-  try{
-    const r = await fetch(`${API}/api/v1/predios/${predioId}/conversar`, {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({texto, canal:'app'})
-    }).then(x => x.json());
-    esperando.remove();
-    burbuja(r.respuesta, 'sistema');
-    // Si el sistema registró algo, los datos cambiaron: refrescar.
-    if(r.accion_ejecutada) setTimeout(cargar, 900);
-  }catch{
-    esperando.remove();
-    burbuja('No pude enviar el mensaje. Revise la señal e intente otra vez.', 'sistema');
-  }
-}
-
-$('#formChat').onsubmit = e => { e.preventDefault(); enviar($('#entradaChat').value); };
-
-/* ══════════════════════════════════════════════════════════
-   APP INSTALABLE
-   ══════════════════════════════════════════════════════════ */
-
+/* ---------- App instalable ---------- */
 if('serviceWorker' in navigator)
   window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
 
 let promptInstalar = null;
 window.addEventListener('beforeinstallprompt', e => {
-  e.preventDefault(); promptInstalar = e;
-  quiereInstalar = true; ordenarAvisos();
+  e.preventDefault(); promptInstalar = e; quiereInstalar = true; ordenarAvisos();
 });
 $('#btnInstalar').onclick = async () => {
   if(!promptInstalar) return;
   promptInstalar.prompt();
   await promptInstalar.userChoice;
-  promptInstalar = null;
-  quiereInstalar = false; ordenarAvisos();
+  promptInstalar = null; quiereInstalar = false; ordenarAvisos();
 };
 window.addEventListener('appinstalled', () => { quiereInstalar = false; ordenarAvisos(); });
 
 (function iOS(){
   const esIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-  const instalada = window.navigator.standalone ||
-                    window.matchMedia('(display-mode: standalone)').matches;
+  const instalada = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
   if(esIOS && !instalada && !localStorage.getItem('hidrosopo_ios')){
     $('#textoInstalar').innerHTML = 'Para instalarla: toque <b>Compartir</b> y luego <b>Agregar a inicio</b>.';
     $('#btnInstalar').hidden = true;
@@ -987,7 +2129,7 @@ function revisarRed(){
   if(!navigator.onLine) marcarPulso('frio', 'sin señal');
   ordenarAvisos();
 }
-window.addEventListener('online',  () => { revisarRed(); cargar(); });
+window.addEventListener('online', () => { revisarRed(); cargar(); });
 window.addEventListener('offline', revisarRed);
 window.addEventListener('resize', () => { if(datos) conectarSensores(); });
 
@@ -995,7 +2137,19 @@ window.addEventListener('resize', () => { if(datos) conectarSensores(); });
   revisarRed();
   await cargarPredios();
   await cargar();
-  setInterval(cargar, 300000);
+  // El acceso directo del ícono entra derecho a la conversación
+  if(new URLSearchParams(location.search).get('charla')){
+    abrirCharla('Regué ');
+  }else{
+    setTimeout(() => {
+      const d = datos.decision;
+      if(d.accion === 'regar') avisar(d.urgencia === 'critica'
+        ? 'Riegue hoy mismo. Toque para que le diga cuánto.'
+        : 'Hay que regar hoy. Toque y le digo cuántos minutos.');
+      else avisar('¿Regó ayer? Cuéntemelo y le digo si fue lo justo.');
+    }, 2600);
+  }
+  setInterval(() => { if(!modoDemo) cargar(); }, 300000);
 })();
 </script>
 </body>
