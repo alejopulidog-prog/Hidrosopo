@@ -1,0 +1,11 @@
+venv/
+__pycache__/
+*.db
+.env
+
+# macOS
+.DS_Store
+
+# Python
+.pytest_cache/
+*.pyc

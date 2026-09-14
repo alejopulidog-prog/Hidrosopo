@@ -1,0 +1,6 @@
+{
+  "_nota": "Reemplaza estos valores con los de TU calibración gravimétrica. Ver 01_hardware/CALIBRACION.md. Los que están aquí son de ejemplo y NO sirven para tus sensores.",
+  "S1": {"a": 1.842e-05, "b": -0.14102, "c": 263.94, "r2": 0.9971, "profundidad_cm": 15},
+  "S2": {"a": 1.901e-05, "b": -0.14550, "c": 271.20, "r2": 0.9958, "profundidad_cm": 30},
+  "S3": {"a": 1.788e-05, "b": -0.13890, "c": 259.11, "r2": 0.9963, "profundidad_cm": 45}
+}

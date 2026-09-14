@@ -1,0 +1,33 @@
+# HidroSopó — entorno completo en un comando
+#   docker compose up
+# Backend en http://localhost:8000 · App en http://localhost:5500
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: hidrosopo
+      POSTGRES_PASSWORD: hidrosopo
+      POSTGRES_DB: hidrosopo
+    volumes: ["datos_pg:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hidrosopo"]
+      interval: 5s
+      retries: 10
+
+  backend:
+    build: ./03_backend
+    environment:
+      DATABASE_URL: postgresql://hidrosopo:hidrosopo@db:5432/hidrosopo
+      CANAL_ALERTAS: consola
+    ports: ["8000:8000"]
+    depends_on:
+      db: {condition: service_healthy}
+    volumes: ["./03_backend/modelos:/app/modelos"]
+
+  app:
+    image: nginx:alpine
+    ports: ["5500:80"]
+    volumes: ["./04_dashboard:/usr/share/nginx/html:ro"]
+
+volumes:
+  datos_pg:
