@@ -156,7 +156,7 @@ En **Environment** (tu enlace `…/env`):
 
 Copia la URL del servicio (arriba, tipo `https://hidrosopo.onrender.com`) y abre:
 
-- `…/api/v1/salud` → debe decir `"estado": "ok"`, `"version": "1.2.0"` y `"fuente_datos": "simulacion"`.
+- `…/api/v1/salud` → debe decir `"estado": "ok"`, `"version": "1.4.0"` y `"fuente_datos": "simulacion"`.
 - `…/docs` → la documentación interactiva de la API.
 
 La primera visita tras un rato puede tardar unos 50 segundos: el plan gratuito duerme el servicio y lo despierta con la visita. El paso 5 lo mantiene despierto.
@@ -230,6 +230,21 @@ cd ../plegable && python generar_plegable.py
 
 ---
 
+## Paso 8 (opcional) · Asistente con conversación libre (10 min, $0)
+
+El asistente ya responde como experto sin internet: recomendación, riego, heladas, ahorro y 32 temas técnicos. Con este paso, además conversa libremente cuando le preguntan algo fuera de esas reglas. Usa un modelo de IA generativa gratuito y **siempre con las cifras que calcula el sistema**: el modelo redacta, no inventa números.
+
+1. Crea una cuenta gratis en **console.groq.com** → **API Keys** → **Create API Key**. Copia la clave (empieza por `gsk_`).
+2. En Render → **Environment**:
+   - `LLM_PROVEEDOR` = `groq`
+   - `GROQ_API_KEY` = la clave que copiaste
+3. **Save Changes**. Render se reinicia solo.
+4. Prueba en la app → **Cuénteme** → algo libre, como «¿qué le puedo sembrar a una huerta en tierra fría?».
+
+Si en los **Logs** de Render aparece que el modelo no existe, en la consola de Groq mira qué modelos hay disponibles y agrega `GROQ_MODEL` = ese nombre. La clave **nunca** va en GitHub, solo en Render. Para apagarlo: `LLM_PROVEEDOR` = `ninguno`.
+
+---
+
 ## Cómo se actualiza de aquí en adelante
 
 ```bash
@@ -272,7 +287,7 @@ git push                          # 4. Render y Netlify se actualizan solos
 - [ ] GitHub en v1.2.0 y **Pruebas** en verde
 - [ ] Nada privado en el repo (`.env`, `secretos.h`, cédula, informes)
 - [ ] Supabase: cadena del pooler y RLS activado sin avisos
-- [ ] Render: `/api/v1/salud` → `version 1.2.0`, `fuente_datos simulacion`
+- [ ] Render: `/api/v1/salud` → `version 1.4.0`, `fuente_datos simulacion`
 - [ ] Netlify: `/`, `/laboratorio`, `/agua`, `/resultados` y `/api/v1/salud` funcionan
 - [ ] Variable `HIDROSOPO_API` creada y **Mantener activo** en verde
 - [ ] QR del póster y del plegable regenerados con Netlify y probados con el celular

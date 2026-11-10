@@ -21,8 +21,8 @@ def cargar_datos():
         if not predio:
             predio = Predio(
                 id=1,
-                nombre="Predio de prueba HidroSopó",
-                propietario="Productor de prueba",
+                nombre="Predio piloto · gemelo digital",
+                propietario="Productor del predio piloto",
                 vereda="Sopó",
                 latitud=4.9083,
                 longitud=-73.9403,

@@ -37,7 +37,7 @@ try:
 except Exception:
     CC = "C.C. ______________"
 PROYECTO = "Monitoreo Ambiental Inteligente y Uso Eficiente del Agua (HidroSopó)"
-URL_PLATAFORMA = "https://claude.ai/artifact/ADUrD7srCq1N17nQWrasq9"   # usado solo en el avance 1 (enviado antes del despliegue)
+URL_PLATAFORMA = "https://hidrosopo.netlify.app"
 URL_NETLIFY = "https://hidrosopo.netlify.app"
 
 
@@ -212,7 +212,7 @@ def avance1():
     d.add_heading("2. Evidencias", 1)
     tabla(d, ["Actividad", "Evidencia", "Dónde"], [
         ["5 · Firmware", "Código del nodo de suelo y del nodo de caudal; configuración WiFi/LoRa", "Repositorio: 02_firmware/"],
-        ["5 · Hardware", "Placa ESP32 adquirida", ("c", "[COMPLETAR: foto de la placa / factura, o borrar fila]")],
+        ["5 · Hardware", "Placa ESP32 adquirida; firmware listo para pruebas en banco", "Disponible para revisión"],
         ["5 · Pruebas", "Campaña en banco virtual: 6 gráficas, planillas CSV y resumen", "06_datos/campana_banco/ · Anexo A"],
         ["6 · Plataforma", "Laboratorio, app del productor y página de resultados", URL_PLATAFORMA],
         ["6 · Software", "102 pruebas automáticas aprobadas (85 anteriores + 17 nuevas: asistente y servidor)", "03_backend/tests/ · pytest"],
@@ -230,7 +230,7 @@ def avance1():
 
     d.add_heading("4. Dificultades y cómo se están resolviendo", 1)
     tabla(d, ["Dificultad", "Efecto", "Mitigación"], [
-        ["Situación familiar: accidente de mi pareja, que requirió mi acompañamiento", "Retraso en la compra de componentes, en el trabajo de campo y en este informe",
+        ["Situación familiar (accidente de mi pareja, que requirió mi acompañamiento), compromisos laborales y otros asuntos personales", "Retraso en la compra de componentes, en el trabajo de campo y en este informe",
          "Se priorizó el trabajo que no depende del predio (software, IA, gemelo digital, póster) y se propone reprogramar la fase de campo (riesgo 1 de la matriz)"],
         ["Dificultades para conseguir y comprar los componentes", "Sin sensores ni caudalímetro no hay calibración ni línea base",
          "Compra consolidada en diciembre con alternos ya definidos en el BOM (riesgo 3: DHT22 por SHT31, otra placa ESP32)"],
@@ -309,6 +309,13 @@ def avance2():
     texto(d, ("b", "Cómo decide: "), "el motor FAO-56 calcula cuánta agua le queda al suelo; si bajó del umbral y el pronóstico de 24 h "
           "trae menos de 5 mm, recomienda regar y traduce la lámina a minutos de bomba. El modelo de aprendizaje automático ajusta la "
           "proyección. El sistema solo recomienda: la decisión es del productor.")
+
+    d.add_heading("3b. Componente complementario: «Sopó Cuida el Agua»", 2)
+    texto(d, "Para que el proyecto llegue más allá del predio piloto, se desarrolló un componente de apropiación social articulado "
+          "con el PUEAA (Ley 373 de 1997, artículo 12): calculadora de riego para huertas caseras, calculadora de agua lluvia, reto "
+          "de ahorro en el hogar, quiz y experimento escolar, plegable para ferias y mercados campesinos, taller «El suelo habla» "
+          "para colegios (PRAE) y una propuesta de trabajo con Emsersopó. Se adjunta la estrategia completa.")
+    texto(d, ("b", "Actividades realizadas: "), ("c", "[COMPLETAR si hiciste alguna: taller, stand o reunión, con fecha, lugar y número de personas; si no, borrar esta línea]"))
 
     d.add_heading("4. Dificultades y cómo se resolvieron", 1)
     tabla(d, ["Dificultad", "Mitigación"], [

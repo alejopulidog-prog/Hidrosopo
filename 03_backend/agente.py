@@ -35,6 +35,11 @@ from datetime import datetime, timedelta, date
 from dataclasses import dataclass
 from typing import Optional
 
+try:
+    from ia import conocimiento, llm_opcional
+except Exception:          # el agente funciona aunque falten estos módulos
+    conocimiento = llm_opcional = None
+
 
 # ============================================================
 #  Normalización
@@ -1027,6 +1032,33 @@ def responder_agradecimiento() -> dict:
     return {"texto": random.choice(respuestas), "accion": None}
 
 
+def responder_conocimiento(e: dict) -> dict:
+    return {"texto": e["respuesta"], "accion": None, "fuente": e.get("fuente"),
+            "sugerencias": e.get("seguir", []), "tema": e["id"]}
+
+
+# Intenciones que una pregunta general («¿qué es…?», «¿por qué…?») puede
+# reemplazar por una respuesta de la base de conocimiento. Las que registran
+# algo (riegos, pastoreo, caudal) nunca se reemplazan.
+REEMPLAZABLES = {"desconocido", "consultar_por_que", "ayuda", "saludo", "identidad",
+                 "consultar_riego", "consultar_lluvia", "consultar_ahorro", "consultar_pastoreo",
+                 "reportar_problema"}
+
+
+def _contexto_para_llm(contexto: dict) -> dict:
+    rec = contexto.get("recomendacion") or {}
+    predio = contexto.get("predio")
+    return {
+        "predio": getattr(predio, "nombre", None),
+        "cultivo": rec.get("perfil") or getattr(predio, "perfil_cultivo", None),
+        "decision": (rec.get("decision") or {}).get("accion"),
+        "razon": (rec.get("decision") or {}).get("razon"),
+        "pct_agua_disponible": (rec.get("estado_suelo") or {}).get("porcentaje_agua_disponible"),
+        "lluvia_7d_mm": (rec.get("clima") or {}).get("lluvia_proxima_7d_mm"),
+        "fuente_datos": rec.get("fuente_datos"),
+    }
+
+
 def responder_desconocido() -> dict:
     respuestas = [
         "No le entendí bien. Puede preguntarme si debe regar hoy, cuánta agua "
@@ -1185,6 +1217,25 @@ def conversar(mensaje: str, contexto: dict) -> dict:
             "accion": None},
         "ayuda":             lambda: responder_ayuda(),
     }
+
+    # ---- Preguntas de conocimiento general: respuesta de experto ----
+    if conocimiento is not None and intencion.tipo in REEMPLAZABLES:
+        e, puntos = conocimiento.buscar(mensaje)
+        if e and (intencion.tipo == "desconocido" or puntos >= 100 or
+                  (conocimiento.es_pregunta_general(mensaje) and puntos >= 8)):
+            salida = responder_conocimiento(e)
+            salida["intencion"] = "consulta_experta"
+            salida["confianza"] = min(0.99, 0.6 + puntos / 100)
+            return salida
+
+    # ---- Nada coincide: si hay un LLM configurado, que redacte con los datos ----
+    if intencion.tipo == "desconocido" and llm_opcional is not None:
+        texto = llm_opcional.responder_pregunta(mensaje, _contexto_para_llm(contexto),
+                                                contexto.get("historial") or [])
+        if texto:
+            return {"texto": texto, "accion": None, "intencion": "conversacion_llm",
+                    "confianza": 0.6, "fuente": "Asistente con IA generativa · cifras del sistema",
+                    "sugerencias": ["¿Riego hoy?", "¿En qué se basa la recomendación?"]}
 
     salida = despacho.get(intencion.tipo, responder_desconocido)()
     salida["intencion"] = intencion.tipo

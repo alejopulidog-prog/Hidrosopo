@@ -1,13 +1,13 @@
 {
-  "name": "HidroSopó — Monitoreo del agua",
+  "name": "HidroSopó · Cuidemos el agua",
   "short_name": "HidroSopó",
   "description": "Recomendaciones de riego basadas en sensores del predio. Municipio de Sopó, Cundinamarca.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait-primary",
-  "background_color": "#2A2117",
-  "theme_color": "#2A2117",
+  "background_color": "#16607F",
+  "theme_color": "#16607F",
   "lang": "es-CO",
   "categories": [
     "productivity",
@@ -35,10 +35,31 @@
   ],
   "shortcuts": [
     {
-      "name": "Cuénteme",
-      "short_name": "Cuénteme",
-      "description": "Reportar un riego o preguntar algo",
+      "name": "Hablar con el asistente",
+      "short_name": "Asistente",
       "url": "./index.html?charla=1",
+      "icons": [
+        {
+          "src": "iconos/icono-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Laboratorio",
+      "short_name": "Laboratorio",
+      "url": "./gemelo.html",
+      "icons": [
+        {
+          "src": "iconos/icono-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Sopó Cuida el Agua",
+      "short_name": "Comunidad",
+      "url": "./comunidad.html",
       "icons": [
         {
           "src": "iconos/icono-192.png",

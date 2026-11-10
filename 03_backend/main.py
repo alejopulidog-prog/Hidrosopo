@@ -39,7 +39,7 @@ import costos
 app = FastAPI(
     title="HidroSopó API",
     description="Monitoreo IoT y optimización del uso del agua — Sopó, Cundinamarca",
-    version="1.2.0",
+    version="1.4.0",
 )
 
 app.add_middleware(
@@ -417,6 +417,9 @@ def conversar(predio_id: int, entrada: MensajeEntrada, db: Session = Depends(get
         "predio": predio, "recomendacion": rec, "sectores": sectores,
         "ahorro": _ahorro(db, predio_id), "esperando": esperando,
         "pendiente": pendiente, "sector_actual": sector_actual,
+        "historial": [{"de": m.de, "texto": m.texto} for m in
+                      reversed(db.query(Mensaje).filter(Mensaje.predio_id == predio_id)
+                               .order_by(desc(Mensaje.ts)).limit(6).all())],
     })
 
     # ---- Ejecutar la acción que el agente decidió ----
@@ -474,6 +477,8 @@ def conversar(predio_id: int, entrada: MensajeEntrada, db: Session = Depends(get
     db.commit()
 
     return {"respuesta": salida["texto"],
+            "sugerencias": salida.get("sugerencias"),
+            "fuente": salida.get("fuente"),
             "intencion": salida.get("intencion"),
             "confianza": salida.get("confianza"),
             "accion_ejecutada": accion,

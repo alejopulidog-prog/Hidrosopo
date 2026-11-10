@@ -11,4 +11,3 @@ __pycache__/
 09_entregables/*.pptx
 09_entregables/datos_personales.json
 02_firmware/src/secretos.h
-.DS_Store

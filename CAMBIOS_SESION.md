@@ -1,3 +1,24 @@
+# Versión 1.4.0 (10/11/2026): modo oscuro, asistente experto y educación completa
+
+- **Modo oscuro** automático (sigue al celular) o manual (menú → Automático / Claro / Oscuro). De noche la escena muestra luna y estrellas.
+- **Asistente experto:** base de conocimiento con 32 temas revisados (`03_backend/ia/conocimiento.json`, misma copia en la app). Responde sin internet, cita la fuente y sugiere la siguiente pregunta. Nunca le quita el turno a un registro de riego. Opcional: conversación libre con IA generativa (Groq o Gemini) cuando ninguna regla aplica, siempre con las cifras del sistema.
+- **Sopó Cuida el Agua:** nueva pestaña «Pregúntele al experto» (buscador y temas), quiz con banco de 16 preguntas y rondas de 8 al azar, certificado «Guardián del Agua» y plan semanal de riego de la huerta.
+- **117 pruebas automáticas.**
+
+---
+
+# Versión 1.3.0 (10/11/2026): app más completa
+
+- **Predios:** el predio piloto del servidor (gemelo digital, «en línea») y los 4 de demostración (La Esperanza, El Retiro, La Huerta, Los Rosales) se ven juntos, cada uno con su etiqueta.
+- **Ahorro de la red:** tarjeta con el total en pesos, m³ y proyección anual (con animación), y hoja de detalle por predio.
+- **Menú:** laboratorio, Sopó Cuida el Agua, resultados, asistente e informe PUEAA.
+- **Asistente:** saludo con el estado de la tierra, «¿Cuánto ahorra la red?», «¿Qué es HidroSopó?» y sugerencias nuevas.
+- **Ícono nuevo** (gota con brote sobre capas de suelo), pensado para pantallas claras y oscuras; generado con `04_dashboard/iconos/generar_iconos.py`.
+- **Corrección importante:** `scikit-learn==1.8.0`, la misma versión con la que se guardaron los modelos (con 1.6.0 la recomendación fallaba en Render).
+- Una gráfica que falle ya no deja la pantalla a medias.
+
+---
+
 # Versión 1.2.0 (10/11/2026): despliegue profesional
 
 - `render.yaml`, `netlify.toml` (proxy `/api/*` → Render, direcciones cortas `/laboratorio`, `/agua`, `/resultados`, cabeceras de seguridad y caché), `.github/workflows/` (pruebas en cada push y «mantener activo»), `03_backend/.env.example`.

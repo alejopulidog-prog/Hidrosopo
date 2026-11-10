@@ -7,7 +7,16 @@
 <meta name="theme-color" id="metaTema" content="#2A2117">
 <meta name="description" content="Cuánta agua tiene su tierra hoy, y si necesita regar. Sopó, Cundinamarca.">
 <link rel="manifest" href="manifest.json">
+<script>
+/* Tema: automático (sigue al celular), claro u oscuro. Se aplica antes de pintar. */
+(function(){
+  var pref = 'auto'; try{ pref = localStorage.getItem('hs_tema') || 'auto'; }catch(e){}
+  var oscuro = pref === 'oscuro' || (pref === 'auto' && window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches);
+  document.documentElement.setAttribute('data-tema', oscuro ? 'oscuro' : 'claro');
+})();
+</script>
 <link rel="apple-touch-icon" href="iconos/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="48x48" href="iconos/favicon-48.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="HidroSopó">
@@ -440,6 +449,88 @@ input[type=range]::-moz-range-thumb{width:30px;height:30px;border-radius:50%;bac
 @media(prefers-reduced-motion:reduce){
   *{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important}
 }
+
+/* ---------- v1.3: marca, menú, red de predios ---------- */
+.marca-app img{width:34px;height:34px;border-radius:10px;flex:none;box-shadow:0 4px 12px -4px rgba(14,90,120,.55)}
+.marca-app b{font-size:1.12rem}
+.marca-app small{display:block;font-size:.66rem;color:var(--humo);font-weight:500;letter-spacing:.02em;margin-top:-2px}
+.cabecera-der{display:flex;align-items:center;gap:.6rem}
+.btn-menu{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:var(--lienzo);border:1px solid var(--linea)}
+.btn-menu svg{width:20px;height:20px}
+.ficha .fuente{display:inline-flex;align-items:center;gap:.25rem;font-size:.62rem;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:var(--humo)}
+.ficha .fuente i{width:6px;height:6px;border-radius:50%;background:#B0AFA6}
+.ficha .fuente.vivo{color:#1F7A55} .ficha .fuente.vivo i{background:#22A06B;animation:latir 2.6s ease-in-out infinite}
+.red{margin:0 1.1rem .8rem;padding:.85rem 1rem;border-radius:16px;color:#F3F7F4;
+  background:radial-gradient(120% 140% at 100% 0%,#1F8BB8 0%,#16607F 45%,#2A2117 100%);
+  display:flex;align-items:center;gap:.9rem;text-align:left;width:calc(100% - 2.2rem);box-shadow:0 10px 26px -14px rgba(14,70,95,.8);
+  position:relative;overflow:hidden}
+.red::after{content:"";position:absolute;right:-30px;bottom:-40px;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,.06)}
+.red .red-cifra{font-family:var(--display);font-weight:800;font-size:1.65rem;letter-spacing:-.03em;line-height:1;font-variant-numeric:tabular-nums}
+.red .txt{font-size:.78rem;line-height:1.35;color:#CFE3EA}
+.red .txt b{color:#fff}
+.red .ir{margin-left:auto;font-size:1.3rem;opacity:.8;flex:none}
+.hoja{position:fixed;left:0;right:0;bottom:0;z-index:31;max-width:620px;margin:0 auto;background:var(--papel);
+  border-radius:20px 20px 0 0;max-height:88vh;overflow-y:auto;transform:translateY(101%);
+  transition:transform .3s cubic-bezier(.32,.72,0,1);box-shadow:0 -12px 44px -16px rgba(23,19,15,.5);
+  padding:1.3rem 1.1rem calc(1.2rem + env(safe-area-inset-bottom))}
+.hoja.abierta{transform:translateY(0)}
+.hoja .agarre{display:block;width:38px;height:4px;border-radius:99px;background:var(--linea);margin:-.6rem auto .9rem}
+.hoja h2{font-family:var(--display);font-size:1.25rem;letter-spacing:-.02em;margin-bottom:.2rem}
+.hoja .sub{font-size:.82rem;color:var(--humo);margin-bottom:1rem}
+.menu-lista{display:grid;gap:.5rem}
+.menu-lista a,.menu-lista button{display:flex;align-items:center;gap:.85rem;padding:.8rem .9rem;border-radius:14px;border:1px solid var(--linea);background:var(--papel);text-decoration:none;color:inherit;text-align:left;width:100%}
+.menu-lista a:active,.menu-lista button:active{background:var(--lienzo)}
+.menu-lista .ic{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;flex:none;font-size:1.15rem}
+.menu-lista b{display:block;font-size:.95rem}
+.menu-lista small{display:block;font-size:.76rem;color:var(--humo);line-height:1.35}
+.menu-pie{font-size:.74rem;color:var(--humo);margin-top:1rem;line-height:1.45}
+.red-total{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem;margin-bottom:1rem}
+.red-total div{background:var(--lienzo);border-radius:12px;padding:.7rem}
+.red-total b{display:block;font-family:var(--display);font-size:1.15rem;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.red-total span{font-size:.7rem;color:var(--humo)}
+.red-fila{display:grid;grid-template-columns:1fr auto;gap:.2rem .8rem;padding:.6rem 0;border-bottom:1px solid var(--linea);font-size:.86rem}
+.red-fila b{font-variant-numeric:tabular-nums}
+.red-fila .barra{grid-column:1/-1;height:7px;border-radius:99px;background:var(--lienzo);overflow:hidden}
+.red-fila .barra i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#2E7EA6,#6F9438);width:0;transition:width .7s cubic-bezier(.32,.72,0,1)}
+.red-fila small{color:var(--humo);font-size:.72rem}
+.chip-fuente{display:inline-block;font-size:.66rem;font-weight:700;padding:.1rem .45rem;border-radius:99px;background:#FBF0DC;color:#7A5410;margin-left:.3rem;vertical-align:middle}
+.chip-fuente.vivo{background:#DDF3E8;color:#1F7A55}
+
+/* ---------- Modo oscuro: la noche en la Sabana ---------- */
+html[data-tema="oscuro"]{
+  --papel:#17140F; --lienzo:#0E0C09; --carbon:#F2EDE4; --humo:#A8A194; --linea:#2D2720;
+  --tierra-honda:#0B0907; --sombra:0 1px 2px rgba(0,0,0,.3), 0 10px 28px -12px rgba(0,0,0,.7);
+  color-scheme:dark;
+}
+html[data-tema="oscuro"] body[data-tipo="pastoreo"]{--acento:#95C25B;--acento-hondo:#BBDD8E;--acento-tenue:#1E2914}
+html[data-tema="oscuro"] body[data-tipo="papa"]{--acento:#A98BD6;--acento-hondo:#CDB8EE;--acento-tenue:#251C33}
+html[data-tema="oscuro"] body[data-tipo="hortalizas"]{--acento:#4FBF93;--acento-hondo:#8EE0BF;--acento-tenue:#11271E}
+html[data-tema="oscuro"] body[data-tipo="flores"]{--acento:#E2708F;--acento-hondo:#F4A9BE;--acento-tenue:#32161F}
+html[data-tema="oscuro"] .envoltura{box-shadow:none}
+html[data-tema="oscuro"] .barra-abajo{background:linear-gradient(to top,var(--papel) 68%,rgba(23,20,15,0))}
+html[data-tema="oscuro"] .aviso.offline{background:#3A2C14;color:#F0CF8A}
+html[data-tema="oscuro"] .aviso.instalar{background:#22303A;color:#E6F1F6}
+html[data-tema="oscuro"] .chip-fuente{background:#3A2C14;color:#F0CF8A}
+html[data-tema="oscuro"] .chip-fuente.vivo,html[data-tema="oscuro"] .ficha .fuente.vivo{background:transparent;color:#5FD39C}
+html[data-tema="oscuro"] .chip-fuente.vivo{background:#12301F}
+html[data-tema="oscuro"] .red{box-shadow:0 10px 30px -14px rgba(31,139,184,.55)}
+html[data-tema="oscuro"] .menu-lista .ic{background:#24201A !important}
+html[data-tema="oscuro"] .saludo-flotante{background:#26211B;color:var(--carbon);border-color:var(--linea)}
+html[data-tema="oscuro"] .burbuja.productor{background:#2E7EA6;color:#fff}
+html[data-tema="oscuro"] .barra-abajo .principal{background:linear-gradient(135deg,#2E8FBB,#1B6488);color:#fff}
+html[data-tema="oscuro"] img,html[data-tema="oscuro"] .escena{filter:none}
+
+/* ---------- Asistente ---------- */
+.burbuja .fuente-b{display:block;margin-top:.45rem;font-size:.7rem;color:var(--humo);font-weight:500;letter-spacing:.01em}
+.burbuja .fuente-b::before{content:"◆ ";color:var(--agua)}
+.charla-cabeza .avatar{background:linear-gradient(135deg,#1F8BB8,#16607F)}
+.charla-cabeza .avatar svg path{fill:#fff}
+.charla-cabeza small .en-linea{color:#1F9A63;font-weight:600}
+.temas{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.55rem}
+.temas button{font-size:.78rem;padding:.38rem .7rem;border-radius:99px;border:1px solid var(--linea);background:var(--papel);color:var(--carbon)}
+.seg-tema{display:grid;grid-template-columns:repeat(3,1fr);gap:.3rem;background:var(--lienzo);border:1px solid var(--linea);border-radius:12px;padding:.25rem;margin-top:.6rem}
+.seg-tema button{padding:.5rem;border-radius:9px;font-size:.82rem;font-weight:600;color:var(--humo)}
+.seg-tema button[aria-pressed="true"]{background:var(--papel);color:var(--carbon);box-shadow:0 1px 3px rgba(0,0,0,.12)}
 </style>
 </head>
 <body data-tipo="pastoreo">
@@ -448,16 +539,24 @@ input[type=range]::-moz-range-thumb{width:30px;height:30px;border-radius:50%;bac
 
   <header class="cabecera">
     <span class="marca-app">
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M12 2.5c3.6 4.3 6.2 7.8 6.2 11a6.2 6.2 0 1 1-12.4 0c0-3.2 2.6-6.7 6.2-11z" fill="var(--agua)"/>
-        <path d="M8.6 14.4c0 2.2 1.5 3.7 3.4 3.9" stroke="#fff" stroke-width="1.4" fill="none" stroke-linecap="round" opacity=".8"/>
-      </svg>
-      <b>HidroSopó</b>
+      <img src="iconos/icono-192.png" alt="" width="34" height="34">
+      <span><b>HidroSopó</b><small>Cuidemos el agua</small></span>
     </span>
-    <span class="pulso vivo" id="pulso"><i></i><span id="pulsoTexto">conectando</span></span>
+    <span class="cabecera-der">
+      <span class="pulso vivo" id="pulso"><i></i><span id="pulsoTexto">conectando</span></span>
+      <button class="btn-menu" id="btnMenu" aria-label="Abrir el menú">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h10"/></svg>
+      </button>
+    </span>
   </header>
 
   <nav class="predios" id="predios" aria-label="Sus predios"></nav>
+
+  <button class="red" id="btnRed" type="button" aria-label="Ver el ahorro de toda la red">
+    <span><span class="red-cifra" id="redCifra">$0</span></span>
+    <span class="txt" id="redTxt">ahorrados en la red de predios</span>
+    <span class="ir" aria-hidden="true">›</span>
+  </button>
 
   <div class="aviso instalar" id="avisoInstalar" hidden>
     <span id="textoInstalar">Instale la app para abrirla sin señal.</span>
@@ -584,6 +683,35 @@ input[type=range]::-moz-range-thumb{width:30px;height:30px;border-radius:50%;bac
 
 <div class="velo" id="velo" hidden></div>
 
+<section class="hoja" id="hojaMenu" role="dialog" aria-modal="true" aria-label="Menú" hidden>
+  <span class="agarre"></span>
+  <h2>HidroSopó</h2>
+  <p class="sub">Monitoreo del agua con sensores e inteligencia artificial · Sopó, Cundinamarca</p>
+  <div class="menu-lista">
+    <button type="button" id="menuRed"><span class="ic" style="background:#DDEFF6">💧</span><span><b>Ahorro de la red</b><small>Cuánta agua y cuánta plata se ahorra en todos los predios</small></span></button>
+    <a href="gemelo.html"><span class="ic" style="background:#E8F1DC">🧪</span><span><b>Laboratorio</b><small>Simulador de riego, pruebas en banco y estado del proyecto</small></span></a>
+    <a href="comunidad.html"><span class="ic" style="background:#E1EEF4">🌱</span><span><b>Sopó Cuida el Agua</b><small>Mi huerta, agua lluvia, reto del hogar, escuela y PUEAA</small></span></a>
+    <a href="resultados.html"><span class="ic" style="background:#F8E8DD">📊</span><span><b>Resultados del proyecto</b><small>Ahorro por temporada, humedad y modelo de IA</small></span></a>
+    <button type="button" id="menuCharla"><span class="ic" style="background:#EFEAF6">💬</span><span><b>Hablar con el asistente</b><small>«¿Riego hoy?», «Regué 40 minutos», «¿Va a caer helada?»</small></span></button>
+    <button type="button" id="menuReporte"><span class="ic" style="background:#F1EFEA">📄</span><span><b>Informe PUEAA del predio</b><small>Indicadores de los últimos 30 días para Emsersopó</small></span></button>
+  </div>
+  <div class="seg-tema" role="group" aria-label="Apariencia">
+    <button type="button" data-tema="auto">Automático</button>
+    <button type="button" data-tema="claro">Claro</button>
+    <button type="button" data-tema="oscuro">Oscuro</button>
+  </div>
+  <p class="menu-pie">Proyecto de Ciencia, Tecnología e Innovación · Incentivo FOES 2026-II · Secretaría de CTeI de Sopó. Las recomendaciones son una ayuda: la decisión de regar es suya.</p>
+</section>
+
+<section class="hoja" id="hojaRed" role="dialog" aria-modal="true" aria-label="Ahorro de la red" hidden>
+  <span class="agarre"></span>
+  <h2>Ahorro de la red</h2>
+  <p class="sub" id="redSub"></p>
+  <div class="red-total" id="redTotales"></div>
+  <div id="redFilas"></div>
+  <p class="menu-pie" id="redNota"></p>
+</section>
+
 <section class="charla" id="charla" role="dialog" aria-modal="true" aria-label="Conversación con el sistema" hidden>
   <header class="charla-cabeza">
     <span class="agarre"></span>
@@ -593,7 +721,7 @@ input[type=range]::-moz-range-thumb{width:30px;height:30px;border-radius:50%;bac
       </svg>
     </span>
     <span>
-      <h2 id="charlaTitulo">Cuénteme</h2>
+      <h2 id="charlaTitulo">Asistente HidroSopó</h2>
       <small id="charlaSub">Dígame cuánto regó o pregúnteme lo que sea</small>
     </span>
     <button class="cerrar" id="charlaCerrar" aria-label="Cerrar la conversación">×</button>
@@ -774,6 +902,9 @@ function cielo(hora, lluviaMm, nublado){
   if(noche){
     astro = `<circle cx="326" cy="40" r="15" fill="#E8E5DC" opacity=".9"/>
              <circle cx="319" cy="35" r="15" fill="${alto}"/>`;
+    if(lluviaMm <= 0.5) for(let i = 0; i < 22; i++){            // estrellas de la Sabana
+      astro += `<circle cx="${(rnd(i+40)*400).toFixed(0)}" cy="${(rnd(i+80)*95).toFixed(0)}" r="${(0.5+rnd(i+120)*0.9).toFixed(1)}" fill="#FFF" opacity="${(0.35+rnd(i+160)*0.5).toFixed(2)}"/>`;
+    }
   }else if(lluviaMm <= 0.5){
     astro = `<circle cx="${ax.toFixed(0)}" cy="${ay.toFixed(0)}" r="20" fill="#F6E2A8" opacity=".32"/>
              <circle cx="${ax.toFixed(0)}" cy="${ay.toFixed(0)}" r="12.5" fill="#F7DC8E"/>`;
@@ -1085,7 +1216,7 @@ function conectarSensores(){
 
 const DEMO = [
 {
-  id:1, nombre:'La Esperanza', tipo:'pastoreo', vereda:'Vereda Meusa',
+  id:101, nombre:'La Esperanza', tipo:'pastoreo', vereda:'Vereda Meusa',
   area_ha:12, area_turno_ha:0.4, caudal_lps:6.5, sistema:'aspersión',
   energia:'electrica', paga_agua:false, altura_bombeo_m:28, costo_kwh:850,
   sectores:[{orden:1,nombre:'franja de arriba',area_ha:0.4,caudal_lps:6.5},
@@ -1107,7 +1238,7 @@ const DEMO = [
     ejes:['sem 1','sem 2','sem 3','sem 4','sem 5','sem 6','sem 7','hoy']},
 },
 {
-  id:2, nombre:'El Retiro', tipo:'papa', vereda:'Vereda Aposentos',
+  id:102, nombre:'El Retiro', tipo:'papa', vereda:'Vereda Aposentos',
   area_ha:3.2, area_turno_ha:0.8, caudal_lps:9, sistema:'aspersión',
   energia:'electrica', paga_agua:true, tarifa_agua_m3:1700, altura_bombeo_m:35, costo_kwh:850,
   sectores:[{orden:1,nombre:'lote de la casa',area_ha:0.8,caudal_lps:9},
@@ -1130,7 +1261,7 @@ const DEMO = [
     ejes:['0','20','40','60','78','95','110','125']},
 },
 {
-  id:3, nombre:'La Huerta', tipo:'hortalizas', vereda:'Vereda Pueblo Viejo',
+  id:103, nombre:'La Huerta', tipo:'hortalizas', vereda:'Vereda Pueblo Viejo',
   area_ha:0.9, area_turno_ha:0.25, caudal_lps:2.2, sistema:'goteo',
   energia:'diesel', paga_agua:false, altura_bombeo_m:22, costo_diesel_litro:13400, consumo_diesel_lph:1.6,
   sectores:[{orden:1,nombre:'camas del invernadero',area_ha:0.25,caudal_lps:2.2},
@@ -1152,7 +1283,7 @@ const DEMO = [
     ejes:['día 1','día 15','día 30','día 41','día 50','día 58']},
 },
 {
-  id:4, nombre:'Los Rosales', tipo:'flores', vereda:'Vereda Hato Grande',
+  id:104, nombre:'Los Rosales', tipo:'flores', vereda:'Vereda Hato Grande',
   area_ha:1.4, area_turno_ha:0.35, caudal_lps:4, sistema:'goteo',
   energia:'electrica', paga_agua:true, tarifa_agua_m3:2100, altura_bombeo_m:18, costo_kwh:920,
   sectores:[{orden:1,nombre:'nave 1',area_ha:0.35,caudal_lps:4},
@@ -1226,9 +1357,11 @@ const TITULARES = {
 function pintarFichas(lista){
   $('#predios').innerHTML = lista.map(p => {
     const t = TIPOS[p.tipo] || TIPOS.pastoreo;
+    const fuente = p.fuente === 'servidor'
+      ? '<span class="fuente vivo"><i></i>en línea</span>' : '<span class="fuente"><i></i>demostración</span>';
     return `<button class="ficha" data-id="${p.id}" aria-current="${p.id === predioId}">
       <span class="mini">${miniatura(p.tipo)}</span>
-      <span>${p.nombre}<small>${t.etiqueta}${p.area_ha ? ' · ' + p.area_ha + ' ha' : ''}</small></span>
+      <span>${p.nombre}<small>${t.etiqueta}${p.area_ha ? ' · ' + p.area_ha + ' ha' : ''}</small>${fuente}</span>
     </button>`;
   }).join('');
   $$('.ficha').forEach(b => b.onclick = () => {
@@ -1477,6 +1610,9 @@ function pintarSectores(lista, nombrePredio){
    ══════════════════════════════════════════════════════════════ */
 
 function comun(){
+  const cv = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const HUMO = cv('--humo') || '#6A6961', LINEA = cv('--linea') || '#E2E2DA', LIENZO = cv('--lienzo') || '#EFF1EC';
+  if(window.Chart){ Chart.defaults.color = HUMO; }
   return {
     responsive:true, maintainAspectRatio:false,
     interaction:{mode:'index', intersect:false},
@@ -1485,10 +1621,10 @@ function comun(){
       tooltip:{backgroundColor:'#17130F', padding:10, cornerRadius:10, titleFont:{family:'Inter',size:11},
                bodyFont:{family:'Inter',size:12}, displayColors:true, boxPadding:4}
     },
-    scales:{x:{ticks:{maxTicksLimit:6, font:{family:'Inter',size:10}, color:'#6A6961'}, grid:{display:false},
-               border:{color:'#E2E2DA'}},
-            y:{ticks:{font:{family:'Inter',size:10}, color:'#6A6961'},
-               grid:{color:'#EFF1EC'}, border:{display:false}}}
+    scales:{x:{ticks:{maxTicksLimit:6, font:{family:'Inter',size:10}, color:HUMO}, grid:{display:false},
+               border:{color:LINEA}},
+            y:{ticks:{font:{family:'Inter',size:10}, color:HUMO},
+               grid:{color:LIENZO}, border:{display:false}}}
   };
 }
 
@@ -1504,6 +1640,9 @@ function grafica(id, cfg){
 }
 
 function pintarGraficas(s, consumo, r){
+  try{ return pintarGraficasInterno(s, consumo, r); }catch(e){ console.warn('[gráficas]', e); }
+}
+function pintarGraficasInterno(s, consumo, r){
   const t = TIPOS[(r.predio && r.predio.tipo) || 'pastoreo'];
   const et = s.suelo.map(x => fechaLarga(x.ts, {day:'2-digit', month:'short', hour:'2-digit'}));
   const ctx = document.getElementById('gHumedad').getContext('2d');
@@ -1515,7 +1654,7 @@ function pintarGraficas(s, consumo, r){
       {label:'30 cm', data:s.suelo.map(x=>x.h2), borderColor:t.color, borderWidth:2, pointRadius:0, tension:.34},
       {label:'45 cm', data:s.suelo.map(x=>x.h3), borderColor:'#8A7052', borderWidth:2, pointRadius:0, borderDash:[5,4], tension:.34}]},
     options:{...comun(), scales:{...comun().scales,
-      y:{...comun().scales.y, title:{display:true, text:'humedad (%)', font:{family:'Inter',size:11}, color:'#6A6961'}}}}
+      y:{...comun().scales.y, title:{display:true, text:'humedad (%)', font:{family:'Inter',size:11}, color:(getComputedStyle(document.documentElement).getPropertyValue('--humo').trim()||'#6A6961')}}}}
   });
 
   grafica('gClima', {
@@ -1523,10 +1662,10 @@ function pintarGraficas(s, consumo, r){
       {type:'bar', label:'Lluvia (mm)', data:s.suelo.map(x=>x.lluvia), backgroundColor:'#5AA8C9', borderRadius:3, yAxisID:'y1'},
       {type:'line', label:'Temperatura (°C)', data:s.suelo.map(x=>x.ta), borderColor:'#C4622D', borderWidth:2, pointRadius:0, tension:.34, yAxisID:'y'}]},
     options:{...comun(), scales:{...comun().scales,
-      y:{...comun().scales.y, position:'left', title:{display:true, text:'°C', font:{family:'Inter',size:11}, color:'#6A6961'}},
+      y:{...comun().scales.y, position:'left', title:{display:true, text:'°C', font:{family:'Inter',size:11}, color:(getComputedStyle(document.documentElement).getPropertyValue('--humo').trim()||'#6A6961')}},
       y1:{position:'right', beginAtZero:true, grid:{drawOnChartArea:false}, border:{display:false},
-          ticks:{font:{family:'Inter',size:10}, color:'#6A6961'},
-          title:{display:true, text:'mm', font:{family:'Inter',size:11}, color:'#6A6961'}}}}
+          ticks:{font:{family:'Inter',size:10}, color:(getComputedStyle(document.documentElement).getPropertyValue('--humo').trim()||'#6A6961')},
+          title:{display:true, text:'mm', font:{family:'Inter',size:11}, color:(getComputedStyle(document.documentElement).getPropertyValue('--humo').trim()||'#6A6961')}}}}
   });
 
   const mitad = Math.floor(consumo.length/2);
@@ -1537,7 +1676,7 @@ function pintarGraficas(s, consumo, r){
        backgroundColor:consumo.map((_,i) => i < mitad ? '#C9C4B6' : t.color), borderRadius:4}]},
     options:{...comun(), plugins:{...comun().plugins, legend:{display:false}},
       scales:{...comun().scales, y:{...comun().scales.y, beginAtZero:true,
-        title:{display:true, text:'m³ por día', font:{family:'Inter',size:11}, color:'#6A6961'}}}}
+        title:{display:true, text:'m³ por día', font:{family:'Inter',size:11}, color:(getComputedStyle(document.documentElement).getPropertyValue('--humo').trim()||'#6A6961')}}}}
   });
 
   const q = r.cuarta;
@@ -1656,6 +1795,8 @@ const PATRONES = [
   ['saludo',0.7,[/^(hola|buenas|buenos dias|buenas tardes|que mas|hey|holi)\b/]],
   ['consultar_helada',0.93,[/\bhelad[ao]s?\b/, /\bescarcha\b/, /\b(va a|va|esta) (hacer|caer) (mucho |)frio\b/, /\bse (va a |)quem(a|ar|e) (el pasto|la papa|el cultivo)\b/]],
   ['consultar_tiempo_riego',0.94,[/\bcuant[oa]s? (tiempo|minutos|horas|rato)\b.*\b(rieg|reg|prend|bomba)/, /\b(por|durante) cuant[oa]s? (tiempo|minutos|horas)\b/, /\bcuanta agua (le |)(echo|pongo|aplico|necesita)\b/]],
+  ['resumen_red',0.95,[/\b(en total|toda la red|todos los predios|la red|entre todos)\b/, /\bcuanto (ahorramos|ahorra la red|se ahorra en total)\b/]],
+  ['proyecto',0.88,[/\b(que es hidrosopo|quien (te |lo |)hizo|de donde sale (esta app|esto)|el proyecto|laboratorio|gemelo digital)\b/]],
   ['ayuda',0.9,[/\b(ayuda|que puedo (preguntar|hacer)|como funciona|no entiendo|menu)\b/]],
 ];
 
@@ -1933,21 +2074,54 @@ function respTiempoRiego(){
   return {texto: t + '. Cuando termine, escríbame «ya regué» y lo anoto.', sugerencias:['Ya regué']};
 }
 
+function respRed(){
+  const r = resumenRed();
+  const mejor = r.filas.filter(f => f.a).sort((x,y) => ((y.a.cop_agua||0)+(y.a.cop_energia||0)) - ((x.a.cop_agua||0)+(x.a.cop_energia||0)))[0];
+  return {texto:`Entre los ${r.n} predios se ahorraron ${Math.round(r.m3)} m³ en 30 días, unos ${cop(r.pesos)}. A ese ritmo serían ${cop(r.anual)} al año.` +
+    (mejor ? ` El que más ahorra es ${mejor.p.nombre}: ${cop((mejor.a.cop_agua||0)+(mejor.a.cop_energia||0))}.` : '') +
+    ' Los predios de demostración muestran cómo se verá con caudalímetro; el predio en línea usa el gemelo digital.',
+    sugerencias:['¿Riego hoy?','¿Va a caer helada?','¿Qué es HidroSopó?']};
+}
+function respProyecto(){
+  return {texto:'HidroSopó es un proyecto de Ciencia, Tecnología e Innovación del municipio de Sopó. Unos sensores miden la humedad de la tierra a 15, 30 y 45 cm, yo miro el pronóstico y calculo con el método FAO-56 si toca regar y cuánto. Un modelo de inteligencia artificial predice cómo va a estar la tierra mañana y pasado. En el menú (las tres rayitas, arriba) está el laboratorio con el gemelo digital y «Sopó Cuida el Agua» para huertas, hogares y colegios.',
+    sugerencias:['¿Cuánto ahorra la red?','¿Riego hoy?','Ayuda']};
+}
+
 function respAyuda(){
   const t = T();
   return {texto:'Yo le sirvo para tres cosas:\n\n'+
     `• Contarme lo que hizo: "regué 40 minutos", "regué ${t.turno} 2", "no pude regar".\n`+
     '• Preguntarme: si riega hoy, cuánto tiempo prender la bomba, si va a llover o a caer helada, cuánto lleva ahorrado, cuánto le cuesta regar.\n'+
-    '• Reportarme problemas: un sensor caído, una fuga, o que usted ve la tierra distinta a lo que digo.\n\n'+
+    '• Reportarme problemas: un sensor caído, una fuga, o que usted ve la tierra distinta a lo que digo.\n'+
+    '• Preguntarme como a un agrónomo: goteo o aspersión, mejor hora para regar, heladas, agua lluvia, PUEAA, cómo funciona la IA…\n\n'+
     'Hábleme como le hable a un vecino. Yo me entiendo.'};
 }
 
 function respSaludo(){
   const d = datos.decision, hora = horaDelPredio();
   const saludo = hora < 12 ? 'Buenos días' : hora < 18 ? 'Buenas tardes' : 'Buenas noches';
-  return {texto:`${saludo}. ${TITULARES[d.accion] || ''}: ${d.razon}`,
-          sugerencias:['Regué 40 minutos','¿Cuánto llevo ahorrado?','¿Va a llover?']};
+  const e = datos.estado_suelo || {};
+  const pa = e.pct_agua_disponible ?? e.porcentaje_agua_disponible;
+  const agua = pa != null ? ` La tierra de ${predioActual.nombre || 'su predio'} tiene ${Math.round(pa)} % del agua que puede guardar.` : '';
+  return {texto:`${saludo}. ${TITULARES[d.accion] || ''}: ${d.razon}${agua} ¿En qué le ayudo?`,
+          sugerencias:['¿Riego hoy?','¿Cuánto tiempo prendo la bomba?','¿Va a caer helada?','¿Cuánto ahorra la red?']};
 }
+
+/* Base de conocimiento: la misma del servidor (03_backend/ia/conocimiento.json) */
+let KB = [];
+fetch('conocimiento.json').then(r => r.json()).then(j => { KB = j.entradas || []; }).catch(() => {});
+const normKB = t => ' ' + norm(t).replace(/[¿?¡!.,;:()«»"']/g, ' ').replace(/\s+/g, ' ').trim() + ' ';
+function buscarKB(mensaje){
+  const t = normKB(mensaje); let mejor = null, max = 0;
+  for(const e of KB){
+    let p = t.includes(normKB(e.titulo)) ? 100 : 0;
+    for(const c of e.claves){ if(t.includes(normKB(c))) p += norm(c).length; }
+    if(p > max){ max = p; mejor = e; }
+  }
+  return max >= 3 ? {e:mejor, p:max} : {e:null, p:0};
+}
+const PREGUNTA_GENERAL = /\b(que es|que son|que significa|para que sirve|para que|como funciona|como se|por que|porque|cual es|cuales son|como hago|como puedo|como regar|como riego|como recojo|como recoger|como guardo|como detecto|como se calcula|como evito|como protejo|cuanta lluvia|cuando necesita|necesito|explique|expliqueme|que pasa si|sirve|conviene|es mejor|deberia)\b/;
+const REEMPLAZABLES = new Set(['desconocido','consultar_por_que','ayuda','saludo','consultar_riego','consultar_lluvia','consultar_ahorro','consultar_pastoreo','reportar_problema','proyecto']);
 
 function responderLocal(mensaje){
   // Continuaciones: el productor está respondiendo algo que yo le pregunté
@@ -1972,6 +2146,11 @@ function responderLocal(mensaje){
   if(esperando === 'segundos_balde') return respMedirCaudal(mensaje);
 
   const i = entender(mensaje);
+  if(REEMPLAZABLES.has(i.tipo)){
+    const k = buscarKB(mensaje);
+    if(k.e && (i.tipo === 'desconocido' || k.p >= 100 || (PREGUNTA_GENERAL.test(norm(mensaje)) && k.p >= 8)))
+      return {texto:k.e.respuesta, fuente:k.e.fuente, sugerencias:k.e.seguir};
+  }
   switch(i.tipo){
     case 'registrar_riego':    return respRiego(i.datos.minutos, i.datos);
     case 'registrar_no_riego': return {texto:'Anotado, no hubo riego. Eso también me sirve: con lo que midan los sensores mañana le digo qué tanto le pesó.'};
@@ -1980,6 +2159,8 @@ function responderLocal(mensaje){
     case 'consultar_riego':    return respRecomendacion();
     case 'consultar_lluvia':   return respLluvia();
     case 'consultar_helada':   return respHelada();
+    case 'resumen_red':        return respRed();
+    case 'proyecto':           return respProyecto();
     case 'consultar_tiempo_riego': return respTiempoRiego();
     case 'consultar_pastoreo': return respCiclo();
     case 'consultar_costo':    return respCosto();
@@ -1988,9 +2169,11 @@ function responderLocal(mensaje){
     case 'discrepar':          return respDiscrepar();
     case 'saludo':             return respSaludo();
     case 'ayuda':              return respAyuda();
-    default:
-      return {texto:'No le entendí bien. Puede decirme cuánto regó ("regué 40 minutos"), preguntarme si riega hoy, si va a llover, o cuánto lleva ahorrado.',
-              sugerencias:['¿Riego hoy?','Regué 40 minutos','Ayuda']};
+    default: {
+      const temas = KB.length ? [...KB].sort(() => Math.random() - .5).slice(0,3).map(e => e.titulo) : ['¿Riego hoy?','Regué 40 minutos'];
+      return {texto:'Esa no la entendí bien. Puedo decirle si riega hoy y cuántos minutos, anotar lo que regó, avisarle de lluvia o helada, contarle cuánto lleva ahorrado, o explicarle temas de riego, suelo y clima. Por ejemplo:',
+              sugerencias:temas.concat(['Ayuda'])};
+    }
   }
 }
 
@@ -1998,10 +2181,11 @@ function responderLocal(mensaje){
    LA CONVERSACIÓN EN PANTALLA
    ══════════════════════════════════════════════════════════════ */
 
-function burbuja(texto, de){
+function burbuja(texto, de, fuente){
   const b = document.createElement('div');
   b.className = 'burbuja ' + de;
   b.textContent = texto;
+  if(fuente){ const f = document.createElement('small'); f.className = 'fuente-b'; f.textContent = fuente; b.appendChild(f); }
   const h = $('#hilo'); h.appendChild(b); h.scrollTop = h.scrollHeight;
   return b;
 }
@@ -2037,7 +2221,7 @@ function fichaChat(f){
 
 function pintarSugerencias(lista){
   const t = T();
-  const base = lista || ['Regué 40 minutos', '¿Riego hoy?', '¿Cuánto llevo ahorrado?',
+  const base = lista || ['¿Riego hoy?', 'Regué 40 minutos', '¿Cuánto tiempo prendo la bomba?', '¿Va a caer helada?', '¿Cuánto llevo ahorrado?', '¿Cuánto ahorra la red?',
     predioActual.tipo === 'pastoreo' ? '¿Cuándo meto los animales?' : '¿Cuándo cosecho?',
     '¿Cuánto cuesta regar?', 'Medir el caudal de mi bomba', 'Se dañó un sensor'];
   $('#sugerencias').innerHTML = base.map(x => `<button type="button">${x}</button>`).join('');
@@ -2048,7 +2232,8 @@ function abrirCharla(prellenado){
   $('#velo').hidden = false;
   $('#charla').hidden = false;
   requestAnimationFrame(() => { $('#velo').classList.add('ver'); $('#charla').classList.add('abierta'); });
-  $('#charlaSub').textContent = predioActual.nombre ? `${predioActual.nombre} · ${T().cultivo}` : '';
+  $('#charlaSub').innerHTML = (predioActual.nombre ? `${predioActual.nombre} · ${T().cultivo} · ` : '') +
+    (modoDemo ? 'demostración' : '<span class="en-linea">en línea</span>');
   if(!$('#hilo').children.length){
     const d = datos.decision;
     const motivo = d.razon.charAt(0).toLowerCase() + d.razon.slice(1);
@@ -2098,13 +2283,13 @@ async function enviar(texto){
   if(local){
     if(!modoDemo) burbuja('Sin señal ahora mismo, le respondo con la última lectura que bajé al teléfono.', 'sistema');
     const l = responderLocal(texto);
-    burbuja(l.texto, 'sistema');
+    burbuja(l.texto, 'sistema', l.fuente);
     fichaChat(l.ficha);
     pintarSugerencias(l.sugerencias);
     if(l.accion === 'registrar_riego') avisar('Riego anotado');
   }else{
-    burbuja(r.respuesta, 'sistema');
-    pintarSugerencias(r.sugerencias);
+    burbuja(r.respuesta, 'sistema', r.fuente);
+    pintarSugerencias(r.sugerencias || undefined);
     if(r.accion_ejecutada) setTimeout(cargar, 900);
   }
 }
@@ -2161,6 +2346,7 @@ async function cargar(){
     esperando = null; pendiente = {};
   }
   try{
+    if(esDemo(predioId)) throw new Error('predio de demostración');
     const [reco, s, consumo, sectores] = await Promise.all([
       pedir(`/api/v1/predios/${predioId}/recomendacion`),
       pedir(`/api/v1/predios/${predioId}/series?horas=168`),
@@ -2175,22 +2361,25 @@ async function cargar(){
     $('#avisoDemoPredio').textContent = datosSimulados ? ' — servidor en línea con datos simulados del gemelo digital' : '';
     series = s;
     pintar(reco); pintarPestanas(); pintarGraficas(s, consumo, reco); pintarSectores(sectores);
+    pintarRed();
   }catch(err){
     const guardado = localStorage.getItem('hidrosopo_cache_' + predioId);
-    if(guardado && !modoDemo && localStorage.getItem('hidrosopo_ultima')){
+    if(guardado && !esDemo(predioId) && localStorage.getItem('hidrosopo_ultima')){
       const {reco, s, consumo, sectores} = JSON.parse(guardado);
       marcarPulso('frio', 'sin señal');
       series = s; pintar(reco); pintarPestanas(); pintarGraficas(s, consumo, reco);
       pintarSectores(sectores || []);
     }else{
-      modoDemo = true;
-      marcarPulso('frio', 'datos de prueba');
+      modoDemo = true; datosSimulados = false;
+      marcarPulso(PREDIOS.some(x => x.fuente === 'servidor') ? 'vivo' : 'frio',
+                  PREDIOS.some(x => x.fuente === 'servidor') ? 'servidor en línea' : 'datos de prueba');
       const p = DEMO.find(x => x.id === predioId) || DEMO[0];
+      $('#avisoDemoPredio').textContent = ' — predio de demostración "' + p.nombre + '"';
       const r = armarDemo(p);
       series = seriesDemo(p);
       pintar(r); pintarPestanas(); pintarGraficas(series, series.consumo, r);
       pintarSectores(p.sectores || [], p.nombre);
-      $('#avisoDemoPredio').textContent = ' — predio simulado "' + p.nombre + '"';
+      $('#avisoDemoPredio').textContent = ' — predio de demostración "' + p.nombre + '"';
     }
   }finally{
     ordenarAvisos();
@@ -2202,16 +2391,80 @@ async function cargar(){
   }
 }
 
+/* Predios: los del servidor (predio piloto, gemelo digital o campo) van primero
+   y se marcan «en línea»; los cuatro de demostración siempre se muestran para
+   enseñar cómo se ve la app en distintos cultivos. */
+let PREDIOS = [];
+const esDemo = id => DEMO.some(x => x.id === id) && !PREDIOS.some(x => x.id === id && x.fuente === 'servidor');
 async function cargarPredios(){
+  let servidor = [];
   try{
     const ps = await pedir('/api/v1/predios');
-    if(!ps.length) throw new Error('vacío');
-    pintarFichas(ps.map(p => ({id:p.id, nombre:p.nombre, tipo:p.tipo || 'pastoreo', area_ha:p.area_ha})));
-    predioId = ps[0].id;
-  }catch{
-    pintarFichas(DEMO);
-    predioId = DEMO[0].id;
+    servidor = (ps || []).map(p => ({id:p.id, nombre:p.nombre, tipo:p.tipo || p.perfil_cultivo_tipo || 'pastoreo',
+                                     area_ha:p.area_ha, fuente:'servidor'}));
+  }catch{}
+  PREDIOS = servidor.concat(DEMO.map(p => ({...p, fuente:'demo'})));
+  pintarFichas(PREDIOS);
+  predioId = PREDIOS[0].id;
+  pintarRed();
+}
+
+/* ══════════════════════════════════════════════════════════════
+   RED DE PREDIOS · ahorro total
+   ══════════════════════════════════════════════════════════════ */
+function ahorroDe(p){
+  if(p.fuente === 'servidor'){
+    const a = (datos && datos.predio && datos.predio.id === p.id) ? datos.ahorro : null;
+    return a && a.m3 > 0 ? a : null;            // sin línea base no se inventa cifra
   }
+  return p.ahorro || null;
+}
+function resumenRed(){
+  const filas = PREDIOS.map(p => ({p, a:ahorroDe(p)}));
+  const con = filas.filter(f => f.a);
+  const pesos = con.reduce((s,f) => s + (f.a.cop_agua||0) + (f.a.cop_energia||0), 0);
+  const m3 = con.reduce((s,f) => s + f.a.m3, 0);
+  const anual = con.reduce((s,f) => s + (f.a.anual_cop||0), 0);
+  return {filas, pesos, m3, anual, n:PREDIOS.length};
+}
+function contar(el, hasta, formato, ms=900){
+  const t0 = performance.now(), desde = 0;
+  const paso = t => { const k = Math.min(1,(t-t0)/ms), e = 1-Math.pow(1-k,3);
+    el.textContent = formato(desde + (hasta-desde)*e); if(k<1) requestAnimationFrame(paso); };
+  requestAnimationFrame(paso);
+}
+function pintarRed(){
+  if(!PREDIOS.length) return;
+  const r = resumenRed();
+  contar($('#redCifra'), r.pesos, v => cop(v));
+  $('#redTxt').innerHTML = `ahorrados en 30 días en <b>${r.n} predios</b> · ${Math.round(r.m3)} m³ de agua · ≈ <b>${cop(r.anual)}</b> al año`;
+}
+function abrirHoja(id){
+  $('#velo').hidden = false; $(id).hidden = false;
+  requestAnimationFrame(() => { $('#velo').classList.add('ver'); $(id).classList.add('abierta'); });
+}
+function cerrarHojas(){
+  $$('.hoja').forEach(h => h.classList.remove('abierta'));
+  $('#velo').classList.remove('ver');
+  setTimeout(() => { $$('.hoja').forEach(h => h.hidden = true); if(!$('#charla').classList.contains('abierta')) $('#velo').hidden = true; }, 300);
+}
+function abrirRed(){
+  const r = resumenRed();
+  const max = Math.max(1, ...r.filas.map(f => f.a ? (f.a.cop_agua||0)+(f.a.cop_energia||0) : 0));
+  $('#redSub').textContent = `Últimos 30 días, ${r.n} predios de Sopó.`;
+  $('#redTotales').innerHTML = `<div><b id="rtPesos">$0</b><span>ahorrados en 30 días</span></div>
+    <div><b id="rtM3">0</b><span>m³ de agua · ${Math.round(r.m3)} tanques de 1.000 L</span></div>
+    <div><b>${cop(r.anual)}</b><span>proyección a un año</span></div>`;
+  contar($('#rtPesos'), r.pesos, v => cop(v)); contar($('#rtM3'), r.m3, v => Math.round(v) + ' m³');
+  $('#redFilas').innerHTML = r.filas.map(({p,a}) => {
+    const v = a ? (a.cop_agua||0)+(a.cop_energia||0) : 0;
+    const chip = p.fuente === 'servidor' ? '<span class="chip-fuente vivo">en línea</span>' : '<span class="chip-fuente">demostración</span>';
+    return `<div class="red-fila"><span>${p.nombre}${chip}<br><small>${a ? `${a.m3.toFixed(1)} m³ · ${Math.round(a.pct)} % menos agua` : 'sin línea base todavía: el ahorro se mide con el caudalímetro'}</small></span>
+      <b>${a ? cop(v) : '—'}</b><span class="barra"><i data-w="${(100*v/max).toFixed(0)}"></i></span></div>`;
+  }).join('');
+  requestAnimationFrame(() => setTimeout(() => $$('#redFilas .barra i').forEach(i => i.style.width = i.dataset.w + '%'), 60));
+  $('#redNota').textContent = 'Los predios de demostración muestran cómo se verá el ahorro con caudalímetro. El predio en línea opera con el gemelo digital; su ahorro real se reportará cuando el caudalímetro tenga línea base.';
+  abrirHoja('#hojaRed');
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -2220,7 +2473,23 @@ async function cargarPredios(){
 
 $('#btnCharla').onclick = () => abrirCharla();
 $('#charlaCerrar').onclick = cerrarCharla;
-$('#velo').onclick = cerrarCharla;
+$('#velo').onclick = () => { cerrarHojas(); cerrarCharla(); };
+$('#btnMenu').onclick = () => { vibrar(8); pintarSegTema(); abrirHoja('#hojaMenu'); };
+function temaPreferido(){ try{ return localStorage.getItem('hs_tema') || 'auto'; }catch(e){ return 'auto'; } }
+function aplicarTema(pref){
+  const osc = pref === 'oscuro' || (pref === 'auto' && matchMedia('(prefers-color-scheme: dark)').matches);
+  document.documentElement.setAttribute('data-tema', osc ? 'oscuro' : 'claro');
+  try{ localStorage.setItem('hs_tema', pref); }catch(e){}
+  pintarSegTema();
+  if(typeof pintarGraficas === 'function' && series && datos) { try{ pintarGraficas(series, series.consumo || null, datos); }catch(e){} }
+}
+function pintarSegTema(){ const p = temaPreferido(); $$('.seg-tema button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.tema === p))); }
+$$('.seg-tema button').forEach(b => b.onclick = () => { vibrar(8); aplicarTema(b.dataset.tema); });
+matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', () => { if(temaPreferido() === 'auto') aplicarTema('auto'); });
+$('#btnRed').onclick = () => { vibrar(8); abrirRed(); };
+$('#menuRed').onclick = () => { cerrarHojas(); setTimeout(abrirRed, 320); };
+$('#menuCharla').onclick = () => { cerrarHojas(); setTimeout(() => abrirCharla(), 320); };
+$('#menuReporte').onclick = () => { cerrarHojas(); setTimeout(() => $('#btnReporte').click(), 320); };
 $('#btnYaRegue').onclick = () => abrirCharla('Regué ');
 $('#btnRefrescar').onclick = () => { vibrar(10); primeraCarga = true; cargar(); };
 $('#formChat').onsubmit = e => { e.preventDefault(); enviar($('#entradaChat').value); };
@@ -2232,7 +2501,7 @@ $('#entradaChat').addEventListener('input', e => {
 $('#entradaChat').addEventListener('keydown', e => {
   if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); enviar(e.target.value); }
 });
-document.addEventListener('keydown', e => { if(e.key === 'Escape') cerrarCharla(); });
+document.addEventListener('keydown', e => { if(e.key === 'Escape'){ cerrarHojas(); cerrarCharla(); } });
 
 $('#btnReporte').onclick = () => {
   if(modoDemo){ avisar('El informe necesita conexión con el servidor.', ocultarSaludo); return; }
