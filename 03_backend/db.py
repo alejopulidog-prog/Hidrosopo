@@ -252,31 +252,30 @@ def init_db():
 
 
 def _migrar_columnas_nuevas():
-    """create_all() solo crea tablas que no existen; no les agrega columnas
-    nuevas a tablas que ya estaban ahí (como el hidrosopo.db que ya tienes
-    corriendo). Esto agrega, con seguridad, las columnas que se sumaron
-    después de que la base ya existía — si ya están, no hace nada.
+    """create_all() solo crea las tablas que no existen: no les agrega columnas
+    nuevas a tablas que ya estaban (por ejemplo, una base de Supabase creada con
+    una versión anterior). Esto compara cada modelo con la tabla real y agrega
+    las columnas que falten. Si ya están, no hace nada. Funciona en SQLite y en
+    PostgreSQL.
     """
-    columnas_nuevas = [("predios", "bajo_cubierta", "BOOLEAN DEFAULT 0")]
-    with engine.connect() as con:
-        for tabla, columna, tipo_sql in columnas_nuevas:
+    from sqlalchemy import inspect, Boolean
+    insp = inspect(engine)
+    for tabla in Base.metadata.sorted_tables:
+        if not insp.has_table(tabla.name):
+            continue
+        existentes = {c["name"] for c in insp.get_columns(tabla.name)}
+        for col in tabla.columns:
+            if col.name in existentes:
+                continue
+            tipo = col.type.compile(dialect=engine.dialect)
+            defecto = " DEFAULT FALSE" if isinstance(col.type, Boolean) else ""
+            sql = f'ALTER TABLE {tabla.name} ADD COLUMN {col.name} {tipo}{defecto}'
             try:
-                if DATABASE_URL.startswith("sqlite"):
-                    existentes = {fila[1] for fila in
-                                  con.exec_driver_sql(f"PRAGMA table_info({tabla})")}
-                    if columna in existentes:
-                        continue
-                    con.exec_driver_sql(f"ALTER TABLE {tabla} ADD COLUMN {columna} {tipo_sql}")
-                    con.commit()
-                else:
-                    # Postgres soporta el IF NOT EXISTS directamente.
-                    con.exec_driver_sql(
-                        f"ALTER TABLE {tabla} ADD COLUMN IF NOT EXISTS {columna} {tipo_sql}")
-                    con.commit()
-            except Exception as e:
-                # No tumbar el arranque por esto: en el peor caso, esa
-                # columna se sigue viendo con el valor por defecto del ORM.
-                print(f"[migración] no se pudo agregar {tabla}.{columna}: {e}")
+                with engine.begin() as con:      # una transacción por columna
+                    con.exec_driver_sql(sql)
+                print(f"[migración] columna agregada: {tabla.name}.{col.name}")
+            except Exception as e:               # no tumbar el arranque por esto
+                print(f"[migración] no se pudo agregar {tabla.name}.{col.name}: {e}")
 
 
 def get_db():
