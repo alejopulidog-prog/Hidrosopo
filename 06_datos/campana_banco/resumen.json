@@ -1,0 +1,128 @@
+{
+  "AVISO": "RESULTADOS SIMULADOS (gemelo digital / banco virtual). No son mediciones de campo. Se repetirán con el hardware real según 09_entregables/PROTOCOLO_PRUEBAS.md.",
+  "semilla": 2026,
+  "p1_calibracion": {
+    "criterio": "R² ≥ 0,90 por sensor",
+    "sensores": {
+      "S1 · 15 cm": {
+        "r2": 0.994,
+        "rmse_pct_vol": 0.99,
+        "adc_seco": 3147,
+        "adc_saturado": 1537,
+        "coeficientes": [
+          1.95e-06,
+          -0.03523053,
+          90.3742525
+        ]
+      },
+      "S2 · 30 cm": {
+        "r2": 0.992,
+        "rmse_pct_vol": 1.11,
+        "adc_seco": 3145,
+        "adc_saturado": 1674,
+        "coeficientes": [
+          3.7e-06,
+          -0.04356357,
+          100.43813566
+        ]
+      },
+      "S3 · 45 cm": {
+        "r2": 0.979,
+        "rmse_pct_vol": 2.03,
+        "adc_seco": 3264,
+        "adc_saturado": 1716,
+        "coeficientes": [
+          4.29e-06,
+          -0.05003498,
+          116.84876515
+        ]
+      }
+    },
+    "r2_min": 0.979,
+    "cumple": true
+  },
+  "p2_wifi": {
+    "criterio": "≥ 95 % de envíos entregados en 72 h",
+    "distancia_m": 38.0,
+    "rssi_medio_dbm": -82.7,
+    "esperados": 288,
+    "entrega_directa_pct": 89.9,
+    "entrega_final_pct": 100.0,
+    "reenviadas_desde_buffer": 29,
+    "max_buffer": 2,
+    "cumple": true
+  },
+  "p2b_alcance_wifi": {
+    "distancias_m": [
+      10,
+      20,
+      30,
+      40,
+      50,
+      60,
+      70,
+      80,
+      90,
+      100,
+      110,
+      120
+    ],
+    "entrega_directa_pct": [
+      100.0,
+      99.7,
+      97.6,
+      88.8,
+      73.0,
+      58.1,
+      44.4,
+      32.3,
+      21.8,
+      15.2,
+      11.1,
+      6.9
+    ]
+  },
+  "p3_energia": {
+    "criterio": "≥ 72 h sin red y V ≥ 3,5 V",
+    "placas": {
+      "ESP32 DevKit (la que se tiene)": {
+        "v_a_72h": 4.09,
+        "v_a_240h": 3.84,
+        "consumo_mah_dia": 214.7,
+        "autonomia_dias_estimada": 19.5
+      },
+      "Placa de bajo consumo": {
+        "v_a_72h": 4.18,
+        "v_a_240h": 4.16,
+        "consumo_mah_dia": 16.6,
+        "autonomia_dias_estimada": 251.6
+      }
+    },
+    "v_a_72h": 4.09,
+    "autonomia_dias_estimada": 19.5,
+    "hallazgo": "Con la DevKit el regulador y el chip USB dominan el consumo; la autonomía baja de cientos de días a ≈ 3 semanas. Cumple el objetivo de ≥ 8 días, pero conviene retirar el LED de encendido o migrar a una placa de bajo consumo.",
+    "cumple": true
+  },
+  "p4_caudal": {
+    "criterio": "error ≤ 5 % vs. balde aforado",
+    "error_medio_fabrica_pct": -6.57,
+    "k_corregido": 420.4,
+    "error_max_corregido_pct": 1.22,
+    "error_medio_corregido_pct": 0.39,
+    "cumple": true
+  },
+  "ia": {
+    "mae_24h": 0.516,
+    "persistencia_24h": 0.734,
+    "mejora_24h_pct": 29.6,
+    "mae_48h": 0.795,
+    "persistencia_48h": 1.095,
+    "mejora_48h_pct": 27.4
+  },
+  "ahorro_temporada_seca": {
+    "mediana_pct": 35.2,
+    "p10_pct": 23.9,
+    "p90_pct": 55.5,
+    "climas": 50
+  }
+}

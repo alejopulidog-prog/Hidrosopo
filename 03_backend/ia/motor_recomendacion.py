@@ -145,6 +145,8 @@ def generar_recomendacion(
             "etc_hoy_mm": round(etc_hoy, 2),
             "lluvia_proxima_7d_mm": round(sum(lluvia_futura), 1),
             "lluvia_por_dia_mm": [round(x, 1) for x in lluvia_futura],
+            # Mínimas del pronóstico: el agente las usa para avisar heladas
+            "temp_min_c": [round(x, 1) for x in (clima or {}).get("temp_min", [])][:7],
         },
         "proyeccion": proyeccion,
         "prediccion_ml": ajuste_ml,

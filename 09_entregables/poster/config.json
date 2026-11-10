@@ -1,0 +1,37 @@
+{
+  "fuente_datos": "simulacion",
+  "csv_sensores": "06_datos/datos_sinteticos.csv",
+  "json_consumo": "06_datos/escenario_ahorro.json",
+  "temporada_consumo": "seca",
+  "ventana_humedad_desde": "2026-09-08",
+  "url_qr": "https://hidrosopo.netlify.app/laboratorio",
+  "contacto": "jose.pulido@uniagustiniana.edu.co",
+  "pruebas": {
+    "software": {
+      "criterio": "102 pruebas automáticas",
+      "resultado": "102/102 ✓",
+      "estado": "ok"
+    },
+    "calibracion": {
+      "criterio": "R² ≥ 0,90 por sensor",
+      "resultado": "R² 0,979–0,994 <small>banco virtual · campo: ene 2027</small>",
+      "estado": "sim"
+    },
+    "wifi": {
+      "criterio": "≥ 95 % de envíos en 72 h",
+      "resultado": "100 % con buffer (89,9 % directo) <small>banco virtual · campo: feb 2027</small>",
+      "estado": "sim"
+    },
+    "autonomia": {
+      "criterio": "≥ 72 h sin red",
+      "resultado": "4,09 V a 72 h · ≈ 19 días <small>banco virtual · campo: feb 2027</small>",
+      "estado": "sim"
+    },
+    "caudal": {
+      "criterio": "error ≤ 5 % vs. balde aforado",
+      "resultado": "1,2 % máx. con K corregido <small>banco virtual · campo: ene 2027</small>",
+      "estado": "sim"
+    }
+  },
+  "url_plegable": "https://hidrosopo.netlify.app/agua"
+}

@@ -561,6 +561,8 @@ input[type=range]::-moz-range-thumb{width:30px;height:30px;border-radius:50%;bac
 
     <footer class="pie">
       <button class="enlace" id="btnReporte">Descargar el informe de los últimos 30 días</button><br><br>
+      <a class="enlace" href="gemelo.html">Laboratorio: simulador de riego y pruebas en banco →</a><br><br>
+      <a class="enlace" href="resultados.html">Ver los resultados del proyecto (ahorro, IA y pruebas) →</a><br><br>
       Las recomendaciones son una ayuda. La decisión de regar siempre es suya.<br>
       Proyecto de Ciencia, Tecnología e Innovación · Municipio de Sopó
     </footer>
@@ -606,7 +608,10 @@ input[type=range]::-moz-range-thumb{width:30px;height:30px;border-radius:50%;bac
 </section>
 <script>
 'use strict';
-const API = localStorage.getItem('hidrosopo_api') || 'https://hidrosopo.onrender.com';
+// En Netlify la app llama a /api/... del mismo dominio y netlify.toml lo
+// reenvía a Render (sin problemas de CORS). Abierta desde otro lado, va directo.
+const API = localStorage.getItem('hidrosopo_api') ||
+  (/netlify\.app$/.test(location.hostname) ? '' : 'https://hidrosopo.onrender.com');
 
 /* ── Hora y fecha ────────────────────────────────────────────────
    El predio está en Sopó y ahí es donde pasan las cosas: el sol, el
@@ -665,7 +670,7 @@ const suave = () => !window.matchMedia('(prefers-reduced-motion: reduce)').match
 const vibrar = ms => { try{ navigator.vibrate && navigator.vibrate(ms); }catch(e){} };
 
 let predioId = 1, datos = null, predioActual = null, graficas = {},
-    modoDemo = false, primeraCarga = true, series = null, diaVisto = 0;
+    modoDemo = false, datosSimulados = false, primeraCarga = true, series = null, diaVisto = 0;
 
 /* ══════════════════════════════════════════════════════════════
    LOS TIPOS DE PREDIO
@@ -1649,6 +1654,8 @@ const PATRONES = [
     /\bmedir\b.*\b(caudal|bomba|cuanta agua)\b/, /\bcuanta agua (da|saca|bota|echa) (la |mi |)bomba\b/,
     /\bno se (cuanto|cuanta)\b.*\b(bomba|caudal)\b/, /\bcalibrar la bomba\b/]],
   ['saludo',0.7,[/^(hola|buenas|buenos dias|buenas tardes|que mas|hey|holi)\b/]],
+  ['consultar_helada',0.93,[/\bhelad[ao]s?\b/, /\bescarcha\b/, /\b(va a|va|esta) (hacer|caer) (mucho |)frio\b/, /\bse (va a |)quem(a|ar|e) (el pasto|la papa|el cultivo)\b/]],
+  ['consultar_tiempo_riego',0.94,[/\bcuant[oa]s? (tiempo|minutos|horas|rato)\b.*\b(rieg|reg|prend|bomba)/, /\b(por|durante) cuant[oa]s? (tiempo|minutos|horas)\b/, /\bcuanta agua (le |)(echo|pongo|aplico|necesita)\b/]],
   ['ayuda',0.9,[/\b(ayuda|que puedo (preguntar|hacer)|como funciona|no entiendo|menu)\b/]],
 ];
 
@@ -1901,11 +1908,36 @@ function respMedirCaudal(mensaje){
   return {texto:partes.join(' '), accion:'guardar_caudal', ficha:{titulo:'Su bomba', caudal:lps, mmHora}};
 }
 
+/* Heladas: noches despejadas de temporada seca en la Sabana. Mismo criterio que agente.py */
+function respHelada(){
+  const c = datos.clima || {};
+  const mins = c.temp_min_c || (modoDemo ? [7.5, 4, 1.5, 5, 8, 8.5, 7] : null);
+  if(!mins || !mins.length) return {texto:'No tengo el pronóstico de temperatura ahora. Si la tarde queda despejada y sin viento, la madrugada puede traer helada.'};
+  const nombres = ['esta noche','mañana en la noche','pasado mañana en la noche','en 3 días','en 4 días','en 5 días','en 6 días'];
+  let peor = null;
+  mins.slice(0,7).forEach((t,i) => { if(t <= 4 && (!peor || t < peor.t)) peor = {t, cuando:nombres[i]}; });
+  if(!peor) return {texto:`No veo riesgo de helada esta semana: la mínima más baja pronosticada es de ${Math.min(...mins.slice(0,7)).toFixed(0)} °C.`};
+  const disp = datos.estado_suelo ? datos.estado_suelo.porcentaje_agua_disponible : null;
+  const consejo = (disp != null && disp >= 70)
+    ? 'La tierra tiene buena humedad, así que guarda calor; no hace falta regar extra.'
+    : 'Si la tierra está seca, un riego ligero en la tarde (unos 5 mm) ayuda: el suelo húmedo guarda calor y lo suelta en la madrugada.';
+  return {texto:`${peor.t <= 2 ? 'Ojo: hay riesgo de helada' : 'Puede hacer bastante frío'} ${peor.cuando}, con mínima de ${peor.t.toFixed(0)} °C (a ras de pasto puede bajar de 0 °C). ${consejo} Evite pastorear o cortar justo antes: el rebrote tierno es el que más se quema.`,
+          sugerencias:['¿Riego hoy?','¿Va a llover?']};
+}
+
+function respTiempoRiego(){
+  const r = datos.riego;
+  if(!r) return {texto:`Hoy no le toca regar, así que no hay que prender la bomba. ${datos.decision ? datos.decision.razon : ''}`};
+  let t = `Hay que aplicar unos ${r.lamina_bruta_mm.toFixed(0)} mm: con su caudal son unos ${r.minutos.toFixed(0)} minutos de bomba`;
+  if(r.fraccionar_en_pasadas && r.pasadas_sugeridas > 1) t += `, mejor en ${r.pasadas_sugeridas} pasadas para que la tierra alcance a chupar el agua`;
+  return {texto: t + '. Cuando termine, escríbame «ya regué» y lo anoto.', sugerencias:['Ya regué']};
+}
+
 function respAyuda(){
   const t = T();
   return {texto:'Yo le sirvo para tres cosas:\n\n'+
     `• Contarme lo que hizo: "regué 40 minutos", "regué ${t.turno} 2", "no pude regar".\n`+
-    '• Preguntarme: si riega hoy, si va a llover, cuánto lleva ahorrado, cuánto le cuesta regar.\n'+
+    '• Preguntarme: si riega hoy, cuánto tiempo prender la bomba, si va a llover o a caer helada, cuánto lleva ahorrado, cuánto le cuesta regar.\n'+
     '• Reportarme problemas: un sensor caído, una fuga, o que usted ve la tierra distinta a lo que digo.\n\n'+
     'Hábleme como le hable a un vecino. Yo me entiendo.'};
 }
@@ -1947,6 +1979,8 @@ function responderLocal(mensaje){
     case 'consultar_ahorro':   return respAhorro();
     case 'consultar_riego':    return respRecomendacion();
     case 'consultar_lluvia':   return respLluvia();
+    case 'consultar_helada':   return respHelada();
+    case 'consultar_tiempo_riego': return respTiempoRiego();
     case 'consultar_pastoreo': return respCiclo();
     case 'consultar_costo':    return respCosto();
     case 'medir_caudal':       return respMedirCaudal(mensaje);
@@ -2111,7 +2145,7 @@ function ordenarAvisos(){
   const sinDatos = !localStorage.getItem('hidrosopo_ultima');
   const offline = !navigator.onLine && !modoDemo && !sinDatos;
   $('#avisoInstalar').hidden = !quiereInstalar;
-  $('#avisoDemo').hidden = quiereInstalar || !modoDemo;
+  $('#avisoDemo').hidden = quiereInstalar || !(modoDemo || datosSimulados);
   $('#avisoOffline').hidden = quiereInstalar || modoDemo || !offline;
   if(offline){
     const t = localStorage.getItem('hidrosopo_ultima');
@@ -2134,9 +2168,11 @@ async function cargar(){
       pedir(`/api/v1/predios/${predioId}/sectores`).catch(() => [])
     ]);
     modoDemo = false;
+    datosSimulados = (reco && reco.fuente_datos) !== 'campo';
     localStorage.setItem('hidrosopo_ultima', Date.now());
     localStorage.setItem('hidrosopo_cache_' + predioId, JSON.stringify({reco, s, consumo, sectores}));
-    marcarPulso('vivo', 'al día');
+    marcarPulso('vivo', datosSimulados ? 'gemelo digital' : 'al día');
+    $('#avisoDemoPredio').textContent = datosSimulados ? ' — servidor en línea con datos simulados del gemelo digital' : '';
     series = s;
     pintar(reco); pintarPestanas(); pintarGraficas(s, consumo, reco); pintarSectores(sectores);
   }catch(err){

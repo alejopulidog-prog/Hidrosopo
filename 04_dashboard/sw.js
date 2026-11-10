@@ -2,9 +2,9 @@
  * Permite que la app abra sin señal y muestre la última recomendación conocida.
  * En una finca de Sopó la señal se cae. Sin esto, la app se vuelve una pantalla en blanco.
  */
-const CACHE = 'hidrosopo-v2';
+const CACHE = 'hidrosopo-v5';
 const ESTATICOS = [
-  './', './index.html', './manifest.json',
+  './', './index.html', './resultados.html', './gemelo.html', './comunidad.html', './manifest.json',
   './iconos/icono-192.png', './iconos/icono-512.png',
   'https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js'
 ];

@@ -74,3 +74,29 @@ Suficiente, pero con menos margen. Si la captación queda a la sombra (bocatomas
 - **Fusible reseteable PTC 1 A** en el positivo de la batería.
 - **BMS/protección** en las celdas 18650 (compra celdas protegidas, no las crudas).
 - **Nunca energizar el módulo LoRa sin antena.** Quema la etapa de potencia del SX1262.
+
+
+---
+
+## Con transmisión WiFi (configuración del piloto)
+
+Con WiFi el nodo permanece conectado unos segundos más que con LoRa. Supuesto a verificar en la prueba de 72 h: conexión + envío HTTPS ≈ 6 s a ≈ 130 mA promedio.
+
+| Estado | Corriente | Duración | Carga (mAh) |
+|---|---|---|---|
+| Deep sleep | 0.020 mA | ≈ 14 min | 0.0049 |
+| Despertar + estabilizar sensores | 45 mA | 2 s | 0.0250 |
+| Lectura de sensores | 65 mA | 3 s | 0.0542 |
+| Conexión WiFi + envío HTTPS | 130 mA | 6 s | 0.2167 |
+| **Total por ciclo (15 min)** | | | **≈ 0.301 mAh** |
+
+```
+96 ciclos/día × 0.301 mAh = 28.9 mAh/día
++ autodescarga ≈ 4 mAh/día + regulador/quiescente ≈ 12 mAh/día
+TOTAL ≈ 45 mAh/día
+Autonomía teórica sin sol = 4800 / 45 ≈ 107 días
+```
+
+Aplicando el mismo factor de frío de la sección anterior (60–90 días reales sobre 188 teóricos), la autonomía práctica queda en **más de 30 días sin sol**, muy por encima del objetivo de diseño de **≥ 8 días**. El panel de 10 W (≈ 5.100 mAh/día) sigue generando más de 100 veces lo que se consume.
+
+**Nodo de caudal con WiFi:** 3.5 mA × 24 h + 96 × 0.217 mAh ≈ 105 mAh/día → ≈ 23 días sin sol con 1 × 3000 mAh (80 % DoD), con panel de 6 W (≈ 3.000 mAh/día) como en la sección anterior.

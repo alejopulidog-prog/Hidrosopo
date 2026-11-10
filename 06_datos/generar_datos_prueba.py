@@ -37,10 +37,28 @@ def generar(dias=60, intervalo_min=15, inicio=None,
         lluvia_por_dia.append(
             random.expovariate(1 / 9.0) if random.random() < prob_lluvia_dia * factor else 0.0)
 
-    def pronostico(d, horizonte_dias):
-        """Pronóstico con error realista: acierta la tendencia, falla el monto."""
-        total = sum(lluvia_por_dia[d + 1: d + 1 + horizonte_dias])
-        return max(0.0, total * random.uniform(0.55, 1.45) + random.gauss(0, 1.2))
+    # Lluvia paso a paso (cae en la tarde, 14–18 h), decidida por adelantado.
+    lluvia_paso = []
+    for i in range(n + int(48 / paso_h) + 1):
+        ts_i = inicio + timedelta(minutes=i * intervalo_min)
+        hora_i = ts_i.hour + ts_i.minute / 60.0
+        ll_d = lluvia_por_dia[min((ts_i.date() - inicio.date()).days, n_dias - 1)]
+        lluvia_paso.append(ll_d / (4 / paso_h) * random.uniform(0.5, 1.5)
+                           if ll_d > 0 and 14 <= hora_i < 18 else 0.0)
+
+    # Error del pronóstico: un factor por día (Open-Meteo acierta la tendencia
+    # y falla el monto), más un ruido pequeño.
+    error_dia = [random.uniform(0.6, 1.4) for _ in range(n_dias + 3)]
+    pasos_24 = int(24 / paso_h)
+
+    def pronostico(i, horas):
+        """Lluvia de las PRÓXIMAS `horas` desde el paso i (ventana móvil, igual
+        que el pronóstico horario de Open-Meteo). Antes se usaba la lluvia del
+        día siguiente, lo que dejaba por fuera el aguacero de esta misma tarde
+        y le quitaba al modelo ML su variable más informativa."""
+        k = int(horas / paso_h)
+        total = sum(lluvia_paso[i + 1: i + 1 + k])
+        return max(0.0, total * error_dia[i // pasos_24] + random.gauss(0, 0.4))
 
     filas = []
     # Estado inicial: suelo cerca de capacidad de campo
@@ -71,11 +89,11 @@ def generar(dias=60, intervalo_min=15, inicio=None,
             dia_actual = ts.day
             idx_dia = (ts.date() - inicio.date()).days
             lluvia_hoy = lluvia_por_dia[min(idx_dia, n_dias - 1)]
-            pron_24 = pronostico(idx_dia, 1)
-            pron_48 = pronostico(idx_dia, 2)
-        lluvia = 0.0
-        if lluvia_hoy > 0 and 14 <= hora < 18:
-            lluvia = lluvia_hoy / (4 / paso_h) * random.uniform(0.5, 1.5)
+        # El pronóstico se refresca cada hora, como el de Open-Meteo
+        if ts.minute == 0:
+            pron_24 = pronostico(i, 24)
+            pron_48 = pronostico(i, 48)
+        lluvia = lluvia_paso[i]
 
         # --- ET0 (solo de día) ---
         et0_dia = 3.2 + 0.8 * math.sin(2 * math.pi * (dj - 30) / 365)
@@ -114,6 +132,25 @@ def generar(dias=60, intervalo_min=15, inicio=None,
                 "lluvia_pron_24h": round(pron_24, 2),
                 "lluvia_pron_48h": round(pron_48, 2),
             })
+
+    # --- Variables "hacia adelante" que el sistema SÍ conoce en operación ---
+    # · riego_prox_24h: el riego que el productor anunció/aceptó (botón "Ya regué",
+    #   o la recomendación que se le dio). Con 0 el modelo responde la pregunta
+    #   del dashboard: "si no riega, ¿qué pasa?".
+    # · et0_pron_24h: Open-Meteo entrega la ET0 FAO pronosticada por hora.
+    k = int(24 / paso_h)
+    riego_paso = [filas[j * 3]["riego_mm"] for j in range(n)]
+    et0_paso = [filas[j * 3]["et0_mm"] for j in range(n)]
+    acum_r = [0.0]; acum_e = [0.0]
+    for r_, e_ in zip(riego_paso, et0_paso):
+        acum_r.append(acum_r[-1] + r_); acum_e.append(acum_e[-1] + e_)
+    for j in range(n):
+        fin = min(n, j + 1 + k)
+        r_fut = acum_r[fin] - acum_r[j + 1]
+        e_fut = (acum_e[fin] - acum_e[j + 1]) * random.uniform(0.9, 1.1)
+        for c in range(3):
+            filas[j * 3 + c]["riego_prox_24h"] = round(r_fut, 2)
+            filas[j * 3 + c]["et0_pron_24h"] = round(e_fut, 3)
 
     return filas
 

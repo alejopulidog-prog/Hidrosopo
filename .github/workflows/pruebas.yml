@@ -1,0 +1,21 @@
+# Corre las pruebas automáticas en cada cambio. Si algo se rompe, GitHub avisa
+# antes de que Render lo publique.
+name: Pruebas
+on:
+  push:
+  pull_request:
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: 03_backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: 03_backend/requirements.txt
+      - run: pip install -r requirements.txt pytest
+      - run: pytest -q

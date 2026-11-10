@@ -44,6 +44,9 @@ FEATURES = [
     "lluvia_acumulada_24h",
     "lluvia_pronosticada_24h",
     "lluvia_pronosticada_48h",
+    "et0_pronosticada_24h",
+    "riego_acumulado_24h",
+    "riego_programado_24h",
     "hora_sin",
     "hora_cos",
     "profundidad_cm",
@@ -105,6 +108,20 @@ def _features_una_serie(df: pd.DataFrame) -> pd.DataFrame:
     # Pronóstico (se rellena desde Open-Meteo al ingerir; 0 si no hay)
     out["lluvia_pronosticada_24h"] = df.get("lluvia_pron_24h", pd.Series(0.0, index=df.index))
     out["lluvia_pronosticada_48h"] = df.get("lluvia_pron_48h", pd.Series(0.0, index=df.index))
+
+    # ET0 pronosticada (Open-Meteo la entrega por hora). Si no llegó, se usa
+    # la de las últimas 24 h como aproximación: el clima de la Sabana cambia
+    # poco de un día al siguiente.
+    out["et0_pronosticada_24h"] = df["et0_pron_24h"] if "et0_pron_24h" in df \
+        else out["et0_acumulada_24h"]
+
+    # Riego: el pasado (lo que el productor reportó con "Ya regué") y el
+    # programado. En la predicción del dashboard el programado va en 0, y así
+    # el modelo responde "si no riega, ¿qué pasa?".
+    riego = df["riego_mm"] if "riego_mm" in df else pd.Series(0.0, index=df.index)
+    out["riego_acumulado_24h"] = riego.rolling("24h").sum()
+    out["riego_programado_24h"] = df["riego_prox_24h"] if "riego_prox_24h" in df \
+        else pd.Series(0.0, index=df.index)
 
     # Codificación cíclica del tiempo: la hora 23 y la hora 0 son vecinas.
     # Sin esto el modelo cree que están a 23 unidades de distancia.
@@ -169,17 +186,18 @@ def entrenar(df_crudo: pd.DataFrame, horizonte_horas: int = 24,
     humedad_ahora = datos["humedad_actual"].values
     ym = datos["objetivo"].values - humedad_ahora
 
-    # Hiperparámetros deliberadamente conservadores. Con series cortas
-    # (4 meses) y objetivo en deltas, los árboles profundos memorizan ruido:
-    # en pruebas, max_depth=4 quedó 9.6% POR DEBAJO de la persistencia,
-    # mientras que max_depth=2 con hojas grandes la supera.
-    # loss="huber" reduce el peso de los saltos por lluvias fuertes.
+    # Hiperparámetros. Con las variables "hacia adelante" (lluvia y ET0
+    # pronosticadas en ventana móvil + riego programado) el modelo ya tiene
+    # señal real y admite árboles de profundidad 3. Sin ellas, cualquier
+    # configuración quedaba por debajo de la persistencia (ver CAMBIOS_SESION,
+    # parte 5). Hojas grandes (min_samples_leaf=50) para no memorizar ruido;
+    # loss="huber" reduce el peso de los saltos por aguaceros fuertes.
     modelo = GradientBoostingRegressor(
-        n_estimators=250,
-        learning_rate=0.03,
-        max_depth=2,
-        min_samples_leaf=80,
-        subsample=0.70,
+        n_estimators=300,
+        learning_rate=0.05,
+        max_depth=3,
+        min_samples_leaf=50,
+        subsample=0.80,
         loss="huber",
         random_state=42,
     )
@@ -197,7 +215,10 @@ def entrenar(df_crudo: pd.DataFrame, horizonte_horas: int = 24,
     # Si el modelo no le gana a esto, el modelo no sirve. Reportarlo
     # es lo que separa un análisis serio de uno decorativo.
     # Con el objetivo en deltas, la persistencia es simplemente predecir 0.
-    mae_persistencia = float(mean_absolute_error(ym, np.zeros_like(ym)))
+    # Se calcula sobre los MISMOS bloques de validación que el modelo, para que
+    # la comparación sea justa (antes se medía sobre toda la serie).
+    mae_persistencia = float(np.mean([
+        mean_absolute_error(ym[te], np.zeros(len(te))) for _, te in cv.split(Xm)]))
 
     # Entrenamiento final con todo el histórico
     modelo.fit(Xm, ym)
@@ -263,6 +284,49 @@ def entrenar(df_crudo: pd.DataFrame, horizonte_horas: int = 24,
     return metricas
 
 
+def contexto_prediccion(humedad_actual: float, *, hora_local: float,
+                        humedad_hace_6h: float | None = None,
+                        humedad_hace_24h: float | None = None,
+                        temp_aire: float | None = None,
+                        temp_suelo: float | None = None,
+                        hr_aire: float | None = None,
+                        lluvia_ultimas_24h_mm: float = 0.0,
+                        riego_ultimas_24h_mm: float = 0.0,
+                        et0_ultimas_24h_mm: float | None = None,
+                        pronostico: dict | None = None,
+                        profundidad_cm: int = 15) -> dict:
+    """Arma el vector de entrada del modelo con los datos que el backend SÍ
+    tiene en vivo. Función pura (sin base de datos) para poder probarla.
+
+    El riego programado va en 0 a propósito: la pregunta que responde la
+    predicción es "si no riega, ¿cómo estará la tierra?".
+    """
+    h6 = humedad_actual if humedad_hace_6h is None else humedad_hace_6h
+    h24 = humedad_actual if humedad_hace_24h is None else humedad_hace_24h
+    lluvia_d = (pronostico or {}).get("lluvia_diaria") or [0.0, 0.0]
+    et0_d = (pronostico or {}).get("et0_diaria") or []
+    et0_pron = float(et0_d[0]) if et0_d else (et0_ultimas_24h_mm or 3.0)
+    return {
+        "humedad_actual": humedad_actual,
+        "humedad_lag_6h": h6,
+        "humedad_lag_24h": h24,
+        "delta_humedad_6h": humedad_actual - h6,
+        "temp_aire": 15.0 if temp_aire is None else temp_aire,
+        "temp_suelo": 15.0 if temp_suelo is None else temp_suelo,
+        "hr_aire": 70.0 if hr_aire is None else hr_aire,
+        "et0_acumulada_24h": et0_ultimas_24h_mm if et0_ultimas_24h_mm is not None else et0_pron,
+        "lluvia_acumulada_24h": lluvia_ultimas_24h_mm,
+        "lluvia_pronosticada_24h": float(lluvia_d[0]) if lluvia_d else 0.0,
+        "lluvia_pronosticada_48h": float(sum(lluvia_d[:2])) if lluvia_d else 0.0,
+        "et0_pronosticada_24h": et0_pron,
+        "riego_acumulado_24h": riego_ultimas_24h_mm,
+        "riego_programado_24h": 0.0,
+        "hora_sin": float(np.sin(2 * np.pi * hora_local / 24)),
+        "hora_cos": float(np.cos(2 * np.pi * hora_local / 24)),
+        "profundidad_cm": profundidad_cm,
+    }
+
+
 def predecir(humedad_actual: float, contexto: dict,
              nombre: str = "humedad", horizonte_horas: int = 24) -> dict | None:
     """Predice la humedad futura. Devuelve None si el modelo no existe todavía."""
@@ -286,8 +350,12 @@ def predecir(humedad_actual: float, contexto: dict,
         "intervalo_aprox": [round(pred - 1.96 * mae, 2), round(pred + 1.96 * mae, 2)],
         "mae": mae,
         "r2": metricas["r2_cv"],
-        "confianza": "alta" if metricas["r2_cv"] > 0.75
-                     else "media" if metricas["r2_cv"] > 0.5 else "baja",
+        # La confianza se mide contra la persistencia, no con el R² de los
+        # deltas (que es bajo por construcción aunque el modelo sea bueno).
+        "confianza": "alta" if metricas.get("mejora_vs_linea_base_pct", 0) >= 25
+                     else "media" if metricas.get("mejora_vs_linea_base_pct", 0) >= 10
+                     else "baja",
+        "mejora_vs_persistencia_pct": metricas.get("mejora_vs_linea_base_pct"),
         "n_registros_entrenamiento": metricas["n_registros"],
     }
 

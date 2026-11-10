@@ -12,12 +12,23 @@
 // ---------- TRANSPORTE ----------
 #define TRANSPORTE_LORA  1
 #define TRANSPORTE_WIFI  2
-#define TRANSPORTE       TRANSPORTE_LORA   // <<< cambia aquí
+#define TRANSPORTE       TRANSPORTE_WIFI   // piloto: WiFi directo (LoRa = opción de escalamiento) <<< cambia aquí
 
 // ---------- WiFi (solo si TRANSPORTE == TRANSPORTE_WIFI) ----------
+// La clave real del WiFi va en secretos.h (copie secretos.h.example).
+// secretos.h está en .gitignore: el repositorio es público.
+#if __has_include("secretos.h")
+#include "secretos.h"
+#endif
+#ifndef WIFI_SSID
 #define WIFI_SSID        "RedDeLaFinca"
+#endif
+#ifndef WIFI_PASS
 #define WIFI_PASS        "clave"
-#define BACKEND_URL      "https://tu-backend.onrender.com/api/v1/telemetria"
+#endif
+#ifndef BACKEND_URL
+#define BACKEND_URL      "https://hidrosopo.onrender.com/api/v1/telemetria"
+#endif
 #define TIMEOUT_WIFI_MS  20000
 
 // ---------- LoRa ----------

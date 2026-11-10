@@ -1,0 +1,23 @@
+# Mantiene despiertos Render (se duerme tras 15 min sin visitas en el plan
+# gratuito) y Supabase (se pausa tras una semana sin actividad), y genera la
+# recomendación del día a las 6:00 a. m. de Colombia.
+# Configurar: Settings → Secrets and variables → Actions → Variables →
+#   HIDROSOPO_API = https://hidrosopo.onrender.com
+name: Mantener activo
+on:
+  schedule:
+    - cron: "*/14 11-23 * * *"   # cada 14 min, 6 a. m. – 6:59 p. m. de Colombia
+    - cron: "*/14 0-3 * * *"     # y hasta las 10:59 p. m.
+    - cron: "0 11 * * *"         # 6:00 a. m.: recomendación del día
+  workflow_dispatch:
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    env:
+      API: ${{ vars.HIDROSOPO_API || 'https://hidrosopo.onrender.com' }}
+    steps:
+      - name: Salud del servidor (despierta Render y toca la base)
+        run: curl -fsS --retry 4 --retry-delay 20 --max-time 120 "$API/api/v1/salud" | head -c 400
+      - name: Recomendación diaria
+        if: github.event.schedule == '0 11 * * *'
+        run: curl -fsS --retry 3 --max-time 120 "$API/api/v1/predios/1/recomendacion?guardar=true" | head -c 400

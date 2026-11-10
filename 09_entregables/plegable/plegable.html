@@ -1,0 +1,131 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Plegable Sopó Cuida el Agua</title>
+<style>
+@page{ size: 279.4mm 215.9mm; margin:0 }
+*{ box-sizing:border-box; margin:0; padding:0 }
+:root{ --tierra:#2A2117; --agua:#2A7BA3; --hondo:#1B5C7D; --tenue:#E1EEF4; --pasto:#5B8A2C; --pasto-t:#E8F1DC;
+  --arcilla:#C2602C; --papel:#FFFDFA; --humo:#5E625B; --linea:#D5DCD6 }
+body{ font-family:"Inter","Noto Sans","DejaVu Sans",Arial,sans-serif; color:var(--tierra); font-size:9.6pt; line-height:1.38 }
+.cara{ width:279.4mm; height:215.9mm; display:grid; grid-template-columns:repeat(3,1fr); page-break-after:always; background:var(--papel) }
+.panel{ padding:11mm 9mm 9mm; position:relative; display:flex; flex-direction:column; gap:3.2mm; overflow:hidden }
+.panel + .panel{ border-left:.2mm dashed #E3E0D8 }
+h1{ font-family:"Bricolage Grotesque","Inter",sans-serif; font-weight:800; font-size:30pt; line-height:.98; letter-spacing:-.02em }
+h2{ font-family:"Bricolage Grotesque","Inter",sans-serif; font-weight:800; font-size:15pt; line-height:1.1; color:var(--hondo) }
+h3{ font-weight:700; font-size:10.5pt }
+.etq{ font-size:7.6pt; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--agua) }
+.gota{ width:5mm; height:6.2mm; fill:var(--agua) }
+.portada{ background:linear-gradient(170deg,#1B5C7D 0%,#22506A 55%,#2A2117 100%); color:#F2F5F2; justify-content:space-between }
+.portada h1 em{ font-style:normal; color:#9DE0A0 }
+.portada .etq{ color:#BFE3F3 }
+.portada p{ color:#D7E3E6; font-size:10.5pt }
+.capas{ display:grid; gap:1.6mm } .capas div{ display:flex; gap:2.4mm; align-items:center; font-weight:600; font-size:10pt }
+.capas i{ width:6mm; height:6mm; border-radius:50%; background:rgba(255,255,255,.14); display:grid; place-items:center; font-style:normal; font-size:8.5pt; flex:none }
+.dato{ background:var(--tenue); border-radius:3.5mm; padding:3.5mm 4mm }
+.dato b{ display:block; font-family:"Bricolage Grotesque","Inter",sans-serif; font-size:22pt; line-height:1; color:var(--hondo) }
+.reglas{ display:grid; gap:2.6mm; list-style:none; counter-reset:r }
+.reglas li{ display:grid; grid-template-columns:8mm 1fr; gap:2mm; counter-increment:r }
+.reglas li::before{ content:counter(r); width:7mm; height:7mm; border-radius:50%; background:var(--pasto); color:#fff; display:grid; place-items:center; font-weight:800; font-size:10pt }
+table{ width:100%; border-collapse:collapse; font-size:8.6pt }
+th{ text-align:left; font-size:7pt; text-transform:uppercase; letter-spacing:.06em; color:var(--humo); padding:1.4mm 1mm; border-bottom:.5mm solid var(--tierra) }
+td{ padding:1.5mm 1mm; border-bottom:.2mm solid var(--linea); font-variant-numeric:tabular-nums }
+td+td{ text-align:right; white-space:nowrap } th+th{ text-align:right }
+.nota{ font-size:7.4pt; color:var(--humo) }
+.qr{ width:42mm; height:42mm; background:#fff; padding:2mm; border-radius:3mm; align-self:center }
+.qr svg{ width:100%; height:100%; display:block }
+.lista{ display:grid; gap:1.8mm; padding-left:4mm } .lista li{ padding-left:1mm }
+.caja{ border:.3mm solid var(--linea); border-radius:3.5mm; padding:3.5mm 4mm; display:grid; gap:1.6mm }
+.verde{ background:var(--pasto-t); border-color:transparent }
+.pie{ margin-top:auto; font-size:7.2pt; color:var(--humo) }
+.experimento{ display:grid; grid-template-columns:repeat(3,1fr); gap:2mm; font-size:8pt }
+.experimento div{ background:var(--tenue); border-radius:2.5mm; padding:2.4mm }
+.experimento b{ display:block; color:var(--hondo); font-size:7.4pt; text-transform:uppercase; letter-spacing:.06em }
+</style></head><body>
+
+<!-- ============ CARA EXTERIOR: solapa interior · contraportada · portada ============ -->
+<div class="cara">
+  <div class="panel">
+    <span class="etq">Agua lluvia</span>
+    <h2>Su techo es un tanque gratis</h2>
+    <div class="dato"><b>1 mm × 1 m² = 1 L</b>Un milímetro de lluvia sobre un metro cuadrado de techo da un litro de agua.</div>
+    <p>Un techo de <b>40 m²</b> con un aguacero de <b>10 mm</b> recoge cerca de <b>300 litros</b>, contando que se pierde algo y que se botan los primeros litros que lavan el techo.</p>
+    <ul class="lista">
+      <li>Bote el primer lavado de cada aguacero.</li>
+      <li>Tape la caneca con angeo: así no se crían zancudos.</li>
+      <li>Úsela para regar y lavar, no para tomar.</li>
+      <li>Ponga la caneca en alto y riegue por gravedad.</li>
+    </ul>
+    <div class="caja verde"><h3>En la casa, sin gastar un peso</h3>
+      <ul class="lista">
+        <li>Ducha de 5 minutos: ahorra unos 50 L por persona al día con regadera convencional.</li>
+        <li>Llave cerrada al cepillarse y al enjabonar los platos.</li>
+        <li>Botella con arena en el tanque de un sanitario antiguo.</li>
+        <li>El agua de la lavadora sirve para trapear.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="panel">
+    <span class="etq">Calcule lo suyo</span>
+    <h2>Escanee y le decimos cuánto regar</h2>
+    <p>Escoja su cultivo, el tamaño de la era o el número de materas, y la página le dice cuántas regaderas echar y cada cuánto. También calcula el agua lluvia de su techo y el gasto de su casa.</p>
+    <div class="qr"><svg data-w="31mm" data-h="31mm" version="1.1" viewBox="0 0 31 31" xmlns="http://www.w3.org/2000/svg"><path d="M1,1H2V2H1zM2,1H3V2H2zM3,1H4V2H3zM4,1H5V2H4zM5,1H6V2H5zM6,1H7V2H6zM7,1H8V2H7zM9,1H10V2H9zM12,1H13V2H12zM18,1H19V2H18zM19,1H20V2H19zM23,1H24V2H23zM24,1H25V2H24zM25,1H26V2H25zM26,1H27V2H26zM27,1H28V2H27zM28,1H29V2H28zM29,1H30V2H29zM1,2H2V3H1zM7,2H8V3H7zM12,2H13V3H12zM13,2H14V3H13zM17,2H18V3H17zM19,2H20V3H19zM20,2H21V3H20zM21,2H22V3H21zM23,2H24V3H23zM29,2H30V3H29zM1,3H2V4H1zM3,3H4V4H3zM4,3H5V4H4zM5,3H6V4H5zM7,3H8V4H7zM10,3H11V4H10zM14,3H15V4H14zM16,3H17V4H16zM17,3H18V4H17zM18,3H19V4H18zM19,3H20V4H19zM21,3H22V4H21zM23,3H24V4H23zM25,3H26V4H25zM26,3H27V4H26zM27,3H28V4H27zM29,3H30V4H29zM1,4H2V5H1zM3,4H4V5H3zM4,4H5V5H4zM5,4H6V5H5zM7,4H8V5H7zM9,4H10V5H9zM10,4H11V5H10zM12,4H13V5H12zM13,4H14V5H13zM15,4H16V5H15zM16,4H17V5H16zM17,4H18V5H17zM19,4H20V5H19zM20,4H21V5H20zM23,4H24V5H23zM25,4H26V5H25zM26,4H27V5H26zM27,4H28V5H27zM29,4H30V5H29zM1,5H2V6H1zM3,5H4V6H3zM4,5H5V6H4zM5,5H6V6H5zM7,5H8V6H7zM9,5H10V6H9zM11,5H12V6H11zM12,5H13V6H12zM14,5H15V6H14zM15,5H16V6H15zM17,5H18V6H17zM19,5H20V6H19zM23,5H24V6H23zM25,5H26V6H25zM26,5H27V6H26zM27,5H28V6H27zM29,5H30V6H29zM1,6H2V7H1zM7,6H8V7H7zM9,6H10V7H9zM14,6H15V7H14zM15,6H16V7H15zM16,6H17V7H16zM18,6H19V7H18zM20,6H21V7H20zM21,6H22V7H21zM23,6H24V7H23zM29,6H30V7H29zM1,7H2V8H1zM2,7H3V8H2zM3,7H4V8H3zM4,7H5V8H4zM5,7H6V8H5zM6,7H7V8H6zM7,7H8V8H7zM9,7H10V8H9zM11,7H12V8H11zM13,7H14V8H13zM15,7H16V8H15zM17,7H18V8H17zM19,7H20V8H19zM21,7H22V8H21zM23,7H24V8H23zM24,7H25V8H24zM25,7H26V8H25zM26,7H27V8H26zM27,7H28V8H27zM28,7H29V8H28zM29,7H30V8H29zM9,8H10V9H9zM10,8H11V9H10zM11,8H12V9H11zM12,8H13V9H12zM13,8H14V9H13zM15,8H16V9H15zM18,8H19V9H18zM21,8H22V9H21zM1,9H2V10H1zM5,9H6V10H5zM7,9H8V10H7zM8,9H9V10H8zM9,9H10V10H9zM12,9H13V10H12zM14,9H15V10H14zM15,9H16V10H15zM16,9H17V10H16zM18,9H19V10H18zM20,9H21V10H20zM22,9H23V10H22zM23,9H24V10H23zM24,9H25V10H24zM25,9H26V10H25zM26,9H27V10H26zM29,9H30V10H29zM3,10H4V11H3zM6,10H7V11H6zM9,10H10V11H9zM10,10H11V11H10zM11,10H12V11H11zM12,10H13V11H12zM13,10H14V11H13zM18,10H19V11H18zM23,10H24V11H23zM24,10H25V11H24zM25,10H26V11H25zM26,10H27V11H26zM27,10H28V11H27zM28,10H29V11H28zM29,10H30V11H29zM2,11H3V12H2zM4,11H5V12H4zM5,11H6V12H5zM7,11H8V12H7zM8,11H9V12H8zM9,11H10V12H9zM11,11H12V12H11zM13,11H14V12H13zM14,11H15V12H14zM15,11H16V12H15zM16,11H17V12H16zM18,11H19V12H18zM21,11H22V12H21zM24,11H25V12H24zM25,11H26V12H25zM29,11H30V12H29zM4,12H5V13H4zM8,12H9V13H8zM9,12H10V13H9zM12,12H13V13H12zM14,12H15V13H14zM16,12H17V13H16zM17,12H18V13H17zM18,12H19V13H18zM19,12H20V13H19zM21,12H22V13H21zM24,12H25V13H24zM26,12H27V13H26zM28,12H29V13H28zM29,12H30V13H29zM2,13H3V14H2zM7,13H8V14H7zM9,13H10V14H9zM11,13H12V14H11zM12,13H13V14H12zM14,13H15V14H14zM18,13H19V14H18zM19,13H20V14H19zM20,13H21V14H20zM21,13H22V14H21zM22,13H23V14H22zM24,13H25V14H24zM28,13H29V14H28zM1,14H2V15H1zM2,14H3V15H2zM5,14H6V15H5zM14,14H15V15H14zM15,14H16V15H15zM16,14H17V15H16zM17,14H18V15H17zM18,14H19V15H18zM19,14H20V15H19zM22,14H23V15H22zM23,14H24V15H23zM24,14H25V15H24zM25,14H26V15H25zM26,14H27V15H26zM27,14H28V15H27zM28,14H29V15H28zM29,14H30V15H29zM2,15H3V16H2zM5,15H6V16H5zM7,15H8V16H7zM8,15H9V16H8zM9,15H10V16H9zM11,15H12V16H11zM12,15H13V16H12zM13,15H14V16H13zM16,15H17V16H16zM19,15H20V16H19zM22,15H23V16H22zM23,15H24V16H23zM24,15H25V16H24zM26,15H27V16H26zM27,15H28V16H27zM29,15H30V16H29zM5,16H6V17H5zM6,16H7V17H6zM8,16H9V17H8zM9,16H10V17H9zM10,16H11V17H10zM12,16H13V17H12zM13,16H14V17H13zM15,16H16V17H15zM16,16H17V17H16zM18,16H19V17H18zM20,16H21V17H20zM21,16H22V17H21zM28,16H29V17H28zM29,16H30V17H29zM1,17H2V18H1zM2,17H3V18H2zM5,17H6V18H5zM6,17H7V18H6zM7,17H8V18H7zM10,17H11V18H10zM14,17H15V18H14zM15,17H16V18H15zM17,17H18V18H17zM18,17H19V18H18zM21,17H22V18H21zM22,17H23V18H22zM28,17H29V18H28zM1,18H2V19H1zM6,18H7V19H6zM10,18H11V19H10zM13,18H14V19H13zM16,18H17V19H16zM17,18H18V19H17zM19,18H20V19H19zM23,18H24V19H23zM24,18H25V19H24zM25,18H26V19H25zM26,18H27V19H26zM28,18H29V19H28zM29,18H30V19H29zM3,19H4V20H3zM4,19H5V20H4zM6,19H7V20H6zM7,19H8V20H7zM8,19H9V20H8zM11,19H12V20H11zM12,19H13V20H12zM13,19H14V20H13zM14,19H15V20H14zM15,19H16V20H15zM16,19H17V20H16zM18,19H19V20H18zM27,19H28V20H27zM29,19H30V20H29zM4,20H5V21H4zM6,20H7V21H6zM10,20H11V21H10zM11,20H12V21H11zM12,20H13V21H12zM14,20H15V21H14zM18,20H19V21H18zM19,20H20V21H19zM20,20H21V21H20zM21,20H22V21H21zM24,20H25V21H24zM25,20H26V21H25zM28,20H29V21H28zM29,20H30V21H29zM1,21H2V22H1zM2,21H3V22H2zM3,21H4V22H3zM5,21H6V22H5zM7,21H8V22H7zM8,21H9V22H8zM10,21H11V22H10zM14,21H15V22H14zM18,21H19V22H18zM21,21H22V22H21zM22,21H23V22H22zM23,21H24V22H23zM24,21H25V22H24zM25,21H26V22H25zM26,21H27V22H26zM29,21H30V22H29zM9,22H10V23H9zM10,22H11V23H10zM12,22H13V23H12zM13,22H14V23H13zM14,22H15V23H14zM15,22H16V23H15zM16,22H17V23H16zM17,22H18V23H17zM20,22H21V23H20zM21,22H22V23H21zM25,22H26V23H25zM29,22H30V23H29zM1,23H2V24H1zM2,23H3V24H2zM3,23H4V24H3zM4,23H5V24H4zM5,23H6V24H5zM6,23H7V24H6zM7,23H8V24H7zM9,23H10V24H9zM16,23H17V24H16zM18,23H19V24H18zM20,23H21V24H20zM21,23H22V24H21zM23,23H24V24H23zM25,23H26V24H25zM26,23H27V24H26zM27,23H28V24H27zM29,23H30V24H29zM1,24H2V25H1zM7,24H8V25H7zM12,24H13V25H12zM15,24H16V25H15zM16,24H17V25H16zM17,24H18V25H17zM18,24H19V25H18zM21,24H22V25H21zM25,24H26V25H25zM28,24H29V25H28zM1,25H2V26H1zM3,25H4V26H3zM4,25H5V26H4zM5,25H6V26H5zM7,25H8V26H7zM9,25H10V26H9zM10,25H11V26H10zM13,25H14V26H13zM14,25H15V26H14zM15,25H16V26H15zM18,25H19V26H18zM20,25H21V26H20zM21,25H22V26H21zM22,25H23V26H22zM23,25H24V26H23zM24,25H25V26H24zM25,25H26V26H25zM26,25H27V26H26zM1,26H2V27H1zM3,26H4V27H3zM4,26H5V27H4zM5,26H6V27H5zM7,26H8V27H7zM10,26H11V27H10zM12,26H13V27H12zM13,26H14V27H13zM16,26H17V27H16zM17,26H18V27H17zM22,26H23V27H22zM29,26H30V27H29zM1,27H2V28H1zM3,27H4V28H3zM4,27H5V28H4zM5,27H6V28H5zM7,27H8V28H7zM11,27H12V28H11zM13,27H14V28H13zM15,27H16V28H15zM16,27H17V28H16zM18,27H19V28H18zM20,27H21V28H20zM21,27H22V28H21zM26,27H27V28H26zM27,27H28V28H27zM28,27H29V28H28zM29,27H30V28H29zM1,28H2V29H1zM7,28H8V29H7zM10,28H11V29H10zM15,28H16V29H15zM18,28H19V29H18zM21,28H22V29H21zM22,28H23V29H22zM23,28H24V29H23zM24,28H25V29H24zM26,28H27V29H26zM28,28H29V29H28zM29,28H30V29H29zM1,29H2V30H1zM2,29H3V30H2zM3,29H4V30H3zM4,29H5V30H4zM5,29H6V30H5zM6,29H7V30H6zM7,29H8V30H7zM9,29H10V30H9zM10,29H11V30H10zM12,29H13V30H12zM13,29H14V30H13zM14,29H15V30H14zM15,29H16V30H15zM16,29H17V30H16zM18,29H19V30H18zM19,29H20V30H19zM21,29H22V30H21zM26,29H27V30H26zM28,29H29V30H28z" id="qr-path" fill="#000000" fill-opacity="1" fill-rule="nonzero" stroke="none"/></svg></div>
+    <p class="nota" style="text-align:center">Funciona en cualquier celular. Gratis y sin registro.</p>
+    <div class="caja"><h3>¿Y en el potrero?</h3>
+      <p>HidroSopó mide la humedad del suelo a 15, 30 y 45 cm, mira el pronóstico y le dice al productor si debe regar hoy y por cuántos minutos. La decisión siempre es suya.</p></div>
+    <div class="pie">Proyecto HidroSopó · José Alejandro Pulido Gómez, Ingeniería Mecatrónica, Universitaria Agustiniana · Incentivo FOES 2026-II, Secretaría de Ciencia, Tecnología e Innovación de Sopó. Material educativo de libre distribución.</div>
+  </div>
+
+  <div class="panel portada">
+    <div style="display:flex;gap:2.5mm;align-items:center"><svg viewBox="0 0 16 20" class="gota" style="fill:#7FC6E6"><path d="M8 0C8 0 0 9 0 13.5A8 8 0 0 0 16 13.5C16 9 8 0 8 0Z"/></svg><span class="etq">HidroSopó</span></div>
+    <div style="display:grid;gap:5mm">
+      <h1>Sopó cuida el agua: <em>riegue con lo justo</em></h1>
+      <p>Guía rápida para huertas caseras, campesinos y familias. Cuánta agua necesita cada cultivo, cuándo regar y cómo aprovechar la lluvia.</p>
+    </div>
+    <div class="capas">
+      <div><i>1</i>Huerta: litros por cultivo</div>
+      <div><i>2</i>Cuatro reglas para regar mejor</div>
+      <div><i>3</i>Agua lluvia y ahorro en la casa</div>
+      <div><i>4</i>Experimento para el colegio</div>
+    </div>
+    <p style="font-size:8.6pt">Cada gota cuenta, y aquí se puede contar.</p>
+  </div>
+</div>
+
+<!-- ============ CARA INTERIOR ============ -->
+<div class="cara">
+  <div class="panel">
+    <span class="etq">Huerta casera</span>
+    <h2>¿Cuánta agua por metro cuadrado a la semana?</h2>
+    <p>Para una era de 1 m² con la planta ya produciendo. Multiplique por los metros de su era.</p>
+    <table><tr><th>Cultivo</th><th>Normal</th><th>Seco</th><th>Regaderas<br>(seco)</th></tr><tr><td>Lechuga</td><td>24 L</td><td>31 L</td><td>3,1</td></tr><tr><td>Cilantro</td><td>24 L</td><td>31 L</td><td>3,1</td></tr><tr><td>Cebolla larga</td><td>24 L</td><td>31 L</td><td>3,1</td></tr><tr><td>Tomate</td><td>28 L</td><td>36 L</td><td>3,6</td></tr><tr><td>Fresa</td><td>21 L</td><td>27 L</td><td>2,7</td></tr><tr><td>Zanahoria</td><td>26 L</td><td>33 L</td><td>3,3</td></tr><tr><td>Papa criolla</td><td>28 L</td><td>36 L</td><td>3,6</td></tr><tr><td>Fríjol</td><td>28 L</td><td>36 L</td><td>3,6</td></tr><tr><td>Aromáticas</td><td>22 L</td><td>28 L</td><td>2,8</td></tr></table>
+    <p class="nota">Regadera de 10 L. Recién sembrada necesita cerca de la mitad, pero en riegos cortos y frecuentes. Si llovió, espere y haga la prueba del dedo. Cálculo FAO-56 con la evaporación de referencia de la Sabana de Bogotá (2,8 mm/día normal y 3,6 mm/día en tiempo seco) y 80 % de aprovechamiento de la regadera.</p>
+  </div>
+
+  <div class="panel">
+    <span class="etq">Cuatro reglas</span>
+    <h2>Regar mejor gasta menos</h2>
+    <ol class="reglas">
+      <li><div><h3>A la hora fresca</h3>Antes de las 9 de la mañana o después de las 4 de la tarde. Al mediodía buena parte se evapora.</div></li>
+      <li><div><h3>Prueba del dedo</h3>Meta el dedo hasta el segundo nudillo. Si sale húmedo, todavía no riegue.</div></li>
+      <li><div><h3>Al pie de la mata</h3>Despacio y en la raíz, no sobre las hojas: se aprovecha más y se evitan hongos.</div></li>
+      <li><div><h3>Suelo cubierto</h3>Pasto seco, hojas o compost encima de la tierra guardan la humedad y espacian los riegos.</div></li>
+    </ol>
+    <div class="dato" style="background:#F8E8DD"><b style="color:#C2602C">Regar de más</b>no hace crecer más la planta: el agua se va por debajo de la raíz y se lleva el abono.</div>
+  </div>
+
+  <div class="panel">
+    <span class="etq">Para el colegio</span>
+    <h2>¿Qué suelo guarda más agua?</h2>
+    <div class="experimento">
+      <div><b>Paso 1</b>3 botellas cortadas, boca abajo, con tela en el pico.</div>
+      <div><b>Paso 2</b>Arena, tierra, y tierra con compost: la misma cantidad.</div>
+      <div><b>Paso 3</b>200 mL de agua en cada una. A los 10 min, mida lo que bajó.</div>
+    </div>
+    <p><b>Agua guardada = 200 mL − lo que bajó.</b> La tierra con materia orgánica guarda más: por eso cubrir el suelo ahorra riego.</p>
+    <div class="caja"><h3>Para el PUEAA de Sopó</h3>
+      <p>La Ley 373 de 1997 pide a los municipios un programa de uso eficiente y ahorro del agua, y campañas educativas a la comunidad (artículo 12). Este material hace parte de esa tarea.</p></div>
+    <div class="caja verde"><h3>Yo me comprometo</h3>
+      <p>En mi casa voy a ahorrar ______ litros al día cambiando: ______________________________</p>
+      <p class="nota">Firme, recorte y péguelo en la nevera.</p></div>
+  </div>
+</div>
+</body></html>

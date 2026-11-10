@@ -39,7 +39,7 @@ import costos
 app = FastAPI(
     title="HidroSopó API",
     description="Monitoreo IoT y optimización del uso del agua — Sopó, Cundinamarca",
-    version="1.0.0",
+    version="1.2.0",
 )
 
 app.add_middleware(
@@ -48,6 +48,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# De dónde vienen los datos que sirve este servidor. Mientras la base tenga
+# lecturas del gemelo digital, se deja en "simulacion" y la app lo rotula así.
+# Cuando el nodo real empiece a reportar, en Render: FUENTE_DATOS=campo
+FUENTE_DATOS = os.getenv("FUENTE_DATOS", "simulacion")
 
 # Calibración de los sensores, obtenida del procedimiento gravimétrico
 RUTA_CAL = os.getenv("RUTA_CALIBRACION", "config_sensores.json")
@@ -225,24 +230,48 @@ def recomendacion(predio_id: int, guardar: bool = False, enviar: bool = False,
     if not humedades:
         raise HTTPException(422, "La última lectura no tiene datos de humedad válidos")
 
-    # Predicción del modelo ML (si ya fue entrenado)
+    # Predicción del modelo ML (si ya fue entrenado). El contexto se arma con
+    # datos reales del predio: rezagos de 6 y 24 h, lluvia y riego de las
+    # últimas 24 h, pronóstico de Open-Meteo y la hora local. Si algo falla,
+    # se cae al contexto mínimo y la recomendación sigue saliendo (FAO-56).
+    def _lectura_cerca(horas):
+        t = ultima.ts - timedelta(hours=horas)
+        return (db.query(LecturaSuelo)
+                .filter(LecturaSuelo.predio_id == predio_id,
+                        LecturaSuelo.ts <= t + timedelta(minutes=45),
+                        LecturaSuelo.ts >= t - timedelta(minutes=45))
+                .order_by(desc(LecturaSuelo.ts)).first())
+    try:
+        l6, l24 = _lectura_cerca(6), _lectura_cerca(24)
+        lluvia_24 = (db.query(func.sum(LecturaSuelo.lluvia_mm))
+                     .filter(LecturaSuelo.predio_id == predio_id,
+                             LecturaSuelo.ts >= ultima.ts - timedelta(hours=24))
+                     .scalar()) or 0.0
+        vol_riego = (db.query(func.sum(EventoRiego.volumen_m3))
+                     .filter(EventoRiego.predio_id == predio_id,
+                             EventoRiego.inicio >= ultima.ts - timedelta(hours=24))
+                     .scalar()) or 0.0
+        area_ha = predio.area_regada_ha or predio.area_predio_ha or 1.0
+        try:
+            from ia.clima import obtener_pronostico
+            pron_ml = obtener_pronostico(predio.latitud, predio.longitud)  # mismo caché que el motor
+        except Exception:                                     # noqa: BLE001
+            pron_ml = None
+        ctx = modelo_ml.contexto_prediccion(
+            humedades[0],
+            hora_local=((ultima.ts.hour - 5) % 24) + ultima.ts.minute / 60.0,  # UTC → Bogotá
+            humedad_hace_6h=l6.hum_pct_1 if l6 else None,
+            humedad_hace_24h=l24.hum_pct_1 if l24 else None,
+            temp_aire=ultima.temp_aire, temp_suelo=ultima.temp_suelo_1,
+            hr_aire=ultima.hum_aire, lluvia_ultimas_24h_mm=float(lluvia_24),
+            riego_ultimas_24h_mm=float(vol_riego) / (area_ha * 10.0),   # m³/ha → mm
+            pronostico=pron_ml, profundidad_cm=15)
+    except Exception as e:                                    # noqa: BLE001
+        print(f"[ml] contexto mínimo por error: {e}")
+        ctx = modelo_ml.contexto_prediccion(humedades[0], hora_local=6.0)
     pred = modelo_ml.predecir(
         humedad_actual=humedades[0],
-        contexto={
-            "humedad_lag_6h": humedades[0],
-            "humedad_lag_24h": humedades[0],
-            "delta_humedad_6h": 0.0,
-            "temp_aire": ultima.temp_aire or 15.0,
-            "temp_suelo": ultima.temp_suelo_1 or 15.0,
-            "hr_aire": ultima.hum_aire or 70.0,
-            "et0_acumulada_24h": 3.0,
-            "lluvia_acumulada_24h": ultima.lluvia_mm or 0.0,
-            "lluvia_pronosticada_24h": 0.0,
-            "lluvia_pronosticada_48h": 0.0,
-            "hora_sin": 0.0, "hora_cos": 1.0,
-            "dia_año_sin": 0.0, "dia_año_cos": 1.0,
-            "profundidad_cm": 15,
-        },
+        contexto=ctx,
         horizonte_horas=48,
     )
     if pred:
@@ -293,6 +322,7 @@ def recomendacion(predio_id: int, guardar: bool = False, enviar: bool = False,
             db.commit()
             r["alerta_enviada"] = ok
 
+    r["fuente_datos"] = FUENTE_DATOS
     return r
 
 
@@ -1065,6 +1095,8 @@ def salud(db: Session = Depends(get_db)):
     ahora = datetime.utcnow()
     return {
         "estado": "ok",
+        "version": app.version,
+        "fuente_datos": FUENTE_DATOS,
         "hora_servidor": ahora.isoformat(),
         "nodos": [{
             "codigo": n.codigo, "tipo": n.tipo, "activo": n.activo,

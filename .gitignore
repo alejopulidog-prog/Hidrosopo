@@ -1,11 +1,14 @@
 venv/
+.venv/
 __pycache__/
+.pytest_cache/
 *.db
 .env
 
-# macOS
+# Documentos con datos personales (cédula, firma): se envían por correo, no se publican
+09_entregables/informes/
+09_entregables/*.docx
+09_entregables/*.pptx
+09_entregables/datos_personales.json
+02_firmware/src/secretos.h
 .DS_Store
-
-# Python
-.pytest_cache/
-*.pyc

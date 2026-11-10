@@ -13,7 +13,8 @@ Proyecto de Ciencia, Tecnología e Innovación — Fondo Especial para el Foment
 1. 👉 **[`00_PLAN_MAESTRO_EJECUCION.md`](00_PLAN_MAESTRO_EJECUCION.md)** — el plan completo:
    cronograma, presupuesto, riesgos y dos advertencias que cambian el diseño del proyecto.
    Léelo antes de comprar nada.
-2. 🔧 **[`07_GUIA_PUESTA_EN_MARCHA.md`](07_GUIA_PUESTA_EN_MARCHA.md)** — el paso a paso:
+2. 🚀 **[`11_DESPLIEGUE_PRO.md`](11_DESPLIEGUE_PRO.md)** — publicar y actualizar: GitHub → Supabase → Render → Netlify.
+3. 🔧 **[`07_GUIA_PUESTA_EN_MARCHA.md`](07_GUIA_PUESTA_EN_MARCHA.md)** — el paso a paso:
    instalar el módulo de IA, publicar el backend, y poner la app en el celular del productor.
 
 ## Contenido
@@ -26,7 +27,7 @@ Proyecto de Ciencia, Tecnología e Innovación — Fondo Especial para el Foment
 | `09_entregables/` | Guion del póster, manual del productor, y ajustes a la presentación |
 | `01_hardware/` | BOM con precios CO, conexiones, calibración, energía, y CAD en **STEP / STL / DXF** |
 | `02_firmware/` | Código ESP32: nodo de suelo, nodo de caudal, gateway |
-| `03_backend/` | API FastAPI, motor FAO-56, modelo ML, **agente conversacional**, sectores de riego, costo en pesos, 83 pruebas |
+| `03_backend/` | API FastAPI, motor FAO-56, modelo ML, **agente conversacional**, sectores de riego, costo en pesos, 102 pruebas |
 | `04_dashboard/` | App del productor: PWA instalable, corte de suelo interactivo y chat con el agente |
 | `05_institucional/` | Consentimiento informado, cartas, protocolo PUEAA, bitácora |
 | `06_datos/` | Generador de datos sintéticos para probar sin hardware |
@@ -60,7 +61,7 @@ El dashboard funciona en modo demostración aunque el backend no esté corriendo
 
 ```bash
 # Verificar que todo esté sano
-cd 03_backend && pytest        # 83 pruebas
+cd 03_backend && pytest        # 102 pruebas
 ```
 
 ## Las tres cosas que no debes olvidar

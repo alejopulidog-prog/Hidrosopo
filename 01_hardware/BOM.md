@@ -108,3 +108,27 @@ Si el presupuesto no da:
 | GitHub | $0 |
 | OpenSCAD / FreeCAD / KiCad | $0 |
 | **Total software** | **$0** |
+
+
+---
+
+## CONFIGURACIÓN WIFI DEL PILOTO (adoptada para reducir costos)
+
+El firmware ya soporta el envío directo por WiFi/HTTPS (`config.h → TRANSPORTE_WIFI`). Con WiFi cada nodo habla con el router de la finca: **no se necesitan gateway, radio LoRa ni antena**. LoRa queda como opción de escalamiento para potreros sin cobertura. Cálculo a partir de las líneas de este mismo BOM (placa ESP32 DevKit V1 de $28.000, la de la «versión económica»):
+
+| Bloque | LoRa (Heltec) | WiFi (ESP32 DevKit) | Cambio |
+|---|---|---|---|
+| Nodo de suelo | 493.000 | 328.000 | −placa Heltec 175.000 +DevKit 28.000 −antena 18.000 |
+| Nodo de caudal | 311.000 | 164.000 | −Heltec 175.000 +DevKit 28.000 |
+| Gateway | 202.000 | 0 | se usa el router WiFi de la finca |
+| Encapsulado y montaje | 317.500 | 289.500 | una caja IP65 menos (28.000) |
+| **Subtotal equipos** | **1.323.500** | **781.500** | **−41 %** |
+| Herramienta (si no se tiene) | 175.000 | 175.000 | |
+| Contingencia 15 % | 225.000 | 143.475 | |
+| **TOTAL** | **≈ 1.723.500** | **≈ 1.100.000** | **−36 %** |
+
+Condiciones y ajustes:
+- El nodo debe quedar **dentro del alcance del router** (≈ 50 m) o con un repetidor/antena exterior. Si el potrero no tiene señal, se activa LoRa y se agrega la pasarela (+ $202.000 aprox.).
+- La ESP32 DevKit V1 requiere **ajustar los pines** en `config.h` y la placa en `platformio.ini` (el firmware está escrito para la Heltec V3). Usando la Heltec en modo WiFi el ahorro es menor (≈ $250.000 por no comprar gateway, antena ni una caja).
+- El cálculo de energía con WiFi está en `ENERGIA.md` (sección «Con transmisión WiFi»).
+- Las cifras del plan maestro (`≈ $1.260.000`) usaban componentes económicos para LoRa y quedan reemplazadas por esta tabla, que es la fuente de costos del proyecto.

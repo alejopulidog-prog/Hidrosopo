@@ -1,0 +1,26 @@
+# HidroSopó · Blueprint de Render (API FastAPI)
+# Si el servicio ya existe, este archivo sirve de referencia de la configuración
+# correcta. Para crearlo desde cero: Render → New → Blueprint → este repositorio.
+services:
+  - type: web
+    name: hidrosopo
+    runtime: docker
+    plan: free
+    region: oregon
+    dockerContext: ./03_backend
+    dockerfilePath: ./03_backend/Dockerfile
+    healthCheckPath: /api/v1/salud
+    autoDeploy: true
+    envVars:
+      - key: DATABASE_URL          # pooler de Supabase (transacción, puerto 6543). Se pega a mano.
+        sync: false
+      - key: CORS_ORIGINS
+        value: https://hidrosopo.netlify.app
+      - key: FUENTE_DATOS          # simulacion | campo
+        value: simulacion
+      - key: CANAL_ALERTAS
+        value: consola
+      - key: LLM_PROVEEDOR
+        value: ninguno
+      - key: TZ
+        value: America/Bogota

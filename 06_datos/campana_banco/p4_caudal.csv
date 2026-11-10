@@ -1,0 +1,11 @@
+serie,llenado,litros_reales,litros_nodo,error_pct,caudal_lpm,fuente
+K de fábrica (450),1,20.14,18.59,-7.72,9.5,simulacion
+K de fábrica (450),2,19.88,18.8,-5.43,15.6,simulacion
+K de fábrica (450),3,19.89,18.42,-7.41,10.3,simulacion
+K de fábrica (450),4,20.14,18.8,-6.63,12.4,simulacion
+K de fábrica (450),5,19.9,18.77,-5.67,15.0,simulacion
+K corregido (420),1,19.9,19.98,0.42,13.6,simulacion
+K corregido (420),2,20.17,20.41,1.22,15.6,simulacion
+K corregido (420),3,19.98,20.13,0.76,14.5,simulacion
+K corregido (420),4,19.93,19.88,-0.26,11.9,simulacion
+K corregido (420),5,20.04,20.0,-0.2,12.1,simulacion

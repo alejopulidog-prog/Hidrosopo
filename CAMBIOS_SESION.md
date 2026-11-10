@@ -1,3 +1,92 @@
+# Versión 1.2.0 (10/11/2026): despliegue profesional
+
+- `render.yaml`, `netlify.toml` (proxy `/api/*` → Render, direcciones cortas `/laboratorio`, `/agua`, `/resultados`, cabeceras de seguridad y caché), `.github/workflows/` (pruebas en cada push y «mantener activo»), `03_backend/.env.example`.
+- Backend: `FUENTE_DATOS` (simulacion|campo) en `/recomendacion` y `/salud`; la app rotula «gemelo digital» mientras no haya datos de campo. Conexión a Supabase por pooler con `pool_recycle` y SSL. **102 pruebas.**
+- Privacidad del repo público: cédula fuera del código (`datos_personales.json`), informes y .docx personales fuera de Git, clave WiFi en `secretos.h`.
+- Guía paso a paso: `11_DESPLIEGUE_PRO.md`.
+
+---
+
+# Versión 11 (10/11/2026): componente «Sopó Cuida el Agua»
+
+- **Página `04_dashboard/comunidad.html`**: Mi huerta (riego por cultivo, FAO-56), Agua lluvia, Reto del hogar, Escuela del agua (quiz de 8 preguntas + experimento) y PUEAA/Emsersopó (flujo e indicadores de ejemplo) + hoja de ruta de la app educativa «Guardianes del Agua». Enlace directo: `…#comunidad`.
+- **Plegable** tríptico con QR: `09_entregables/plegable/`.
+- **Estrategia de apropiación social** con guía docente, encuesta antes/después, carta a Emsersopó y planilla de asistencia: `09_entregables/informes/Estrategia_Sopo_Cuida_el_Agua_HidroSopo.docx`.
+- Póster (sección 07 «PUEAA y comunidad»), informe final (sección 7) y correos actualizados.
+
+---
+
+# Versión 10 (10/11/2026): avance 1, gemelo digital ampliado y entregas restantes
+
+- **Campaña de pruebas en banco virtual** (`06_datos/campana_banco_simulada.py`): los 5 protocolos simulados con modelos físicos (sensor capacitivo, pérdida WiFi log-distancia + buffer, descarga Li-ion con ESP32 DevKit vs. placa de bajo consumo, factor K del caudalímetro) + IA. Todo rotulado SIMULACIÓN. Hallazgo: la DevKit gasta ≈ 8 mA en reposo → ≈ 19 días de autonomía.
+- **Laboratorio web** (`04_dashboard/gemelo.html`): simulador de riego FAO-56 interactivo (cultivo, suelo, temporada, área, tarifa, 50 climas), pruebas en banco y estado honesto del plan de trabajo. Publicado junto con la app.
+- **Asistente**: nuevas intenciones «¿va a caer helada?» (mínima de Open-Meteo) y «¿cuánto tiempo prendo la bomba?», en backend y en la app sin conexión. **101 pruebas, 101 aprobadas.**
+- **Póster**: huecos de foto reemplazados por capturas reales del software, render del CAD y gráficas de banco (rotuladas); tabla de pruebas con resultados de banco virtual; QR a la plataforma; fase de campo 2027.
+- **Informes** (`09_entregables/generar_informes.py` → `informes/`): avance 1, avance 2, informe técnico final, correos. Lo que debe completarse con datos reales va en amarillo [COMPLETAR].
+- **Bitácora y formato** actualizados al 10/11 con la propuesta de reprogramación (Anexo 5).
+
+---
+
+# Ajuste final (26/10): piloto con WiFi directo y cifras unificadas
+
+- **Comunicación:** el piloto usa WiFi directo (`config.h → TRANSPORTE_WIFI`). LoRa y la pasarela quedan como opción de escalamiento para potreros sin cobertura. Hardware ≈ $1,1 M frente a ≈ $1,7 M (BOM.md, sección «Configuración WiFi del piloto»).
+- **Costos:** la fuente es `01_hardware/BOM.md`; la cifra de ≈ $1.260.000 del plan maestro queda reemplazada.
+- **Energía:** `ENERGIA.md` tiene la sección «Con transmisión WiFi» (> 30 días sin sol calculados; objetivo de diseño ≥ 8 días).
+- **Pruebas:** la prueba de «alcance LoRa» pasa a «conexión WiFi en el sitio» (≥ 95 % de envíos en 72 h) en `PROTOCOLO_PRUEBAS.md`.
+- **Pendiente técnico:** si se usa ESP32 DevKit en lugar de la Heltec V3, ajustar pines en `config.h` y la placa en `platformio.ini`.
+
+---
+
+# Cambios de esta sesión (parte 5) — cierre FOES
+
+## 11. El modelo de IA ya le gana a la persistencia (antes perdía)
+
+Las métricas guardadas decían que el modelo a 24 h era **11 % peor** que suponer
+"mañana igual que hoy". Un jurado técnico lo habría visto. Tres causas, tres arreglos:
+
+- **Simulador:** el "pronóstico" de lluvia era la lluvia del día siguiente, así que dejaba
+  por fuera el aguacero de esa misma tarde. Ahora es una ventana móvil de 24/48 h que se
+  refresca cada hora, como el pronóstico horario de Open-Meteo (`06_datos/generar_datos_prueba.py`).
+- **Variables nuevas:** ET₀ pronosticada, riego de las últimas 24 h y riego programado
+  (en 0 en la predicción = "si no riega, ¿qué pasa?") (`ia/modelo_ml.py`).
+- **Backend:** `main.py` alimentaba el modelo con valores fijos (lags = humedad actual,
+  pronóstico 0, hora fija). Ahora usa lecturas reales de hace 6 y 24 h, lluvia y riego de
+  las últimas 24 h, el pronóstico de Open-Meteo y la hora local, con respaldo si algo falla.
+  La lógica vive en `modelo_ml.contexto_prediccion()`, una función pura con 2 pruebas nuevas.
+- La persistencia se mide ahora sobre los **mismos bloques** de validación que el modelo
+  (antes, sobre toda la serie: comparación injusta). La confianza se calcula contra la
+  persistencia y no con el R² de los deltas.
+
+| Horizonte | MAE modelo | MAE persistencia | Mejora |
+|---|---|---|---|
+| 24 h | 0,52 % vol | 0,73 % vol | **30 %** |
+| 48 h | 0,80 % vol | 1,10 % vol | **27 %** |
+
+**85 pruebas, 85 aprobadas.**
+
+## 12. Escenario de ahorro (gemelo digital) — `06_datos/escenario_ahorro.py`
+
+Riego por calendario vs. HidroSopó con el mismo clima, 50 climas distintos.
+Temporada seca: ahorro mediano **35 %** (P10–P90: 24–56 %). Lluvias: 82 %.
+Está rotulado como simulación en todas partes: el número oficial sale del caudalímetro.
+
+## 13. Póster 90 × 120 cm generado por código — `09_entregables/poster/`
+
+`python generar_poster.py` → PDF vectorial listo para imprenta. Lee datos, métricas y
+resultados de pruebas de `config.json`; fotos y logos de `fotos/` y `logos/`.
+Con datos de campo: `"fuente_datos": "campo"` y se regenera.
+
+## 14. Página interactiva de resultados — `04_dashboard/resultados.html`
+
+Para el jurado y el QR del póster: KPIs animados, humedad por profundidad con filtros,
+ahorro por temporada con calculadora (área y fuente de agua), y comparación del modelo IA.
+
+## 15. Protocolo de pruebas y paso a paso de entregas
+
+`09_entregables/PROTOCOLO_PRUEBAS.md` y `10_PASO_A_PASO_ENTREGAS.md`.
+
+---
+
 # Cambios de esta sesión (parte 4)
 
 ## 10. Las 83 pruebas — arreglado, y era un bug real de producción, no solo de tests

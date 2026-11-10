@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>HidroSopó · Resultados del proyecto</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+:root{ box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  --fondo:#F6F5F0; --papel:#FFFFFF; --tinta:#1E1A14; --humo:#6A6961; --linea:#E3E2DA;
+  --tierra:#2A2117; --agua:#2E7EA6; --agua2:#5AA8C9; --kikuyo:#6F9438; --arcilla:#C4622D; --oro:#C9A46B;
+  --aviso-f:#FFF3E6; --aviso-t:#8A3E14; color-scheme:light }
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){ --fondo:#14110D; --papel:#1F1A14; --tinta:#F1ECE4; --humo:#A9A397; --linea:#332C23;
+  --tierra:#0E0B08; --agua:#5AA8C9; --agua2:#8CC4DC; --kikuyo:#9BBF63; --arcilla:#E08A55; --aviso-f:#3A2414; --aviso-t:#F4C29A; color-scheme:dark } }
+:root[data-theme="dark"]{ --fondo:#14110D; --papel:#1F1A14; --tinta:#F1ECE4; --humo:#A9A397; --linea:#332C23;
+  --tierra:#0E0B08; --agua:#5AA8C9; --agua2:#8CC4DC; --kikuyo:#9BBF63; --arcilla:#E08A55; --aviso-f:#3A2414; --aviso-t:#F4C29A; color-scheme:dark }
+html{ scroll-padding-top:env(safe-area-inset-top,0px) }
+*,*::before,*::after{ box-sizing:border-box } body{ margin:0; background:var(--fondo); color:var(--tinta);
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; line-height:1.5 }
+.hero{ background:linear-gradient(170deg,#2A2117,#3A2D1F 70%,#54412D); color:#fff; padding:44px 20px 70px; position:relative; overflow:hidden }
+.hero::after{ content:""; position:absolute; left:-10%; right:-10%; bottom:-40px; height:90px; background:var(--fondo); border-radius:50% 50% 0 0 / 100% 100% 0 0 }
+.envoltura{ max-width:1080px; margin:0 auto; padding:0 20px }
+.marca{ font-weight:800; color:#BFE0EE; letter-spacing:.03em; display:flex; gap:8px; align-items:center }
+.marca i{ width:12px; height:16px; background:#5AA8C9; border-radius:50% 50% 50% 50%/62% 62% 38% 38%; transform:rotate(180deg) }
+h1{ font-size:clamp(28px,5vw,52px); line-height:1.05; margin:14px 0 10px; letter-spacing:-.01em } h1 em{ font-style:normal; color:var(--oro) }
+.hero p{ color:#E8E3DA; max-width:680px; margin:0 } .hero small{ display:block; color:#BFB6A6; margin-top:14px }
+.aviso{ background:var(--aviso-f); color:var(--aviso-t); border-radius:12px; padding:10px 14px; font-size:14px; font-weight:600; margin:-30px auto 22px; position:relative; z-index:2 }
+.kpis{ display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:14px }
+.kpi{ background:var(--papel); border:1px solid var(--linea); border-radius:16px; padding:18px; opacity:0; transform:translateY(10px); animation:entra .6s forwards }
+.kpi:nth-child(2){animation-delay:.08s}.kpi:nth-child(3){animation-delay:.16s}.kpi:nth-child(4){animation-delay:.24s}
+@keyframes entra{ to{ opacity:1; transform:none } } @media (prefers-reduced-motion:reduce){ .kpi{ animation:none; opacity:1; transform:none } }
+.kpi b{ display:block; font-size:38px; line-height:1; color:var(--agua); font-variant-numeric:tabular-nums } .kpi span{ color:var(--humo); font-size:14px }
+.kpi:nth-child(2) b{ color:var(--kikuyo) } .kpi:nth-child(4) b{ color:var(--arcilla) }
+.tarjeta{ background:var(--papel); border:1px solid var(--linea); border-radius:18px; padding:20px; margin-top:22px }
+h2{ margin:0 0 4px; font-size:22px } .sub{ color:var(--humo); margin:0 0 14px; font-size:15px }
+.pestanas{ display:flex; gap:6px; background:var(--fondo); padding:5px; border-radius:12px; width:max-content; max-width:100%; overflow-x:auto; margin:26px 0 0 }
+.pestanas button{ border:0; background:transparent; color:var(--humo); font:inherit; font-weight:600; padding:9px 16px; border-radius:9px; cursor:pointer; white-space:nowrap }
+.pestanas button[aria-selected="true"]{ background:var(--papel); color:var(--tinta); box-shadow:0 1px 3px rgba(0,0,0,.12) }
+.panel[hidden]{ display:none } .lienzo{ position:relative; height:340px }
+.chips{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px }
+.chip{ border:1px solid var(--linea); background:var(--papel); color:var(--tinta); border-radius:999px; padding:6px 12px; font:inherit; font-size:14px; cursor:pointer; display:flex; gap:6px; align-items:center }
+.chip i{ width:10px; height:10px; border-radius:50% } .chip[aria-pressed="false"]{ opacity:.45 }
+.calc{ display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:16px; margin-top:18px; align-items:end }
+label{ font-size:14px; color:var(--humo); display:block; margin-bottom:6px } input[type=range]{ width:100%; accent-color:var(--agua) }
+select{ width:100%; padding:9px; border-radius:10px; border:1px solid var(--linea); background:var(--papel); color:var(--tinta); font:inherit }
+.resultado{ background:linear-gradient(110deg,#1F5F80,#2E7EA6); color:#fff; border-radius:14px; padding:16px 18px }
+.resultado b{ font-size:30px; display:block; line-height:1.1 } .resultado span{ font-size:14px; color:#DDEEF6 }
+.dos{ display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:18px }
+.ruta{ display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:12px; counter-reset:f }
+.fase{ border:1px solid var(--linea); border-radius:14px; padding:14px; position:relative; background:var(--fondo) }
+.fase::before{ counter-increment:f; content:counter(f); width:28px; height:28px; border-radius:50%; background:var(--kikuyo); color:#fff; display:grid; place-items:center; font-weight:800; margin-bottom:8px }
+.fase b{ display:block } .fase span{ color:var(--humo); font-size:14px } .fase em{ display:inline-block; margin-top:8px; font-style:normal; font-size:12px; font-weight:700; padding:3px 9px; border-radius:999px; background:var(--aviso-f); color:var(--aviso-t) }
+table{ width:100%; border-collapse:collapse; font-size:15px } td,th{ padding:8px 6px; border-bottom:1px solid var(--linea); text-align:left } th{ color:var(--humo); font-weight:600; font-size:13px }
+footer{ color:var(--humo); font-size:13px; text-align:center; padding:30px 20px 40px }
+</style></head><body>
+<header class="hero"><div class="envoltura">
+  <div class="marca"><i></i>HidroSopó</div>
+  <h1>¿Cuánta agua se ahorra cuando el <em>suelo</em> puede hablar?</h1>
+  <p>Monitoreo Ambiental Inteligente y Uso Eficiente del Agua · IoT + inteligencia artificial para el riego en predios rurales de Sopó, Cundinamarca.</p>
+  <small>José Alejandro Pulido Gómez · Ingeniería Mecatrónica, Uniagustiniana · Estímulo FOES 2026-II · COMUC+CTeI Sopó</small>
+</div></header>
+<main class="envoltura">
+  <div class="aviso">Gemelo digital: estos resultados vienen de la simulación. El ahorro definitivo es el que mida el caudalímetro en el predio piloto.</div>
+  <section class="kpis">
+    <div class="kpi"><b data-n="AHORRO" data-suf=" %">0</b><span>menos agua en temporada seca (mediana de 50 climas)</span></div>
+    <div class="kpi"><b data-n="MEJORA" data-suf=" %">0</b><span>mejor que la persistencia: el modelo de IA a 24 h</span></div>
+    <div class="kpi"><b data-n="85" data-suf="/85">0</b><span>pruebas automáticas del software aprobadas</span></div>
+    <div class="kpi"><b data-n="1.1" data-pre="$" data-suf=" M" data-dec="1">0</b><span>costo del hardware por predio · software $0</span></div>
+  </section>
+
+  <div class="pestanas" role="tablist">
+    <button role="tab" aria-selected="true" data-p="pHum">Humedad del suelo</button>
+    <button role="tab" aria-selected="false" data-p="pAho">Ahorro de agua</button>
+    <button role="tab" aria-selected="false" data-p="pIA">Inteligencia artificial</button>
+  </div>
+
+  <section class="tarjeta panel" id="pHum">
+    <h2>Humedad por profundidad · 4 semanas</h2>
+    <p class="sub">Toque una profundidad para mostrarla u ocultarla. Las barras son la lluvia; la línea punteada, el umbral de riego (FAO-56).</p>
+    <div class="chips" id="chipsProf"></div>
+    <div class="lienzo"><canvas id="gHum"></canvas></div>
+  </section>
+
+  <section class="tarjeta panel" id="pAho" hidden>
+    <h2>Agua aplicada: riego tradicional vs. HidroSopó</h2>
+    <p class="sub">Mismo clima, 1 ha de kikuyo, 90 días. La zona sombreada es el agua que no se bombeó.</p>
+    <div class="chips"><button class="chip" aria-pressed="true" data-t="seca">Temporada seca (dic–feb)</button><button class="chip" aria-pressed="false" data-t="lluviosa">Temporada de lluvias (sep–nov)</button></div>
+    <div class="lienzo"><canvas id="gAho"></canvas></div>
+    <div class="calc">
+      <div><label for="area">Área regada: <b id="areaV">1,0</b> ha</label><input id="area" type="range" min="0.25" max="5" step="0.25" value="1"></div>
+      <div><label for="fuente">Fuente de agua y bombeo</label><select id="fuente">
+        <option value="190">Quebrada propia + bomba eléctrica ($190/m³)</option>
+        <option value="1905">Acueducto veredal + bomba eléctrica ($1.905/m³)</option>
+        <option value="2600">Pozo + motobomba diésel ($2.600/m³)</option></select></div>
+      <div class="resultado"><b id="calcM3">—</b><span id="calcCop">—</span></div>
+    </div>
+    <table style="margin-top:16px"><thead><tr><th></th><th>Tradicional</th><th>HidroSopó</th></tr></thead><tbody id="tablaAho"></tbody></table>
+  </section>
+
+  <section class="tarjeta panel" id="pIA" hidden>
+    <div class="dos">
+      <div><h2>¿La IA le gana a no hacer nada?</h2>
+        <p class="sub">Error medio (MAE, % vol) en validación temporal. Persistencia = “mañana igual que hoy”.</p>
+        <div class="lienzo" style="height:280px"><canvas id="gMae"></canvas></div></div>
+      <div><h2>¿Qué mira el modelo?</h2>
+        <p class="sub">Importancia de cada variable en la predicción a 24 h.</p>
+        <div class="lienzo" style="height:280px"><canvas id="gImp"></canvas></div></div>
+    </div>
+  </section>
+
+  <section class="tarjeta">
+    <h2>Ruta del proyecto</h2><p class="sub">Los cuatro bloques que pidió el COMUC+CTeI, con sus entregas.</p>
+    <div class="ruta">
+      <div class="fase"><b>Diagnóstico y diseño electrónico</b><span>24 ago – 9 oct</span><br><em>Avance 1 · 5 nov</em></div>
+      <div class="fase"><b>Sensores y plataforma en la nube</b><span>28 sep – 3 nov</span></div>
+      <div class="fase"><b>Módulo de IA e instalación piloto</b><span>12 oct – 13 nov</span><br><em>Avance 2 · 19 nov</em></div>
+      <div class="fase"><b>Pruebas, análisis y recomendaciones</b><span>9 – 26 nov</span><br><em>Póster · 26 nov</em></div>
+    </div>
+  </section>
+</main>
+<footer>💧 Cuidemos el agua, cuidemos el futuro · Código MIT · Diseños CC BY 4.0</footer>
+<script>
+const D = {"hum": {"15": [31.12, 31.16, 31.09, 30.87, 30.43, 30.19, 30.17, 30.19, 30.19, 30.22, 30.08, 29.84, 29.48, 29.76, 29.94, 30.14, 29.95, 29.97, 29.93, 29.62, 29.28, 29.2, 29.08, 29.22, 28.97, 29.02, 29.0, 28.67, 28.24, 28.15, 28.02, 28.05, 28.09, 28.01, 27.94, 27.67, 27.54, 29.31, 30.46, 30.39, 30.49, 30.58, 30.52, 30.12, 29.85, 29.52, 29.46, 29.53, 29.57, 29.44, 29.42, 29.25, 29.3, 31.82, 32.01, 31.97, 31.97, 31.9, 31.95, 31.66, 31.34, 31.12, 31.02, 31.06, 30.91, 31.11, 30.98, 30.69, 30.43, 30.54, 30.82, 30.76, 30.64, 30.87, 30.73, 30.36, 30.18, 29.96, 29.75, 29.82, 29.76, 29.91, 29.75, 29.47, 29.21, 29.05, 29.25, 29.17, 29.22, 29.11, 29.12, 28.95, 28.9, 31.68, 32.11, 32.05, 32.08, 31.99, 31.94, 31.61, 31.35, 31.27, 31.07, 31.05, 31.06, 30.9, 31.11, 30.7, 30.39, 30.24, 30.19, 30.05, 30.12, 30.2, 30.16, 29.89, 29.44, 29.23, 29.15, 29.25, 29.3, 29.13, 29.16, 28.79, 28.47, 28.22, 28.21, 28.1, 28.22, 28.3, 28.19, 27.78, 27.65, 27.35, 27.3, 27.32, 27.22, 27.13, 27.35, 26.98, 26.79, 28.47, 29.6, 29.56, 29.62, 29.61, 29.64, 29.29, 29.13, 28.7, 28.69, 28.67, 28.75, 28.8, 28.79, 28.54, 28.09, 27.88, 27.93, 27.88, 27.81, 27.85, 27.68, 27.4, 27.08, 27.04, 26.79, 26.9, 26.81, 26.78, 26.82, 26.73, 26.31, 25.88, 25.9, 25.93, 26.0, 25.96, 25.8, 25.71, 25.35, 25.07, 25.08, 25.0, 24.97, 25.07, 25.21, 24.81, 24.4, 24.98, 25.35, 25.27, 25.3, 25.38, 25.22, 24.97, 24.58, 24.57, 24.71, 24.72, 24.65, 24.75, 24.58, 24.55, 24.16, 24.09, 24.09, 24.11, 24.16, 24.22, 24.1, 24.02, 23.85, 25.89, 27.04, 27.14, 27.18, 27.17, 27.18, 26.88, 26.56, 27.43, 28.07, 27.95], "30": [26.58, 26.59, 26.61, 26.5, 26.33, 26.17, 26.24, 26.25, 26.27, 26.22, 26.2, 26.05, 25.83, 26.03, 25.82, 25.74, 25.72, 25.81, 25.77, 25.67, 25.44, 25.26, 25.26, 25.26, 25.36, 25.28, 25.36, 25.25, 25.0, 24.87, 24.97, 24.89, 24.88, 24.94, 24.77, 24.78, 24.57, 24.55, 24.46, 24.42, 24.54, 24.48, 24.43, 24.35, 24.32, 24.12, 24.11, 24.09, 24.1, 24.24, 24.06, 23.78, 23.58, 24.53, 26.14, 26.04, 26.13, 26.12, 26.12, 26.07, 25.94, 25.58, 25.67, 25.55, 25.88, 25.64, 25.67, 25.65, 25.41, 25.31, 25.26, 25.37, 25.31, 25.32, 25.26, 25.05, 24.97, 24.87, 24.8, 24.84, 24.77, 24.83, 24.92, 24.72, 24.67, 24.44, 24.46, 24.42, 24.48, 24.48, 24.5, 24.24, 24.14, 25.08, 26.8, 26.61, 26.67, 26.66, 26.6, 26.57, 26.33, 26.37, 26.31, 26.19, 26.34, 26.26, 26.32, 26.04, 25.94, 25.97, 25.74, 25.8, 25.74, 25.85, 25.9, 25.72, 25.54, 25.34, 25.4, 25.39, 25.45, 25.45, 25.4, 25.26, 25.24, 25.0, 25.0, 24.94, 25.02, 25.05, 25.06, 24.89, 24.69, 24.58, 24.6, 24.6, 24.43, 24.74, 24.63, 24.51, 24.34, 24.25, 24.11, 24.23, 24.1, 24.1, 24.25, 24.24, 23.99, 23.74, 23.7, 23.74, 23.81, 23.76, 23.87, 23.78, 23.54, 23.46, 23.32, 23.38, 23.42, 23.36, 23.47, 23.36, 23.16, 23.08, 23.04, 22.87, 22.98, 22.93, 22.98, 22.94, 22.61, 22.53, 22.62, 22.48, 22.61, 22.61, 22.66, 22.44, 22.36, 22.27, 22.28, 22.28, 22.14, 22.3, 22.23, 22.02, 22.05, 21.88, 21.91, 21.75, 21.81, 21.85, 21.79, 21.73, 21.48, 21.51, 21.34, 21.4, 21.52, 21.47, 21.52, 21.3, 21.0, 20.98, 20.98, 20.99, 21.06, 21.14, 21.02, 20.9, 20.8, 20.54, 20.6, 20.63, 20.56, 20.72, 20.61, 20.42, 20.28, 20.29, 20.27, 20.09], "45": [27.03, 27.04, 27.05, 26.98, 27.06, 26.98, 26.91, 26.87, 26.94, 26.94, 26.95, 27.01, 26.85, 26.82, 26.56, 26.87, 26.83, 26.79, 26.8, 26.77, 26.74, 26.6, 26.7, 26.81, 26.66, 26.63, 26.65, 26.74, 26.62, 26.53, 26.5, 26.64, 26.58, 26.68, 26.53, 26.49, 26.49, 26.46, 26.51, 26.35, 26.58, 26.43, 26.36, 26.39, 26.36, 26.32, 26.35, 26.48, 26.38, 26.31, 26.33, 26.34, 26.33, 26.2, 26.2, 26.24, 26.18, 26.16, 26.21, 26.06, 26.04, 25.99, 26.08, 25.89, 25.98, 26.17, 26.12, 26.17, 25.96, 25.93, 25.94, 25.88, 25.93, 25.91, 25.86, 25.89, 25.94, 25.72, 25.78, 25.76, 25.8, 25.89, 25.77, 25.81, 25.74, 25.63, 25.49, 25.69, 25.68, 25.56, 25.62, 25.86, 25.52, 25.4, 25.56, 25.69, 25.44, 25.57, 25.51, 25.43, 25.37, 25.51, 25.55, 25.41, 25.58, 25.5, 25.44, 25.44, 25.37, 25.38, 25.28, 25.34, 25.32, 25.34, 25.34, 25.34, 25.23, 25.26, 25.19, 25.16, 25.33, 25.15, 25.2, 25.03, 25.07, 25.29, 24.94, 25.05, 24.95, 25.05, 25.07, 25.0, 25.1, 24.91, 24.94, 25.01, 24.98, 24.89, 25.04, 24.78, 24.94, 24.78, 24.81, 24.83, 24.88, 24.69, 24.74, 24.79, 24.73, 24.68, 24.71, 24.62, 24.84, 24.59, 24.76, 24.58, 24.79, 24.59, 24.59, 24.48, 24.59, 24.54, 24.66, 24.48, 24.41, 24.56, 24.43, 24.42, 24.6, 24.48, 24.47, 24.44, 24.36, 24.21, 24.29, 24.39, 24.31, 24.3, 24.33, 24.4, 24.29, 24.24, 24.19, 24.31, 24.16, 24.09, 24.31, 24.23, 24.21, 23.98, 24.18, 24.13, 24.03, 24.12, 24.11, 24.1, 23.93, 23.98, 23.86, 23.99, 24.06, 24.1, 23.98, 23.83, 23.92, 23.8, 23.82, 23.85, 23.86, 23.82, 23.86, 23.74, 23.65, 23.72, 23.82, 23.55, 23.84, 23.71, 23.8, 23.62, 23.62, 23.64, 23.7, 23.64]}, "labels": ["08 Sep 00h", "08 Sep 03h", "08 Sep 06h", "08 Sep 09h", "08 Sep 12h", "08 Sep 15h", "08 Sep 18h", "08 Sep 21h", "09 Sep 00h", "09 Sep 03h", "09 Sep 06h", "09 Sep 09h", "09 Sep 12h", "09 Sep 15h", "09 Sep 18h", "09 Sep 21h", "10 Sep 00h", "10 Sep 03h", "10 Sep 06h", "10 Sep 09h", "10 Sep 12h", "10 Sep 15h", "10 Sep 18h", "10 Sep 21h", "11 Sep 00h", "11 Sep 03h", "11 Sep 06h", "11 Sep 09h", "11 Sep 12h", "11 Sep 15h", "11 Sep 18h", "11 Sep 21h", "12 Sep 00h", "12 Sep 03h", "12 Sep 06h", "12 Sep 09h", "12 Sep 12h", "12 Sep 15h", "12 Sep 18h", "12 Sep 21h", "13 Sep 00h", "13 Sep 03h", "13 Sep 06h", "13 Sep 09h", "13 Sep 12h", "13 Sep 15h", "13 Sep 18h", "13 Sep 21h", "14 Sep 00h", "14 Sep 03h", "14 Sep 06h", "14 Sep 09h", "14 Sep 12h", "14 Sep 15h", "14 Sep 18h", "14 Sep 21h", "15 Sep 00h", "15 Sep 03h", "15 Sep 06h", "15 Sep 09h", "15 Sep 12h", "15 Sep 15h", "15 Sep 18h", "15 Sep 21h", "16 Sep 00h", "16 Sep 03h", "16 Sep 06h", "16 Sep 09h", "16 Sep 12h", "16 Sep 15h", "16 Sep 18h", "16 Sep 21h", "17 Sep 00h", "17 Sep 03h", "17 Sep 06h", "17 Sep 09h", "17 Sep 12h", "17 Sep 15h", "17 Sep 18h", "17 Sep 21h", "18 Sep 00h", "18 Sep 03h", "18 Sep 06h", "18 Sep 09h", "18 Sep 12h", "18 Sep 15h", "18 Sep 18h", "18 Sep 21h", "19 Sep 00h", "19 Sep 03h", "19 Sep 06h", "19 Sep 09h", "19 Sep 12h", "19 Sep 15h", "19 Sep 18h", "19 Sep 21h", "20 Sep 00h", "20 Sep 03h", "20 Sep 06h", "20 Sep 09h", "20 Sep 12h", "20 Sep 15h", "20 Sep 18h", "20 Sep 21h", "21 Sep 00h", "21 Sep 03h", "21 Sep 06h", "21 Sep 09h", "21 Sep 12h", "21 Sep 15h", "21 Sep 18h", "21 Sep 21h", "22 Sep 00h", "22 Sep 03h", "22 Sep 06h", "22 Sep 09h", "22 Sep 12h", "22 Sep 15h", "22 Sep 18h", "22 Sep 21h", "23 Sep 00h", "23 Sep 03h", "23 Sep 06h", "23 Sep 09h", "23 Sep 12h", "23 Sep 15h", "23 Sep 18h", "23 Sep 21h", "24 Sep 00h", "24 Sep 03h", "24 Sep 06h", "24 Sep 09h", "24 Sep 12h", "24 Sep 15h", "24 Sep 18h", "24 Sep 21h", "25 Sep 00h", "25 Sep 03h", "25 Sep 06h", "25 Sep 09h", "25 Sep 12h", "25 Sep 15h", "25 Sep 18h", "25 Sep 21h", "26 Sep 00h", "26 Sep 03h", "26 Sep 06h", "26 Sep 09h", "26 Sep 12h", "26 Sep 15h", "26 Sep 18h", "26 Sep 21h", "27 Sep 00h", "27 Sep 03h", "27 Sep 06h", "27 Sep 09h", "27 Sep 12h", "27 Sep 15h", "27 Sep 18h", "27 Sep 21h", "28 Sep 00h", "28 Sep 03h", "28 Sep 06h", "28 Sep 09h", "28 Sep 12h", "28 Sep 15h", "28 Sep 18h", "28 Sep 21h", "29 Sep 00h", "29 Sep 03h", "29 Sep 06h", "29 Sep 09h", "29 Sep 12h", "29 Sep 15h", "29 Sep 18h", "29 Sep 21h", "30 Sep 00h", "30 Sep 03h", "30 Sep 06h", "30 Sep 09h", "30 Sep 12h", "30 Sep 15h", "30 Sep 18h", "30 Sep 21h", "01 Oct 00h", "01 Oct 03h", "01 Oct 06h", "01 Oct 09h", "01 Oct 12h", "01 Oct 15h", "01 Oct 18h", "01 Oct 21h", "02 Oct 00h", "02 Oct 03h", "02 Oct 06h", "02 Oct 09h", "02 Oct 12h", "02 Oct 15h", "02 Oct 18h", "02 Oct 21h", "03 Oct 00h", "03 Oct 03h", "03 Oct 06h", "03 Oct 09h", "03 Oct 12h", "03 Oct 15h", "03 Oct 18h", "03 Oct 21h", "04 Oct 00h", "04 Oct 03h", "04 Oct 06h", "04 Oct 09h", "04 Oct 12h", "04 Oct 15h", "04 Oct 18h", "04 Oct 21h", "05 Oct 00h", "05 Oct 03h", "05 Oct 06h", "05 Oct 09h", "05 Oct 12h", "05 Oct 15h", "05 Oct 18h", "05 Oct 21h"], "lluvia": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.41, 1.59, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 2.2, 5.82, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 3.55, 10.99, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.41, 1.23, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.24, 0.62, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 4.77, 10.87, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 2.33, 5.4, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.59, 2.18, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.19, 0.57, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.26, 0.73, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 2.12, 6.84, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.09, 3.03, 0.0, 0.0], "lluviosa": {"A": [320.0, 160.0, 160.0, 160.0, 0.0, 0.0, 0.0, 160.0, 0.0, 160.0, 320.0, 160.0, 0.0], "B": [0.0, 377.6, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 392.8, 0.0], "mc": {"n": 50, "ahorro_pct_mediana": 82.1, "ahorro_pct_p10": 69.9, "ahorro_pct_p90": 100.0, "ahorro_m3_mediana": 1216.0, "estres_hidrosopo_mediana": 1.0, "estres_tradicional_mediana": 0.0}, "r": {"tradicional": {"m3": 1600.0, "eventos": 10, "dias_estres": 0, "percolacion_mm": 96.0}, "hidrosopo": {"m3": 770.4, "eventos": 2, "dias_estres": 2, "percolacion_mm": 33.9}, "ahorro_m3": 829.6, "ahorro_pct": 51.9, "ahorro_cop_energia": 157251}}, "seca": {"A": [320.0, 160.0, 160.0, 320.0, 160.0, 320.0, 480.0, 320.0, 320.0, 480.0, 160.0, 320.0, 160.0], "B": [0.0, 0.0, 404.9, 0.0, 0.0, 403.4, 0.0, 378.0, 386.4, 403.8, 0.0, 409.8, 0.0], "mc": {"n": 50, "ahorro_pct_mediana": 35.2, "ahorro_pct_p10": 23.9, "ahorro_pct_p90": 55.5, "ahorro_m3_mediana": 1066.8, "estres_hidrosopo_mediana": 5.5, "estres_tradicional_mediana": 0.0}, "r": {"tradicional": {"m3": 3680.0, "eventos": 23, "dias_estres": 0, "percolacion_mm": 75.8}, "hidrosopo": {"m3": 2386.3, "eventos": 6, "dias_estres": 6, "percolacion_mm": 0.0}, "ahorro_m3": 1293.7, "ahorro_pct": 35.2, "ahorro_cop_energia": 245221}}, "ml": {"24": {"mae_cv": 0.516, "mae_linea_base_persistencia": 0.734, "mejora_vs_linea_base_pct": 29.6, "n_registros": 25350}, "48": {"mae_cv": 0.795, "mae_linea_base_persistencia": 1.095, "mejora_vs_linea_base_pct": 27.4, "n_registros": 25062}, "imp": [["lluvia_pronosticada_24h", 0.5259], ["profundidad_cm", 0.2034], ["humedad_actual", 0.138], ["delta_humedad_6h", 0.0493], ["et0_acumulada_24h", 0.025], ["humedad_lag_24h", 0.0226], ["humedad_lag_6h", 0.0105]]}};
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const fmt = (v,d=0) => v.toLocaleString('es-CO',{minimumFractionDigits:d,maximumFractionDigits:d});
+document.querySelectorAll('[data-n]').forEach(el=>{
+  let v = el.dataset.n==='AHORRO' ? D.seca.mc.ahorro_pct_mediana : el.dataset.n==='MEJORA' ? D.ml['24'].mejora_vs_linea_base_pct : +el.dataset.n;
+  const dec=+(el.dataset.dec||0), pre=el.dataset.pre||'', suf=el.dataset.suf||'';
+  const t0=performance.now(), dur=matchMedia('(prefers-reduced-motion: reduce)').matches?0:1100;
+  const paso=t=>{ const k=dur?Math.min(1,(t-t0)/dur):1; el.textContent=pre+fmt(v*(1-Math.pow(1-k,3)),dec)+suf; if(k<1) requestAnimationFrame(paso) };
+  requestAnimationFrame(paso);
+});
+let G = {};
+function base(){ Chart.defaults.color=css('--humo'); Chart.defaults.borderColor=css('--linea'); Chart.defaults.font.family='system-ui,-apple-system,Segoe UI,Roboto,sans-serif' }
+const PROF=[['15','15 cm','--agua'],['30','30 cm','--kikuyo'],['45','45 cm','--arcilla']];
+function gHum(){
+  const ds = PROF.map(([k,l,c])=>({type:'line',label:l,data:D.hum[k],borderColor:css(c),borderWidth:2.2,pointRadius:0,tension:.3,yAxisID:'y'}));
+  ds.push({type:'line',label:'Umbral de riego',data:D.labels.map(()=>23.2),borderColor:css('--arcilla'),borderDash:[6,5],borderWidth:1.5,pointRadius:0,yAxisID:'y'});
+  ds.push({type:'bar',label:'Lluvia (mm)',data:D.lluvia,backgroundColor:css('--agua2')+'88',yAxisID:'y2'});
+  G.hum = new Chart(gHumEl,{data:{labels:D.labels,datasets:ds},options:{maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${fmt(c.parsed.y,1)}${c.dataset.yAxisID==='y2'?' mm':' %'}`}}},
+    scales:{x:{ticks:{maxTicksLimit:8}},y:{min:15,max:34,title:{display:true,text:'% vol'}},y2:{position:'right',grid:{display:false},min:0,max:16,title:{display:true,text:'mm'}}}}});
+}
+const chipsProf=document.getElementById('chipsProf');
+PROF.forEach(([k,l,c],i)=>{ const b=document.createElement('button'); b.className='chip'; b.setAttribute('aria-pressed','true'); b.innerHTML=`<i style="background:${css(c)}"></i>${l}`;
+  b.onclick=()=>{ const on=b.getAttribute('aria-pressed')==='true'; b.setAttribute('aria-pressed',String(!on)); G.hum.setDatasetVisibility(i,!on); G.hum.update() }; chipsProf.appendChild(b) });
+let temporada='seca';
+function cum(a){ let s=0; return [0,...a.map(x=>s+=x)] }
+function gAho(){
+  const T=D[temporada], A=cum(T.A), B=cum(T.B), L=A.map((_,i)=>'Sem '+i);
+  const cfg={type:'line',data:{labels:L,datasets:[
+    {label:'Riego tradicional',data:A,borderColor:'#9C8F7A',backgroundColor:css('--agua2')+'44',fill:'+1',borderWidth:3,pointRadius:3,tension:.15},
+    {label:'Con HidroSopó',data:B,borderColor:css('--agua'),borderWidth:3,pointRadius:3,tension:.15}]},
+    options:{maintainAspectRatio:false,plugins:{tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${fmt(c.parsed.y)} m³`}}},scales:{y:{title:{display:true,text:'m³/ha acumulados'}}}}};
+  if(G.aho){ G.aho.data=cfg.data; G.aho.update() } else G.aho=new Chart(gAhoEl,cfg);
+  const r=T.r; document.getElementById('tablaAho').innerHTML=
+   `<tr><td>Agua aplicada</td><td>${fmt(r.tradicional.m3)} m³</td><td><b>${fmt(r.hidrosopo.m3)} m³</b></td></tr>
+    <tr><td>Riegos en 90 días</td><td>${r.tradicional.eventos}</td><td><b>${r.hidrosopo.eventos}</b></td></tr>
+    <tr><td>Pérdida por percolación</td><td>${fmt(r.tradicional.percolacion_mm)} mm</td><td><b>${fmt(r.hidrosopo.percolacion_mm)} mm</b></td></tr>
+    <tr><td>Días con estrés hídrico</td><td>${r.tradicional.dias_estres}</td><td>${r.hidrosopo.dias_estres}</td></tr>`;
+  calc();
+}
+function calc(){
+  const a=+area.value, cop=+fuente.value, m3=D[temporada].r.ahorro_m3*a;
+  areaV.textContent=fmt(a,2).replace(/,?0+$/,'')||'0';
+  calcM3.textContent=fmt(m3)+' m³ ahorrados';
+  calcCop.textContent=`≈ $${fmt(m3*cop)} COP en 90 días · ${fmt(D[temporada].mc.ahorro_pct_p10)}–${fmt(D[temporada].mc.ahorro_pct_p90)} % según el clima`;
+}
+function gIA(){
+  G.mae=new Chart(gMae,{type:'bar',data:{labels:['24 h','48 h'],datasets:[
+    {label:'Modelo HidroSopó',data:[D.ml['24'].mae_cv,D.ml['48'].mae_cv],backgroundColor:css('--kikuyo'),borderRadius:6},
+    {label:'Persistencia',data:[D.ml['24'].mae_linea_base_persistencia,D.ml['48'].mae_linea_base_persistencia],backgroundColor:'#B9AE9C',borderRadius:6}]},
+    options:{maintainAspectRatio:false,scales:{y:{beginAtZero:true,title:{display:true,text:'MAE (% vol)'}}}}});
+  const nombres={lluvia_pronosticada_24h:'Lluvia pronosticada 24 h',profundidad_cm:'Profundidad',humedad_actual:'Humedad actual',delta_humedad_6h:'Cambio en 6 h',et0_acumulada_24h:'ET₀ últimas 24 h',humedad_lag_24h:'Humedad hace 24 h',lluvia_acumulada_24h:'Lluvia últimas 24 h',et0_pronosticada_24h:'ET₀ pronosticada',temp_suelo:'Temp. del suelo',lluvia_pronosticada_48h:'Lluvia pronosticada 48 h'};
+  G.imp=new Chart(gImp,{type:'bar',data:{labels:D.ml.imp.map(x=>nombres[x[0]]||x[0]),datasets:[{data:D.ml.imp.map(x=>x[1]*100),backgroundColor:css('--agua'),borderRadius:5}]},
+    options:{indexAxis:'y',maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fmt(c.parsed.x,1)+' %'}}},scales:{x:{title:{display:true,text:'% de importancia'}}}}});
+}
+const gHumEl=document.getElementById('gHum'), gAhoEl=document.getElementById('gAho'), gMae=document.getElementById('gMae'), gImp=document.getElementById('gImp');
+const area=document.getElementById('area'), fuente=document.getElementById('fuente'), areaV=document.getElementById('areaV'), calcM3=document.getElementById('calcM3'), calcCop=document.getElementById('calcCop');
+area.oninput=calc; fuente.onchange=calc;
+document.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{ temporada=b.dataset.t; document.querySelectorAll('[data-t]').forEach(x=>x.setAttribute('aria-pressed',String(x===b))); gAho() });
+const hechos={};
+function abrir(id){ document.querySelectorAll('.pestanas button').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.p===id)));
+  document.querySelectorAll('.panel').forEach(p=>p.hidden=p.id!==id);
+  if(!hechos[id]){ hechos[id]=1; ({pHum:gHum,pAho:gAho,pIA:gIA})[id]() } }
+document.querySelectorAll('.pestanas button').forEach(b=>b.onclick=()=>abrir(b.dataset.p));
+function iniciar(){ if(!window.Chart){ document.querySelectorAll('.lienzo').forEach(l=>l.innerHTML='<p class="sub">Las gráficas necesitan conexión para cargar.</p>'); return }
+  base(); const h=(location.hash||'').slice(1); abrir({ahorro:'pAho',ia:'pIA'}[h]||'pHum') }
+iniciar();
+</script></body></html>

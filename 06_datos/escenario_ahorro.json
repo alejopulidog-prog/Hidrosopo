@@ -1,0 +1,124 @@
+{
+  "nota": "SIMULACIÓN (gemelo digital). No reemplaza la medición de campo.",
+  "dias": 90,
+  "area_ha": 1.0,
+  "taw_mm": 64.0,
+  "raw_mm": 35.2,
+  "tradicional": {
+    "m3": 1600.0,
+    "eventos": 10,
+    "dias_estres": 0,
+    "percolacion_mm": 96.0
+  },
+  "hidrosopo": {
+    "m3": 770.4,
+    "eventos": 2,
+    "dias_estres": 2,
+    "percolacion_mm": 33.9
+  },
+  "ahorro_m3": 829.6,
+  "ahorro_pct": 51.9,
+  "ahorro_cop_energia": 157251,
+  "semanal_tradicional_m3": [
+    320.0,
+    160.0,
+    160.0,
+    160.0,
+    0.0,
+    0.0,
+    0.0,
+    160.0,
+    0.0,
+    160.0,
+    320.0,
+    160.0,
+    0.0
+  ],
+  "semanal_hidrosopo_m3": [
+    0.0,
+    377.6,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    392.8,
+    0.0
+  ],
+  "lluvia_total_mm": 270.4,
+  "montecarlo": {
+    "n": 50,
+    "ahorro_pct_mediana": 82.1,
+    "ahorro_pct_p10": 69.9,
+    "ahorro_pct_p90": 100.0,
+    "ahorro_m3_mediana": 1216.0,
+    "estres_hidrosopo_mediana": 1.0,
+    "estres_tradicional_mediana": 0.0
+  },
+  "montecarlo_temporada_seca": {
+    "n": 50,
+    "ahorro_pct_mediana": 35.2,
+    "ahorro_pct_p10": 23.9,
+    "ahorro_pct_p90": 55.5,
+    "ahorro_m3_mediana": 1066.8,
+    "estres_hidrosopo_mediana": 5.5,
+    "estres_tradicional_mediana": 0.0
+  },
+  "seca": {
+    "nota": "SIMULACIÓN (gemelo digital). No reemplaza la medición de campo.",
+    "dias": 90,
+    "area_ha": 1.0,
+    "taw_mm": 64.0,
+    "raw_mm": 35.2,
+    "tradicional": {
+      "m3": 3680.0,
+      "eventos": 23,
+      "dias_estres": 0,
+      "percolacion_mm": 75.8
+    },
+    "hidrosopo": {
+      "m3": 2386.3,
+      "eventos": 6,
+      "dias_estres": 6,
+      "percolacion_mm": 0.0
+    },
+    "ahorro_m3": 1293.7,
+    "ahorro_pct": 35.2,
+    "ahorro_cop_energia": 245221,
+    "semanal_tradicional_m3": [
+      320.0,
+      160.0,
+      160.0,
+      320.0,
+      160.0,
+      320.0,
+      480.0,
+      320.0,
+      320.0,
+      480.0,
+      160.0,
+      320.0,
+      160.0
+    ],
+    "semanal_hidrosopo_m3": [
+      0.0,
+      0.0,
+      404.9,
+      0.0,
+      0.0,
+      403.4,
+      0.0,
+      378.0,
+      386.4,
+      403.8,
+      0.0,
+      409.8,
+      0.0
+    ],
+    "lluvia_total_mm": 86.9
+  }
+}

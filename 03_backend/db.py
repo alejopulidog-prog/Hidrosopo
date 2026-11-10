@@ -17,8 +17,16 @@ DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///hidrosopo.db")
 if DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
-connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
-engine = create_engine(DATABASE_URL, connect_args=connect_args, pool_pre_ping=True)
+if DATABASE_URL.startswith("sqlite"):
+    connect_args = {"check_same_thread": False}
+    engine = create_engine(DATABASE_URL, connect_args=connect_args, pool_pre_ping=True)
+else:
+    # Supabase desde Render: usar el pooler compartido (IPv4). pool_pre_ping y
+    # pool_recycle evitan errores cuando el pooler o Render cierran conexiones
+    # inactivas; sslmode=require cifra el tráfico si la cadena no lo trae.
+    connect_args = {} if "sslmode=" in DATABASE_URL else {"sslmode": "require"}
+    engine = create_engine(DATABASE_URL, connect_args=connect_args, pool_pre_ping=True,
+                           pool_recycle=280, pool_size=3, max_overflow=2)
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
 Base = declarative_base()
 

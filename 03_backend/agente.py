@@ -278,6 +278,17 @@ PATRONES = [
         r"\b(listo|vale|de una)\s*,?\s*gracias\b",
         r"^(chao|hasta luego|nos vemos|que este bien|hasta manana)\b",
     ]),
+    # --- Heladas: el riesgo climático n.º 1 de la Sabana para pasto y papa ---
+    ("consultar_helada", 0.93, [
+        r"\bhelad[ao]s?\b", r"\bescarcha\b", r"\b(va a|va|esta) (hacer|caer) (mucho |)frio\b",
+        r"\bse (va a |)quem(a|ar|e) (el pasto|la papa|el cultivo)\b",
+    ]),
+    # --- Cuánto tiempo prender la bomba ---
+    ("consultar_tiempo_riego", 0.94, [
+        r"\bcuant[oa]s? (tiempo|minutos|horas|rato)\b.*\b(rieg|reg|prend|bomba)",
+        r"\b(por|durante) cuant[oa]s? (tiempo|minutos|horas)\b",
+        r"\bcuanta agua (le |)(echo|pongo|aplico|necesita)\b",
+    ]),
     # --- Saludo / ayuda ---
     ("saludo", 0.7, [
         r"^(hola|buenas|buenos dias|buenas tardes|que mas|hey|holi)\b",
@@ -783,6 +794,60 @@ def responder_lluvia(r: dict) -> dict:
                      "Téngalo en cuenta antes de prender la bomba.", "accion": None}
 
 
+UMBRAL_HELADA_C = 2.0   # en abrigo meteorológico; a ras de pasto es 3–5 °C menos
+
+
+def responder_helada(r: dict) -> dict:
+    """Aviso de helada con la mínima del pronóstico (Open-Meteo).
+
+    En la Sabana de Bogotá las heladas llegan en noches despejadas de la
+    temporada seca (dic–feb y jul–ago). Un suelo húmedo guarda más calor y
+    lo suelta en la madrugada, por eso un riego ligero en la tarde anterior
+    es una práctica de protección conocida. El agente no lo impone: avisa.
+    """
+    mins = ((r or {}).get("clima") or {}).get("temp_min_c") or []
+    if not mins:
+        return {"texto": "No tengo el pronóstico de temperatura en este momento. "
+                         "Si la tarde está despejada, sin viento y el cielo muy limpio, "
+                         "la madrugada puede traer helada.", "accion": None}
+    nombres = ["esta noche", "mañana en la noche", "pasado mañana en la noche",
+               "en 3 días", "en 4 días", "en 5 días", "en 6 días"]
+    riesgo = [(nombres[i], t) for i, t in enumerate(mins[:7]) if t <= UMBRAL_HELADA_C + 2]
+    if not riesgo:
+        return {"texto": f"No veo riesgo de helada esta semana: la mínima más baja "
+                         f"pronosticada es de {min(mins[:7]):.0f} °C.", "accion": None}
+    cuando, t = min(riesgo, key=lambda x: x[1])
+    fuerte = t <= UMBRAL_HELADA_C
+    disp = ((r or {}).get("estado_suelo") or {}).get("porcentaje_agua_disponible")
+    consejo = ("Si la tierra está seca, un riego ligero esta tarde (unos 5 mm) ayuda: "
+               "el suelo húmedo guarda calor y lo suelta en la madrugada.")
+    if disp is not None and disp >= 70:
+        consejo = "La tierra tiene buena humedad, así que guarda calor; no hace falta regar extra."
+    return {"texto": (f"{'Ojo: hay riesgo de helada' if fuerte else 'Puede hacer bastante frío'} "
+                      f"{cuando}, con mínima de {t:.0f} °C en el pronóstico (a ras de pasto "
+                      f"puede bajar de 0 °C). {consejo} Evite pastorear o cortar justo "
+                      "antes: el rebrote tierno es el que más se quema."),
+            "accion": "alerta_helada" if fuerte else None,
+            "datos": {"cuando": cuando, "temp_min_c": t}}
+
+
+def responder_tiempo_riego(r: dict) -> dict:
+    rg = (r or {}).get("riego")
+    if not rg:
+        msg = (r or {}).get("mensaje") or "Hoy no hace falta regar."
+        return {"texto": f"Hoy no le toca regar, así que no hay que prender la bomba. {msg}",
+                "accion": None}
+    mins = rg.get("tiempo_riego_min") or rg.get("minutos")
+    lam = rg.get("lamina_bruta_mm")
+    partes = [f"Hay que aplicar unos {lam:.0f} mm" if lam else "Hay que regar"]
+    if mins:
+        partes.append(f"con su caudal, eso son unos {mins:.0f} minutos de bomba")
+    if rg.get("fraccionar_en_pasadas") and rg.get("pasadas_sugeridas", 1) > 1:
+        partes.append(f"mejor en {rg['pasadas_sugeridas']} pasadas para que la tierra alcance a chupar el agua")
+    return {"texto": ", ".join(partes) + ". Cuando termine, escríbame «ya regué» y lo anoto.",
+            "accion": None}
+
+
 def responder_rutina(datos: dict) -> dict:
     frec = datos.get("frecuencia")
     if frec:
@@ -847,6 +912,8 @@ def responder_ayuda() -> dict:
         "· \"¿Riego hoy?\" — le doy la recomendación del día\n"
         "· \"¿Cuánta agua he ahorrado?\" — le muestro el acumulado\n"
         "· \"¿Va a llover?\" — le doy el pronóstico\n"
+        "· \"¿Va a caer helada?\" — le aviso y le digo cómo proteger el cultivo\n"
+        "· \"¿Cuánto tiempo prendo la bomba?\" — se lo paso a minutos\n"
         "· \"¿Cuándo meto los animales?\" — le digo cómo va la franja\n"
         "· \"Regué el sector 2, 40 minutos\" — si tiene varios sectores\n"
         "· \"Prendí las dos bombas una hora\" — riego simultáneo\n"
@@ -1103,6 +1170,8 @@ def conversar(mensaje: str, contexto: dict) -> dict:
         "registrar_pastoreo": lambda: responder_registro_pastoreo(
             intencion.datos.get("fecha_pastoreo"), predio),
         "consultar_lluvia":  lambda: responder_lluvia(rec or {}),
+        "consultar_helada":  lambda: responder_helada(rec or {}),
+        "consultar_tiempo_riego": lambda: responder_tiempo_riego(rec or {}),
         "reportar_problema": lambda: responder_problema(mensaje),
         "discrepar":         lambda: responder_discrepancia(),
         "consultar_por_que": lambda: responder_por_que(rec or {}),

@@ -286,3 +286,36 @@ def test_reporte_no_menciona_autoridades_regionales():
     texto = rp.generar_reporte_markdown(u, ind)
     for prohibido in ["CAR ", "SIRH", "Corporación Autónoma", "VITAL"]:
         assert prohibido not in texto, f"El reporte menciona '{prohibido}'"
+
+
+# ---------- Modelo ML: contexto en vivo (parte 5) ----------
+
+def test_contexto_ml_usa_pronostico_y_hora_real():
+    from ia.modelo_ml import contexto_prediccion, FEATURES
+    pron = {"lluvia_diaria": [6.0, 2.0, 0.0], "et0_diaria": [3.4, 3.1, 3.0]}
+    c = contexto_prediccion(24.0, hora_local=6.0, humedad_hace_6h=25.0,
+                            humedad_hace_24h=26.5, pronostico=pron,
+                            riego_ultimas_24h_mm=4.0)
+    assert set(FEATURES) <= set(c)                  # no falta ninguna variable
+    assert c["lluvia_pronosticada_24h"] == 6.0
+    assert c["lluvia_pronosticada_48h"] == 8.0
+    assert c["et0_pronosticada_24h"] == 3.4
+    assert c["delta_humedad_6h"] == pytest.approx(-1.0)
+    assert c["riego_programado_24h"] == 0.0         # escenario "si no riega"
+    assert c["hora_sin"] == pytest.approx(1.0)      # 6 a. m.
+
+
+def test_contexto_ml_sin_pronostico_no_falla():
+    from ia.modelo_ml import contexto_prediccion
+    c = contexto_prediccion(20.0, hora_local=14.0)
+    assert c["humedad_lag_6h"] == 20.0 and c["lluvia_pronosticada_24h"] == 0.0
+    assert c["et0_pronosticada_24h"] > 0
+
+
+def test_salud_informa_fuente_de_datos(monkeypatch):
+    """La app rotula «gemelo digital» mientras el servidor no tenga datos de campo."""
+    from fastapi.testclient import TestClient
+    import main
+    r = TestClient(main.app).get("/api/v1/salud")
+    assert r.status_code == 200
+    assert r.json()["fuente_datos"] in ("simulacion", "campo")

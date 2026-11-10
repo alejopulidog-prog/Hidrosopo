@@ -1,0 +1,423 @@
+<title>Laboratorio HidroSopó</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Capas del suelo de la Sabana: un corte de andisol como banda de cabecera,
+   paneles claros como libreta de campo, el agua como único acento frío. */
+:root{
+  --suelo:#2A2117; --suelo-2:#4A3A28; --suelo-3:#6E5637;
+  --papel:#FFFDFA; --lienzo:#EFF0EA; --tinta:#1B1712; --humo:#686459; --linea:#DFDED5;
+  --agua:#2E7EA6; --agua-tenue:#E3EFF5; --pasto:#5F8A2E; --pasto-tenue:#EAF1DE;
+  --arcilla:#C2602C; --arcilla-tenue:#F8E9DF; --alerta:#A83E30;
+  --sim:#9A5A12; --sim-tenue:#FBF0DD;
+  --sans:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --display:"Bricolage Grotesque","Inter",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  --rad:14px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --papel:#1E1A15; --lienzo:#151210; --tinta:#F1ECE3; --humo:#A79F92; --linea:#3A332A;
+  --agua:#5AAAD0; --agua-tenue:#1B2C35; --pasto:#93BE5C; --pasto-tenue:#24301A;
+  --arcilla:#E0844F; --arcilla-tenue:#3A2519; --alerta:#E2735F; --sim:#E2A84E; --sim-tenue:#3A2C17;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --papel:#1E1A15; --lienzo:#151210; --tinta:#F1ECE3; --humo:#A79F92; --linea:#3A332A;
+  --agua:#5AAAD0; --agua-tenue:#1B2C35; --pasto:#93BE5C; --pasto-tenue:#24301A;
+  --arcilla:#E0844F; --arcilla-tenue:#3A2519; --alerta:#E2735F; --sim:#E2A84E; --sim-tenue:#3A2C17;
+  color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+.lab>*,.lab .panel,.kpis{min-width:0}
+body{margin:0;background:var(--lienzo);color:var(--tinta);font:15px/1.55 var(--sans)}
+.envoltura{max-width:1120px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+/* Cabecera: corte del suelo */
+.corte{background:linear-gradient(180deg,#3B2E20 0%,#2A2117 55%,#211A12 100%);color:#F4EEE4;position:relative;overflow:hidden}
+.corte::after{content:"";position:absolute;inset:auto 0 0 0;height:10px;background:repeating-linear-gradient(90deg,#6E5637 0 22px,#54412D 22px 40px);opacity:.7}
+.corte .envoltura{padding-block:28px 34px;display:grid;gap:14px}
+.marca{display:flex;align-items:center;gap:10px;font:700 15px var(--display);letter-spacing:.01em;color:#CFE6F2}
+.marca svg{flex:none}
+h1{font:800 clamp(30px,5vw,52px)/1.02 var(--display);margin:0;letter-spacing:-.02em;text-wrap:balance;max-width:20ch}
+h1 em{font-style:normal;color:#7FC0E0}
+.bajada{margin:0;max-width:64ch;color:#D8CFC1}
+.autor{font-size:12.5px;color:#B0A491;letter-spacing:.02em}
+.capas{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+.capas span{font:500 12px var(--mono);padding:4px 9px;border-radius:999px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:#E9E1D3}
+
+/* Pestañas */
+nav.pestanas{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--lienzo);border-bottom:1px solid var(--linea)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--lienzo)}
+nav.pestanas .envoltura{display:flex;gap:4px;overflow-x:auto;padding-block:8px}
+nav.pestanas a{flex:none;text-decoration:none;color:var(--humo);font:600 14px var(--sans);padding:9px 14px;border-radius:10px}
+nav.pestanas a[aria-current="page"]{background:var(--papel);color:var(--tinta);box-shadow:0 1px 0 var(--linea),0 0 0 1px var(--linea)}
+nav.pestanas a:focus-visible,button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--agua);outline-offset:2px}
+
+main .envoltura{padding-block:22px 48px;display:grid;gap:18px}
+.aviso-sim{display:flex;gap:10px;align-items:flex-start;background:var(--sim-tenue);color:var(--sim);border-radius:12px;padding:11px 14px;font-size:13.5px;font-weight:500}
+.aviso-sim b{font-weight:700}
+.panel{background:var(--papel);border:1px solid var(--linea);border-radius:var(--rad);padding:20px}
+h2{font:700 21px/1.2 var(--display);margin:0 0 4px;letter-spacing:-.01em;text-wrap:balance}
+h3{font:700 16px/1.3 var(--display);margin:0 0 4px}
+.sub{color:var(--humo);margin:0 0 14px;font-size:14px;max-width:70ch}
+
+/* Simulador */
+.lab{display:grid;grid-template-columns:290px 1fr;gap:18px;align-items:start}
+.controles{display:grid;gap:14px}
+.campo{display:grid;gap:5px}
+.campo label,.etq{font:600 11.5px var(--sans);text-transform:uppercase;letter-spacing:.07em;color:var(--humo)}
+select,input[type=number]{font:500 14.5px var(--sans);padding:9px 10px;border-radius:10px;border:1px solid var(--linea);background:var(--lienzo);color:var(--tinta);width:100%}
+.seg{display:grid;grid-template-columns:1fr 1fr;background:var(--lienzo);border-radius:10px;padding:3px;gap:3px;border:1px solid var(--linea)}
+.seg button{border:0;background:transparent;font:600 13.5px var(--sans);padding:8px;border-radius:8px;color:var(--humo);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--papel);color:var(--tinta);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.boton{font:600 14px var(--sans);border:0;border-radius:10px;padding:10px 14px;cursor:pointer;background:var(--suelo);color:#F4EEE4;display:inline-flex;align-items:center;gap:8px;justify-content:center}
+:root[data-theme="dark"] .boton{background:#3A2F23}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .boton{background:#3A2F23}}
+.semilla{font:500 12px var(--mono);color:var(--humo)}
+
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.kpi{border:1px solid var(--linea);border-radius:12px;padding:12px 14px;background:var(--papel);min-width:0}
+.kpi .v{font:800 26px/1.1 var(--display);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.kpi .d{font-size:12.5px;color:var(--humo)}
+.kpi.agua .v{color:var(--agua)} .kpi.pasto .v{color:var(--pasto)} .kpi.arcilla .v{color:var(--arcilla)}
+.comparar{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.estrategia{border-radius:12px;padding:12px 14px;font-size:13.5px;min-width:0}
+.estrategia.cal{background:var(--arcilla-tenue)} .estrategia.hs{background:var(--agua-tenue)}
+.estrategia h3{font-size:14px}
+.estrategia dl{display:grid;grid-template-columns:auto auto;gap:2px 12px;margin:6px 0 0;font-variant-numeric:tabular-nums}
+.estrategia dt{color:var(--humo)} .estrategia dd{margin:0;text-align:right;font-weight:600}
+.grafica{width:100%;overflow-x:auto;margin-top:6px}
+.grafica svg{display:block;width:100%;min-width:560px;height:auto}
+.leyenda{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12.5px;color:var(--humo);margin-top:6px}
+.leyenda i{display:inline-block;width:14px;height:3px;border-radius:2px;vertical-align:middle;margin-right:6px}
+.mc{display:grid;grid-template-columns:1fr 220px;gap:18px;align-items:center}
+.mc p{margin:0;font-size:14px}
+
+/* Banco */
+.banco{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.prueba{display:grid;gap:10px;align-content:start;min-width:0}
+.prueba figure{margin:0;background:#FBFAF6;border-radius:10px;border:1px solid var(--linea);overflow:hidden}
+.prueba img{display:block;width:100%;height:auto}
+.fila{display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap}
+.chip{font:600 11.5px var(--sans);padding:3px 9px;border-radius:999px;white-space:nowrap}
+.chip.ok{background:var(--pasto-tenue);color:var(--pasto)}
+.chip.sim{background:var(--sim-tenue);color:var(--sim)}
+.chip.pend{background:var(--arcilla-tenue);color:var(--arcilla)}
+.chip.hecho{background:var(--agua-tenue);color:var(--agua)}
+.dato{font:500 13px var(--mono);color:var(--tinta)}
+.prueba p{margin:0;font-size:13.5px;color:var(--humo)}
+
+/* Estado */
+.linea-tiempo{display:grid;gap:0}
+.hito{display:grid;grid-template-columns:28px 1fr;gap:12px;padding-bottom:16px;position:relative}
+.hito::before{content:"";position:absolute;left:13px;top:26px;bottom:0;width:2px;background:var(--linea)}
+.hito:last-child::before{display:none}
+.hito .n{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font:700 12.5px var(--sans);background:var(--lienzo);border:2px solid var(--linea);color:var(--humo)}
+.hito.hecho .n{background:var(--agua);border-color:var(--agua);color:#fff}
+.hito.parcial .n{background:var(--sim-tenue);border-color:var(--sim);color:var(--sim)}
+.hito .cuerpo{min-width:0}
+.hito .fechas{font:500 12px var(--mono);color:var(--humo)}
+.hito p{margin:4px 0 0;font-size:14px}
+.enlaces{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.enlace{display:grid;gap:4px;text-decoration:none;color:inherit;padding:16px;border:1px solid var(--linea);border-radius:12px;background:var(--papel)}
+.enlace:hover{border-color:var(--agua)}
+.enlace b{font:700 16px var(--display)} .enlace span{color:var(--humo);font-size:13.5px}
+footer{color:var(--humo);font-size:12.5px;text-align:center;padding-block:10px 30px}
+
+@media (max-width:860px){
+  .lab{grid-template-columns:1fr}
+  .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .banco,.enlaces,.mc{grid-template-columns:1fr}
+}
+@media (max-width:460px){.comparar{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<header class="corte">
+  <div class="envoltura">
+    <div class="marca">
+      <svg width="16" height="20" viewBox="0 0 16 20" aria-hidden="true"><path d="M8 0C8 0 0 9 0 13.5A8 8 0 0 0 16 13.5C16 9 8 0 8 0Z" fill="#5AA8C9"/></svg>
+      HidroSopó · Laboratorio
+    </div>
+    <h1>El gemelo digital del predio: <em>probar el riego</em> antes de abrir la llave</h1>
+    <p class="bajada">Simulador de balance hídrico FAO-56 y campaña de pruebas en banco virtual del prototipo IoT + IA. Sirve para dimensionar el ahorro esperado y fijar los criterios de aceptación de las pruebas de campo.</p>
+    <div class="autor">José Alejandro Pulido Gómez · Ingeniería Mecatrónica, Universitaria Agustiniana · Incentivo FOES 2026-II · Secretaría de CTeI, Sopó</div>
+    <div class="capas" aria-label="Capas del sistema">
+      <span>ESP32 + WiFi</span><span>FastAPI · PostgreSQL</span><span>FAO-56 · ETc = Kc × ET₀</span><span>Gradient Boosting 24/48 h</span><span>Open-Meteo</span>
+    </div>
+  </div>
+</header>
+
+<nav class="pestanas" aria-label="Secciones">
+  <div class="envoltura">
+    <a href="#simulador" data-vista="simulador">Simulador de riego</a>
+    <a href="#banco" data-vista="banco">Pruebas en banco</a>
+    <a href="#estado" data-vista="estado">Estado del proyecto</a>
+    <a href="comunidad.html">Sopó Cuida el Agua →</a>
+  </div>
+</nav>
+
+<main>
+  <!-- ================= SIMULADOR ================= -->
+  <section class="envoltura" id="v-simulador" data-vista="simulador">
+    <div class="aviso-sim" role="note"><span aria-hidden="true">◐</span><span><b>Simulación.</b> Clima y suelo generados por el gemelo digital. El ahorro oficial del proyecto será el medido con el caudalímetro frente a la línea base del predio.</span></div>
+
+    <div class="lab">
+      <div class="panel controles" aria-label="Parámetros del escenario">
+        <div><h2>Escenario</h2><p class="sub" style="margin:0">Cambie el predio y compare las dos formas de regar con el mismo clima.</p></div>
+        <div class="campo"><label for="cultivo">Cultivo</label>
+          <select id="cultivo">
+            <option value="kikuyo">Pasto kikuyo (pastoreo)</option>
+            <option value="papa">Papa</option>
+            <option value="hortalizas">Hortalizas</option>
+            <option value="flores">Flores al aire libre</option>
+          </select></div>
+        <div class="campo"><label for="suelo">Suelo</label>
+          <select id="suelo">
+            <option value="andisol">Andisol de la Sabana</option>
+            <option value="arcilloso">Franco arcilloso</option>
+            <option value="arenoso">Franco arenoso</option>
+          </select></div>
+        <div class="campo"><span class="etq" id="etq-temp">Temporada</span>
+          <div class="seg" role="group" aria-labelledby="etq-temp">
+            <button type="button" id="t-seca" aria-pressed="true">Seca (dic–feb)</button>
+            <button type="button" id="t-lluvia" aria-pressed="false">Lluvias (sep–nov)</button>
+          </div></div>
+        <div class="campo"><label for="area">Área (ha)</label><input id="area" type="number" min="0.1" max="50" step="0.1" value="1"></div>
+        <div class="campo"><label for="tarifa">Costo del agua bombeada ($/m³)</label><input id="tarifa" type="number" min="0" step="10" value="190">
+          <span class="semilla">190 $/m³ ≈ energía de bombeo (BOM). Ajústelo a la tarifa del predio.</span></div>
+        <button class="boton" type="button" id="otroClima">↻ Otro año de clima</button>
+        <span class="semilla" id="semillaTxt"></span>
+      </div>
+
+      <div style="display:grid;gap:14px;min-width:0">
+        <div class="kpis" id="kpis"></div>
+        <div class="panel">
+          <h3>Agua disponible en la zona de raíces, 90 días</h3>
+          <p class="sub" style="margin-bottom:6px">Por debajo de la línea punteada la planta empieza a sufrir (umbral FAO-56, agua fácilmente aprovechable). Las barras de arriba son la lluvia; las marcas, cada riego.</p>
+          <div class="grafica" id="grafica"></div>
+          <div class="leyenda">
+            <span><i style="background:var(--arcilla)"></i>Riego por calendario</span>
+            <span><i style="background:var(--agua)"></i>Riego con HidroSopó</span>
+            <span><i style="background:var(--humo);height:1px"></i>Umbral de riego</span>
+          </div>
+          <div class="comparar" id="comparar"></div>
+        </div>
+        <div class="panel">
+          <h3>¿Y si el clima es otro? 50 años simulados</h3>
+          <div class="mc">
+            <div class="grafica" id="mc" style="margin:0"></div>
+            <p id="mcTxt"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= BANCO ================= -->
+  <section class="envoltura" id="v-banco" data-vista="banco" hidden>
+    <div class="aviso-sim" role="note"><span aria-hidden="true">◐</span><span><b>Banco virtual.</b> Cada prueba del protocolo se simuló con un modelo físico del componente (06_datos/campana_banco_simulada.py). Fija qué se espera medir y deja listas las planillas. Se repite con el hardware real en la fase de campo.</span></div>
+    <div class="banco" id="bancoGrid"></div>
+  </section>
+
+  <!-- ================= ESTADO ================= -->
+  <section class="envoltura" id="v-estado" data-vista="estado" hidden>
+    <div class="panel">
+      <h2>Plan de trabajo: dónde va cada actividad</h2>
+      <p class="sub">Corte al 10 de noviembre de 2026. Azul: ejecutada. Ámbar: desarrollada en software o simulación, con la parte de campo pendiente. Gris: por ejecutar.</p>
+      <div class="linea-tiempo" id="hitos"></div>
+    </div>
+    <div class="enlaces">
+      <a class="enlace" href="index.html"><b>App del productor →</b><span>«¿Riego hoy?», corte del suelo por profundidad, «¿qué pasa si no riego?» y asistente en español. Modo demostración con datos de prueba.</span></a>
+      <a class="enlace" href="comunidad.html"><b>Sopó Cuida el Agua →</b><span>Componente de apropiación social: huertas caseras, agua lluvia, reto del hogar, escuela del agua y PUEAA con Emsersopó.</span></a>
+      <a class="enlace" href="resultados.html"><b>Resultados del proyecto →</b><span>Página para el jurado y el QR del póster: humedad, ahorro por temporada y modelo de IA.</span></a>
+    </div>
+  </section>
+</main>
+<footer class="envoltura">Cuidemos el agua, cuidemos el futuro · Las recomendaciones son una ayuda: la decisión de regar es del productor.</footer>
+
+<script>
+(function(){
+"use strict";
+const $ = s => document.querySelector(s);
+const fmt = (n,d=0) => n.toLocaleString('es-CO',{maximumFractionDigits:d,minimumFractionDigits:d});
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+
+/* ---------- Parámetros (mismos de escenario_ahorro.py y ia/perfiles.py) ---------- */
+const CULTIVOS = {
+  kikuyo:{nombre:'kikuyo', kc:1.00, raiz:0.40, p:0.55},
+  papa:{nombre:'papa', kc:1.05, raiz:0.40, p:0.35},
+  hortalizas:{nombre:'hortalizas', kc:0.95, raiz:0.30, p:0.40},
+  flores:{nombre:'flores', kc:1.00, raiz:0.30, p:0.45}
+};
+const SUELOS = {andisol:{cc:.32,pmp:.16}, arcilloso:{cc:.36,pmp:.22}, arenoso:{cc:.22,pmp:.10}};
+const estado = {cultivo:'kikuyo', suelo:'andisol', temporada:'seca', area:1, tarifa:190, semilla:7};
+try{ const g = JSON.parse(localStorage.getItem('hs_lab')||'{}'); Object.assign(estado, g); }catch(e){}
+
+function rng(seed){ let a = seed>>>0; return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a>>>15, 1|a); t = t + Math.imul(t ^ t>>>7, 61|t) ^ t; return ((t ^ t>>>14)>>>0)/4294967296; }; }
+function gauss(r){ let u=0,v=0; while(!u)u=r(); while(!v)v=r(); return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v); }
+
+function clima(semilla, temporada, dias){
+  const r = rng(semilla*7919+13);
+  const inicio = temporada==='seca' ? 349 : 244;   // 15 dic · 1 sep (día juliano)
+  const lluvia=[], et0=[];
+  for(let d=0; d<dias+2; d++){
+    const dj = (inicio + d) % 365;
+    const f = 1 + 0.6*Math.sin(4*Math.PI*(dj-60)/365);
+    lluvia.push(r() < 0.33*f ? -Math.log(1-r())*9 : 0);
+    et0.push(Math.max(1.8, 3.2 + 0.8*Math.sin(2*Math.PI*(dj-30)/365) + gauss(r)*0.5));
+  }
+  const pron = lluvia.slice(1,dias+1).map(l => Math.max(0, l*(0.6+0.8*r()) + gauss(r)*0.8));
+  return {lluvia, et0, pron, inicio};
+}
+
+function simular(p, cl, politica, dias){
+  const taw = (p.cc-p.pmp)*p.raiz*1000, raw = p.p*taw, efic=0.75;
+  let dr = 0.3*taw; const serie=[]; let m3=0, eventos=0, estres=0, perc=0;
+  for(let d=0; d<dias; d++){
+    let bruto = 0;
+    if(politica==='calendario'){
+      const llovio = cl.lluvia.slice(Math.max(0,d-3),d).reduce((a,b)=>a+b,0) > 3;
+      if(d%3===0 && !llovio) bruto = 12/efic;
+    } else if(dr > raw && cl.pron[d] < 5){ bruto = 0.8*dr/efic; }
+    const pe = cl.lluvia[d] > 2 ? cl.lluvia[d]*0.85 : 0;
+    const ks = dr <= raw ? 1 : Math.max(0,(taw-dr)/(taw-raw));
+    dr = dr - pe - bruto*efic + p.kc*cl.et0[d]*ks;
+    if(dr < 0){ perc += -dr; dr = 0; } dr = Math.min(taw, dr);
+    if(bruto>0){ eventos++; m3 += bruto*10*p.area; }
+    if(dr > raw) estres++;
+    serie.push({disp: 100*(1-dr/taw), riego: bruto>0});
+  }
+  return {serie, m3, eventos, estres, perc, taw, raw, umbral: 100*(1-raw/taw)};
+}
+
+function escenario(semilla){
+  const c = CULTIVOS[estado.cultivo], s = SUELOS[estado.suelo];
+  const p = {...c, ...s, area: estado.area};
+  const cl = clima(semilla, estado.temporada, 90);
+  return {cl, cal: simular(p, cl, 'calendario', 90), hs: simular(p, cl, 'hidrosopo', 90)};
+}
+
+/* ---------- Gráfica principal (SVG, una sola escala) ---------- */
+function graficar(e){
+  const W=760, H=300, m={l:40,r:12,t:46,b:28}, iw=W-m.l-m.r, ih=H-m.t-m.b, n=e.hs.serie.length;
+  const x = i => m.l + i*iw/(n-1), y = v => m.t + ih*(1 - v/100);
+  const maxLl = Math.max(20, ...e.cl.lluvia.slice(0,n));
+  const fecha0 = new Date(2026, estado.temporada==='seca'?11:8, estado.temporada==='seca'?15:1);
+  const linea = arr => arr.map((s,i)=>`${i?'L':'M'}${x(i).toFixed(1)},${y(s.disp).toFixed(1)}`).join('');
+  let g = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Agua disponible en el suelo durante 90 días, calendario frente a HidroSopó">`;
+  for(const v of [0,25,50,75,100]){ g += `<line x1="${m.l}" x2="${W-m.r}" y1="${y(v)}" y2="${y(v)}" stroke="${css('--linea')}" stroke-width="1"/><text x="${m.l-6}" y="${y(v)+4}" text-anchor="end" font-size="11" fill="${css('--humo')}">${v}%</text>`; }
+  for(let i=0;i<n;i++){ const h = 30*e.cl.lluvia[i]/maxLl; if(h>0.4) g += `<rect x="${x(i)-2.2}" y="${8}" width="4.4" height="${h.toFixed(1)}" fill="${css('--agua')}" opacity=".35"/>`; }
+  g += `<text x="${m.l}" y="${m.t-6}" font-size="11" fill="${css('--humo')}">lluvia (máx. ${fmt(maxLl)} mm/día)</text>`;
+  g += `<rect x="${m.l}" y="${y(e.hs.umbral)}" width="${iw}" height="${y(0)-y(e.hs.umbral)}" fill="${css('--arcilla')}" opacity=".06"/>`;
+  g += `<line x1="${m.l}" x2="${W-m.r}" y1="${y(e.hs.umbral)}" y2="${y(e.hs.umbral)}" stroke="${css('--humo')}" stroke-dasharray="5 4"/>`;
+  g += `<path d="${linea(e.cal.serie)}" fill="none" stroke="${css('--arcilla')}" stroke-width="2" opacity=".85"/>`;
+  g += `<path d="${linea(e.hs.serie)}" fill="none" stroke="${css('--agua')}" stroke-width="2.6"/>`;
+  e.cal.serie.forEach((s,i)=>{ if(s.riego) g += `<line x1="${x(i)}" x2="${x(i)}" y1="${y(0)}" y2="${y(0)-7}" stroke="${css('--arcilla')}" stroke-width="2"/>`; });
+  e.hs.serie.forEach((s,i)=>{ if(s.riego) g += `<circle cx="${x(i)}" cy="${y(0)-12}" r="4" fill="${css('--agua')}"/>`; });
+  for(let i=0;i<n;i+=15){ const f = new Date(fecha0); f.setDate(f.getDate()+i);
+    g += `<text x="${x(i)}" y="${H-8}" text-anchor="middle" font-size="11" fill="${css('--humo')}">${f.toLocaleDateString('es-CO',{day:'numeric',month:'short'})}</text>`; }
+  return g + `</svg>`;
+}
+
+function render(){
+  try{ localStorage.setItem('hs_lab', JSON.stringify(estado)); }catch(e){}
+  const e = escenario(estado.semilla);
+  const ahorro = e.cal.m3 - e.hs.m3, pct = e.cal.m3 ? 100*ahorro/e.cal.m3 : 0;
+  $('#kpis').innerHTML = `
+    <div class="kpi agua"><div class="v">${fmt(pct)} %</div><div class="d">menos agua que por calendario</div></div>
+    <div class="kpi"><div class="v">${fmt(ahorro)} m³</div><div class="d">ahorrados en 90 días · ${fmt(ahorro/1000*1000/1000,1)} mil L × 1.000</div></div>
+    <div class="kpi pasto"><div class="v">$${fmt(ahorro*estado.tarifa)}</div><div class="d">a ${fmt(estado.tarifa)} $/m³ en ${fmt(estado.area,1)} ha</div></div>
+    <div class="kpi arcilla"><div class="v">${e.hs.eventos} <span style="font-size:15px;color:var(--humo)">vs ${e.cal.eventos}</span></div><div class="d">riegos HidroSopó vs calendario</div></div>`;
+  $('#kpis .kpi:nth-child(2) .d').textContent = `ahorrados en 90 días · equivale a ${fmt(ahorro)} tanques de 1.000 L`;
+  $('#grafica').innerHTML = graficar(e);
+  const fila = (t,a,b) => `<dt>${t}</dt><dd>${a}</dd>`;
+  $('#comparar').innerHTML = `
+    <div class="estrategia cal"><h3>Por calendario</h3><dl>${fila('Agua aplicada',fmt(e.cal.m3)+' m³')}${fila('Riegos',e.cal.eventos)}${fila('Agua perdida por drenaje',fmt(e.cal.perc)+' mm')}${fila('Días bajo el umbral',e.cal.estres)}</dl></div>
+    <div class="estrategia hs"><h3>Con HidroSopó</h3><dl>${fila('Agua aplicada',fmt(e.hs.m3)+' m³')}${fila('Riegos',e.hs.eventos)}${fila('Agua perdida por drenaje',fmt(e.hs.perc)+' mm')}${fila('Días bajo el umbral',e.hs.estres)}</dl></div>`;
+  $('#semillaTxt').textContent = `Clima simulado n.º ${estado.semilla} · TAW ${fmt(e.hs.taw)} mm · RAW ${fmt(e.hs.raw)} mm`;
+  ['seca','lluvia'].forEach(t => $('#t-'+t).setAttribute('aria-pressed', String((t==='seca'?'seca':'lluvias')===estado.temporada)));
+  $('#cultivo').value = estado.cultivo; $('#suelo').value = estado.suelo; $('#area').value = estado.area; $('#tarifa').value = estado.tarifa;
+  montecarlo();
+}
+
+function montecarlo(){
+  const v = [];
+  for(let s=1; s<=50; s++){ const e = escenario(s); if(e.cal.m3>0) v.push(100*(e.cal.m3-e.hs.m3)/e.cal.m3); }
+  v.sort((a,b)=>a-b);
+  const q = p => v[Math.min(v.length-1, Math.floor(p*(v.length-1)))];
+  const med=q(.5), p10=q(.1), p90=q(.9);
+  const W=520,H=120,l=14,r=14, lo=Math.min(0,Math.floor(v[0]/10)*10), hi=100;
+  const x = t => l + (W-l-r)*(t-lo)/(hi-lo);
+  let g = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Distribución del ahorro en 50 climas simulados">`;
+  g += `<rect x="${x(p10)}" y="30" width="${x(p90)-x(p10)}" height="44" rx="6" fill="${css('--agua')}" opacity=".12"/>`;
+  v.forEach((t,i)=>{ g += `<circle cx="${x(t)}" cy="${40+ (i%5)*6}" r="3.6" fill="${css('--agua')}" opacity=".75"/>`; });
+  g += `<line x1="${x(med)}" x2="${x(med)}" y1="22" y2="82" stroke="${css('--tinta')}" stroke-width="2"/>`;
+  g += `<text x="${x(med)}" y="16" text-anchor="middle" font-size="12" font-weight="700" fill="${css('--tinta')}">mediana ${fmt(med)} %</text>`;
+  for(let t=Math.ceil(lo/20)*20; t<=hi; t+=20) g += `<text x="${x(t)}" y="104" text-anchor="middle" font-size="11" fill="${css('--humo')}">${t}%</text>`;
+  $('#mc').innerHTML = g + `</svg>`;
+  $('#mcTxt').innerHTML = `En 50 años de clima distintos, HidroSopó ahorra entre <b>${fmt(p10)} %</b> y <b>${fmt(p90)} %</b> del agua (P10–P90) en ${estado.temporada==='seca'?'temporada seca':'temporada de lluvias'}, con mediana de <b>${fmt(med)} %</b>. La banda sombreada es ese rango.<br><span class="semilla">Las cifras de los informes salen de la corrida de referencia de escenario_ahorro.py (temporada seca: mediana 35 %, P10–P90 24–56 %). Este simulador usa otro generador de clima, por eso sus números varían.</span>`;
+}
+
+/* ---------- Banco virtual ---------- */
+const BANCO = [
+  {img:'banco/p1_calibracion.png', t:'1 · Calibración gravimétrica', crit:'R² ≥ 0,90 por sensor', res:'R² = 0,994 · 0,992 · 0,979', nota:'Ajuste cuadrático ADC → θv con 9 puntos por sensor. El de 45 cm queda más disperso: en campo conviene un punto extra cerca de capacidad de campo.'},
+  {img:'banco/p2_wifi.png', t:'2 · Conexión WiFi en el sitio', crit:'≥ 95 % de envíos en 72 h', res:'89,9 % directo → 100 % con buffer', nota:'A 38 m del router, 29 envíos fallan y se reenvían desde el buffer del nodo (máx. 2 en cola). El buffer de 120 lecturas es lo que hace cumplir el criterio.'},
+  {img:'banco/p2b_alcance_wifi.png', t:'2b · Alcance esperado', crit:'Regla de instalación', res:'≥ 95 % directo hasta ≈ 30 m', nota:'Define dónde se instala el nodo: hasta ≈ 50 m funciona con el buffer; más lejos, repetidor o LoRa (ya soportado por el firmware).'},
+  {img:'banco/p3_energia.png', t:'3 · Autonomía energética', crit:'≥ 72 h sin red y V ≥ 3,5 V', res:'4,09 V a 72 h · ≈ 19 días (DevKit)', nota:'Hallazgo: en la ESP32 DevKit el regulador y el chip USB consumen ≈ 8 mA en reposo y dominan el presupuesto. Cumple, pero una placa de bajo consumo llevaría la autonomía a meses.'},
+  {img:'banco/p4_caudal.png', t:'4 · Caudalímetro vs. balde aforado', crit:'Error ≤ 5 %', res:'−6,6 % de fábrica → 1,2 % máx. corregido', nota:'El factor de 450 pulsos/L de fábrica subestima el volumen. Con 5 llenados se corrige a ≈ 420 pulsos/L en el firmware.'},
+  {img:'banco/p5_modelo_ia.png', t:'5 · Pronóstico de humedad (IA)', crit:'Mejor que «mañana igual que hoy»', res:'−30 % error a 24 h · −27 % a 48 h', nota:'Validación temporal por bloques sobre 90 días simulados (25.350 registros). Se reentrena con los datos reales del predio.'}
+];
+$('#bancoGrid').innerHTML = BANCO.map(b => `
+  <article class="panel prueba">
+    <div class="fila"><h3>${b.t}</h3><span class="chip sim">simulado · cumple</span></div>
+    <figure><img src="${b.img}" alt="Gráfica de la prueba ${b.t}" loading="lazy"></figure>
+    <div class="fila"><span class="dato">${b.res}</span><span class="semilla">criterio: ${b.crit}</span></div>
+    <p>${b.nota}</p>
+  </article>`).join('');
+
+/* ---------- Estado del proyecto (honesto) ---------- */
+const HITOS = [
+  ['hecho','10 ago – 26 oct','Formulación y plan de trabajo','Presentado ante el COMUC+CTeI; formato de seguimiento y bitácora entregados el 26/10.'],
+  ['hecho','10 – 28 ago','Revisión técnica y requerimientos','FAO-56, PUEAA (Ley 373 de 1997), sensores y comunicación definidos.'],
+  ['parcial','24 ago – 18 sep','Diagnóstico del predio piloto','Conversación inicial con el productor. Falta formalizar ficha, fotos y consentimiento firmado.'],
+  ['hecho','7 sep – 9 oct','Diseño electrónico y mecánico','Esquema, BOM ≈ $1,1 M con WiFi, presupuesto energético y CAD (STEP, STL, DXF).'],
+  ['parcial','28 sep – 30 oct','Sensores y calibración','Firmware escrito y placa ESP32 adquirida. Sensores y caudalímetro por comprar; calibración validada en banco virtual.'],
+  ['parcial','5 oct – 3 nov','Plataforma en la nube y app','API, base de datos, PUEAA, app instalable y laboratorio publicados; 101/102 pruebas. Falta conectar datos reales.'],
+  ['parcial','12 oct – 12 nov','Módulo de IA','FAO-56 + modelos 24/48 h que superan la persistencia (simulado) y asistente. Reentrenar con datos de campo.'],
+  ['pend','2 – 13 nov → 2027','Instalación piloto','Reprogramación solicitada: compras en diciembre e instalación al inicio de 2027.'],
+  ['pend','9 – 24 nov → 2027','Pruebas de campo y análisis','Protocolo y planillas listos; se ejecutan en la fase de campo.'],
+  ['parcial','16 – 26 nov','Póster e informe final','Póster 90 × 120 cm y gemelo digital listos para el 26/11; resultados de campo en informe complementario.']
+];
+$('#hitos').innerHTML = HITOS.map((h,i)=>`
+  <div class="hito ${h[0]==='hecho'?'hecho':h[0]==='parcial'?'parcial':''}">
+    <div class="n">${i+1}</div>
+    <div class="cuerpo"><div class="fila"><h3>${h[2]}</h3><span class="chip ${h[0]==='hecho'?'hecho':h[0]==='parcial'?'sim':'pend'}">${h[0]==='hecho'?'ejecutada':h[0]==='parcial'?'software listo · campo pendiente':'por ejecutar'}</span></div>
+    <div class="fechas">${h[1]}</div><p>${h[3]}</p></div>
+  </div>`).join('');
+
+/* ---------- Eventos y navegación ---------- */
+$('#cultivo').addEventListener('change', e => { estado.cultivo = e.target.value; render(); });
+$('#suelo').addEventListener('change', e => { estado.suelo = e.target.value; render(); });
+$('#t-seca').addEventListener('click', () => { estado.temporada='seca'; render(); });
+$('#t-lluvia').addEventListener('click', () => { estado.temporada='lluvias'; render(); });
+$('#area').addEventListener('input', e => { const v = parseFloat(e.target.value); if(v>0){ estado.area=v; render(); } });
+$('#tarifa').addEventListener('input', e => { const v = parseFloat(e.target.value); if(v>=0){ estado.tarifa=v; render(); } });
+$('#otroClima').addEventListener('click', () => { estado.semilla = 1 + (estado.semilla % 50); render(); });
+
+if(location.hash === '#comunidad'){ location.replace('comunidad.html'); return; }
+const VISTAS = ['simulador','banco','estado'];
+function ruta(){
+  const v = VISTAS.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'simulador';
+  document.querySelectorAll('main > section').forEach(s => s.hidden = s.dataset.vista !== v);
+  document.querySelectorAll('nav.pestanas a').forEach(a => { if(a.dataset.vista===v) a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current'); });
+}
+window.addEventListener('hashchange', ruta);
+matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', render);
+new MutationObserver(render).observe(document.documentElement, {attributes:true, attributeFilter:['data-theme']});
+ruta(); render();
+})();
+</script>
