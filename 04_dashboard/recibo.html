@@ -1,0 +1,498 @@
+<link rel="icon" type="image/png" href="iconos/favicon-48.png">
+<title>Mi recibo de agua</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta charset="utf-8">
+<meta name="theme-color" content="#16607F">
+<link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<script src="comun.js"></script>
+<style>
+/* Mi recibo de agua: el contador de la casa como instrumento de medición.
+   Cabecera en el azul del agua; fichas de papel para leer y anotar. */
+:root{
+  --papel:#FFFDFA; --lienzo:#EEF2F0; --tinta:#1B1712; --humo:#5F635C; --linea:#DCE1DC;
+  --agua:#2A7BA3; --agua-hondo:#1B5C7D; --agua-tenue:#E1EEF4; --pasto:#4E7F22; --pasto-tenue:#E8F1DC;
+  --arcilla:#B4531F; --arcilla-tenue:#F8E8DD; --sol:#8A6408; --sol-tenue:#FBF3DA;
+  --sans:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --display:"Bricolage Grotesque","Inter",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --papel:#1A1E1D; --lienzo:#121514; --tinta:#ECEFEA; --humo:#A6ACA4; --linea:#313834;
+  --agua:#62B1D6; --agua-hondo:#9BD0E8; --agua-tenue:#17303B; --pasto:#9AC664; --pasto-tenue:#223019;
+  --arcilla:#E3895A; --arcilla-tenue:#3A251A; --sol:#E5BE55; --sol-tenue:#352C14; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --papel:#1A1E1D; --lienzo:#121514; --tinta:#ECEFEA; --humo:#A6ACA4; --linea:#313834;
+  --agua:#62B1D6; --agua-hondo:#9BD0E8; --agua-tenue:#17303B; --pasto:#9AC664; --pasto-tenue:#223019;
+  --arcilla:#E3895A; --arcilla-tenue:#3A251A; --sol:#E5BE55; --sol-tenue:#352C14; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--lienzo);color:var(--tinta);font:15px/1.55 var(--sans)}
+.env{max-width:1080px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header.cab{background:linear-gradient(165deg,#1F7FA8 0%,#16607F 50%,#123C50 100%);color:#F2F5F2}
+header.cab .env{padding-block:26px 30px;display:grid;gap:12px}
+.eti{font:700 12px var(--sans);letter-spacing:.14em;text-transform:uppercase;color:#BFE3F3}
+h1{margin:0;font:800 clamp(30px,5.2vw,52px)/1.03 var(--display);letter-spacing:-.02em;text-wrap:balance;max-width:20ch}
+h1 em{font-style:normal;color:#9DE0A0}
+.bajada{margin:0;max-width:64ch;color:#D7E3E6}
+.oficial{display:flex;gap:10px;align-items:flex-start;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:12px;padding:10px 14px;font-size:13.5px;max-width:760px}
+.oficial b{color:#fff}
+main .env{padding-block:22px 90px;display:grid;gap:16px}
+.panel{background:var(--papel);border:1px solid var(--linea);border-radius:16px;padding:20px;min-width:0}
+h2{font:700 22px/1.2 var(--display);margin:0 0 4px;letter-spacing:-.01em;text-wrap:balance}
+h3{font:700 16px/1.3 var(--display);margin:0 0 4px}
+.sub{color:var(--humo);margin:0 0 14px;font-size:14px;max-width:70ch}
+.dos{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:16px;align-items:start}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.kpi{border:1px solid var(--linea);border-radius:12px;padding:12px 14px;background:var(--papel);min-width:0}
+.kpi .v{font:800 26px/1.1 var(--display);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.kpi .d{font-size:12.5px;color:var(--humo)}
+.kpi.alerta{border-color:var(--arcilla);background:var(--arcilla-tenue)}
+.kpi.alerta .v{color:var(--arcilla)}
+.kpi.bien .v{color:var(--pasto)}
+.form{display:grid;gap:12px}
+.fila{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}
+.campo{display:grid;gap:5px;flex:1;min-width:130px}
+label,.etq{font:600 11.5px var(--sans);text-transform:uppercase;letter-spacing:.07em;color:var(--humo)}
+input[type=number],input[type=date],input[type=text]{font:500 15.5px var(--sans);padding:10px;border-radius:10px;border:1px solid var(--linea);background:var(--lienzo);color:var(--tinta);width:100%;font-variant-numeric:tabular-nums}
+.boton{font:600 14px var(--sans);border:0;border-radius:10px;padding:11px 15px;cursor:pointer;background:var(--agua-hondo);color:#fff;white-space:nowrap}
+:root[data-theme="dark"] .boton{background:#1B5C7D}
+:root[data-theme="dark"] .boton.sec{background:var(--lienzo);color:var(--tinta)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .boton{background:#1B5C7D}:root:not([data-theme="light"]) .boton.sec{background:var(--lienzo);color:var(--tinta)}}
+.boton.sec{background:var(--lienzo);color:var(--tinta);border:1px solid var(--linea)}
+.chip{font:600 11.5px var(--sans);padding:3px 9px;border-radius:999px;white-space:nowrap;background:var(--sol-tenue);color:var(--sol)}
+.grafica svg{display:block;width:100%;height:auto}
+.lista{width:100%;border-collapse:collapse;font-size:14px}
+.lista th{text-align:left;font:600 11.5px var(--sans);text-transform:uppercase;letter-spacing:.06em;color:var(--humo);padding:7px 6px;border-bottom:2px solid var(--linea)}
+.lista td{padding:8px 6px;border-bottom:1px solid var(--linea);font-variant-numeric:tabular-nums}
+.lista td.n{text-align:right}
+.lista button{border:0;background:none;color:var(--humo);cursor:pointer;font-size:16px;padding:2px 6px;border-radius:6px}
+.lista button:hover{background:var(--lienzo);color:var(--arcilla)}
+.scroll{overflow-x:auto}
+.total{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.total b{font:800 clamp(36px,6vw,54px)/1 var(--display);color:var(--agua);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.partidas{display:grid;gap:6px;margin-top:8px}
+.partida{display:flex;justify-content:space-between;gap:10px;font-size:14px;padding:6px 0;border-bottom:1px dashed var(--linea)}
+.partida b{font-variant-numeric:tabular-nums}
+.factura{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.dato{border:1px solid var(--linea);border-radius:12px;padding:12px 14px;display:grid;gap:4px;min-width:0}
+.dato b{font:700 15px var(--display)}
+.dato span{font-size:13.5px;color:var(--humo)}
+.pagar{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.canal{border-radius:12px;padding:14px;background:var(--agua-tenue);min-width:0}
+.canal b{display:block;font:700 15px var(--display)}
+.canal span{font-size:13.5px}
+.cuidado{display:flex;gap:10px;background:var(--arcilla-tenue);color:var(--tinta);border-radius:12px;padding:12px 14px;font-size:14px;margin-top:12px}
+.cuidado b{color:var(--arcilla)}
+.cuenta{font:800 34px/1 var(--display);font-variant-numeric:tabular-nums}
+.nota{font-size:12.5px;color:var(--humo)}
+.consejos{display:grid;gap:8px;margin:0;padding:0;list-style:none}
+.consejos li{display:grid;grid-template-columns:18px 1fr;gap:8px;font-size:14px}
+.consejos li::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--pasto);margin-top:6px}
+/* Canales oficiales */
+.canales{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.canal-ofi{display:grid;gap:4px;text-decoration:none;color:var(--tinta);border:1px solid var(--linea);background:var(--papel);border-radius:14px;padding:14px 16px;min-width:0;transition:border-color .15s, transform .15s}
+.canal-ofi:hover{border-color:var(--agua);transform:translateY(-1px)}
+.canal-ofi b{font:700 16px var(--display);display:flex;justify-content:space-between;gap:8px}
+.canal-ofi b::after{content:"↗";color:var(--agua)}
+.canal-ofi span{font-size:13.5px;color:var(--humo)}
+.canal-ofi small{font:500 12px var(--mono);color:var(--agua-hondo);overflow-wrap:anywhere}
+.canal-ofi.prim{background:var(--agua-tenue);border-color:transparent}
+.t-acciones a{text-decoration:none}
+@media (max-width:860px){.canales{grid-template-columns:1fr}}
+/* Mi factura */
+.mifactura{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:16px;align-items:start}
+.tarjeta{border-radius:18px;padding:22px;color:#F2F5F2;background:radial-gradient(130% 120% at 100% 0%,#1F8BB8 0%,#16607F 50%,#123C50 100%);display:grid;gap:14px;position:relative;overflow:hidden;box-shadow:0 14px 34px -18px rgba(14,70,95,.8)}
+.tarjeta::after{content:"";position:absolute;right:-40px;top:-40px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,.06)}
+.tarjeta .t-eti{font:700 11.5px var(--sans);letter-spacing:.14em;text-transform:uppercase;color:#BFE3F3}
+.tarjeta .t-total{font:800 clamp(34px,5vw,46px)/1 var(--display);letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.tarjeta .t-fila{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.tarjeta .t-fila div{background:rgba(255,255,255,.08);border-radius:10px;padding:8px 10px;min-width:0}
+.tarjeta .t-fila span{display:block;font-size:11.5px;color:#BFD8E2}
+.tarjeta .t-fila b{font:700 15px var(--display);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.ref{display:flex;align-items:center;gap:10px;background:rgba(0,0,0,.18);border-radius:12px;padding:10px 12px}
+.ref code{font:600 17px var(--mono);letter-spacing:.06em;flex:1;min-width:0;overflow-wrap:anywhere}
+.ref button{border:0;border-radius:9px;padding:8px 12px;font:700 13px var(--sans);background:#F2F5F2;color:#123C50;cursor:pointer;white-space:nowrap}
+.t-acciones{display:flex;gap:10px;flex-wrap:wrap}
+.t-acciones .boton{background:#9DE0A0;color:#123C50}
+.t-acciones .boton.sec{background:transparent;color:#F2F5F2;border:1px solid rgba(255,255,255,.35)}
+.estado{display:inline-flex;align-items:center;gap:6px;font:700 12px var(--sans);padding:4px 10px;border-radius:999px;background:rgba(255,255,255,.14)}
+.estado.vence{background:#F4C35A;color:#3A2A05}
+.estado.vencida{background:#F08A6B;color:#3A1205}
+.estado.pagada{background:#9DE0A0;color:#123C50}
+.vacia{border:1.5px dashed var(--linea);border-radius:18px;padding:22px;display:grid;gap:8px;text-align:center;color:var(--humo)}
+.vacia b{color:var(--tinta);font:700 17px var(--display)}
+.adjunto{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.adjunto img{max-width:100%;max-height:220px;border-radius:10px;border:1px solid var(--linea);display:block}
+.convenio{display:flex;gap:12px;align-items:flex-start;background:var(--agua-tenue);border-radius:12px;padding:12px 14px;font-size:13.5px}
+@media (max-width:860px){.mifactura{grid-template-columns:1fr}}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--agua);outline-offset:2px}
+@media (max-width:860px){.dos{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.pagar{grid-template-columns:1fr}}
+@media (max-width:480px){.factura{grid-template-columns:1fr}}
+</style>
+
+<header class="cab">
+  <div class="env">
+    <span class="eti">HidroSopó · Hogares</span>
+    <h1>Mi recibo de agua: <em>entiéndalo, mídalo y pague menos</em></h1>
+    <p class="bajada">Anote las lecturas de su contador, vea cuánta agua gasta su casa, estime el valor de su próxima factura y detecte fugas a tiempo.</p>
+    <div class="oficial" role="note"><span aria-hidden="true">ⓘ</span><span><b>HidroSopó no es Emsersopó ni recibe pagos.</b> La descarga y el pago se hacen en los portales oficiales de la empresa, que se abren desde aquí. Sus lecturas y datos se guardan solo en este celular.</span></div>
+  </div>
+</header>
+
+<main>
+<div class="env">
+
+  <section class="panel" id="panelFactura">
+    <div class="fila" style="justify-content:space-between;align-items:center;margin-bottom:4px">
+      <h2 style="margin:0">Mi factura del mes</h2>
+      <span class="chip" style="background:var(--agua-tenue);color:var(--agua-hondo)">copiada de su recibo</span>
+    </div>
+    <p class="sub">Copie los datos de su recibo impreso o digital y téngalos a la mano: valor, fecha límite y la referencia para pagar en los canales oficiales.</p>
+    <div class="mifactura">
+      <form class="form" id="formFactura" autocomplete="off">
+        <div class="fila">
+          <div class="campo"><label for="fCuenta">Número de cuenta o contrato</label><input id="fCuenta" type="text" inputmode="numeric" maxlength="24"></div>
+          <div class="campo"><label for="fRef">Referencia de pago</label><input id="fRef" type="text" maxlength="40"></div>
+        </div>
+        <div class="fila">
+          <div class="campo"><label for="fPeriodo">Periodo facturado</label><input id="fPeriodo" type="text" maxlength="40" placeholder="Ej.: 5 oct – 5 nov"></div>
+          <div class="campo"><label for="fConsumo">Consumo (m³)</label><input id="fConsumo" type="number" min="0" step="0.1"></div>
+        </div>
+        <div class="fila">
+          <div class="campo"><label for="fTotal">Total a pagar ($)</label><input id="fTotal" type="number" min="0" step="any"></div>
+          <div class="campo"><label for="fLimite">Fecha límite</label><input id="fLimite" type="date"></div>
+        </div>
+        <a class="canal-ofi prim" data-canal="factura" href="#" target="_blank" rel="noopener noreferrer"><b>Descargar mi factura</b><span>En el portal de facturación de Emsersopó. Copie aquí los datos o mire la foto.</span><small>emsersopo.hassqlservice.com</small></a>
+        <div class="fila" style="align-items:center">
+          <button class="boton sec" type="button" id="fConsultar">Consultar con Emsersopó</button>
+          <span class="nota" id="fConsultaMsg" aria-live="polite">Consulta automática dentro de la app: se activa con el convenio.</span>
+        </div>
+        <div class="adjunto">
+          <label class="boton sec" for="fFoto" style="cursor:pointer;text-transform:none;letter-spacing:0;font:600 14px var(--sans);color:var(--tinta)">Ver una foto de mi recibo</label>
+          <input id="fFoto" type="file" accept="image/*" hidden>
+          <span class="nota">Solo se muestra en esta pantalla, no se guarda ni se envía.</span>
+        </div>
+        <div id="fFotoVista"></div>
+        <div class="fila">
+          <button class="boton" type="submit">Guardar mi factura</button>
+          <button class="boton sec" type="button" id="fBorrar">Borrar</button>
+        </div>
+      </form>
+      <div id="tarjetaFactura" aria-live="polite"></div>
+    </div>
+    <div class="convenio" role="note" style="margin-top:14px"><span aria-hidden="true">🤝</span><span><b>Descarga y pago:</b> en los portales oficiales de Emsersopó (PSE y AvalPayCenter), que se abren desde aquí. <b>Consulta automática dentro de la app:</b> se activa cuando la empresa la autorice mediante convenio. HidroSopó no recibe pagos ni guarda datos bancarios.</span></div>
+  </section>
+
+  <section class="kpis" id="kpis" aria-live="polite"></section>
+
+  <div class="dos">
+    <section class="panel">
+      <div class="fila" style="justify-content:space-between;align-items:center;margin-bottom:6px">
+        <h2 style="margin:0">Mis lecturas del contador</h2>
+        <span class="chip" id="chipEjemplo">datos de ejemplo</span>
+      </div>
+      <p class="sub">Anote el número que marca el contador (en m³), siempre el mismo día de cada mes. Con dos lecturas ya calculo su consumo.</p>
+      <div class="grafica" id="grafica"></div>
+      <form class="form" id="formLectura" autocomplete="off">
+        <div class="fila">
+          <div class="campo"><label for="lFecha">Fecha</label><input id="lFecha" type="date" required></div>
+          <div class="campo"><label for="lValor">Lectura (m³)</label><input id="lValor" type="number" step="0.001" min="0" placeholder="Ej.: 1284.5" required></div>
+          <button class="boton" type="submit">Anotar</button>
+        </div>
+      </form>
+      <div class="scroll" style="margin-top:12px"><table class="lista" id="tablaLecturas"></table></div>
+      <div class="fila" style="margin-top:10px">
+        <button class="boton sec" type="button" id="btnEmpezar">Borrar el ejemplo y empezar con mis lecturas</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Estime su próxima factura</h2>
+      <p class="sub">Copie los valores de su último recibo. Cambian según el estrato y la tarifa vigente, por eso no los invento.</p>
+      <div class="form">
+        <div class="fila">
+          <div class="campo"><label for="tConsumo">Consumo del mes (m³)</label><input id="tConsumo" type="number" step="0.1" min="0"></div>
+          <div class="campo"><label for="tPersonas">Personas en la casa</label><input id="tPersonas" type="number" min="1" step="1" value="4"></div>
+        </div>
+        <div class="fila">
+          <div class="campo"><label for="tFijo">Cargo fijo acueducto ($)</label><input id="tFijo" type="number" min="0" step="any" value="9800"></div>
+          <div class="campo"><label for="tM3">Valor m³ acueducto ($)</label><input id="tM3" type="number" min="0" step="any" value="3200"></div>
+        </div>
+        <div class="fila">
+          <div class="campo"><label for="tFijoA">Cargo fijo alcantarillado ($)</label><input id="tFijoA" type="number" min="0" step="any" value="5400"></div>
+          <div class="campo"><label for="tM3A">Valor m³ alcantarillado ($)</label><input id="tM3A" type="number" min="0" step="any" value="2100"></div>
+        </div>
+        <div class="fila">
+          <div class="campo"><label for="tAjuste">Subsidio (−) o contribución (+) en %</label><input id="tAjuste" type="number" step="1" value="0"></div>
+          <div class="campo"><label for="tOtros">Otros cobros: aseo, etc. ($)</label><input id="tOtros" type="number" min="0" step="any" value="0"></div>
+        </div>
+      </div>
+      <div style="margin-top:14px">
+        <span class="etq">Valor estimado</span>
+        <div class="total"><b id="tTotal">$0</b><span class="nota" id="tTotalNota"></span></div>
+        <div class="partidas" id="tPartidas"></div>
+        <p class="nota" style="margin-top:8px">Los valores que vienen escritos son de ejemplo. El valor real es el de su factura.</p>
+      </div>
+    </section>
+  </div>
+
+  <div class="dos">
+    <section class="panel">
+      <h2>Cómo leer su factura</h2>
+      <p class="sub">Lo que suele traer un recibo de acueducto y alcantarillado en Colombia, y para qué le sirve cada dato.</p>
+      <div class="factura">
+        <div class="dato"><b>Número de cuenta o contrato</b><span>Identifica su predio ante la empresa. Lo piden para cualquier reclamo.</span></div>
+        <div class="dato"><b>Referencia de pago</b><span>El código con el que se paga la factura en banco o en línea. Cambia o se repite según la empresa.</span></div>
+        <div class="dato"><b>Periodo facturado</b><span>Las fechas que cubre el cobro. Compare siempre periodos de la misma duración.</span></div>
+        <div class="dato"><b>Lectura anterior y actual</b><span>Lo que marcaba el contador. La diferencia es su consumo en m³. Puede verificarla aquí.</span></div>
+        <div class="dato"><b>Consumo básico y complementario</b><span>Los primeros m³ del mes tienen una tarifa; lo que pase de ese límite suele costar más.</span></div>
+        <div class="dato"><b>Cargo fijo</b><span>Se paga aunque no se use agua. Cubre la operación del servicio.</span></div>
+        <div class="dato"><b>Subsidio o contribución</b><span>Depende del estrato: los estratos 1, 2 y 3 reciben subsidio; los 5, 6 y comercio aportan contribución.</span></div>
+        <div class="dato"><b>Fecha límite y de suspensión</b><span>Pagar después de la fecha límite puede generar intereses o reconexión.</span></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Recordatorio de pago</h2>
+      <p class="sub">Escriba la fecha límite que trae su recibo y le muestro cuántos días le quedan.</p>
+      <div class="fila">
+        <div class="campo"><label for="rFecha">Fecha límite de pago</label><input id="rFecha" type="date"></div>
+      </div>
+      <div style="margin-top:14px;display:grid;gap:6px" aria-live="polite">
+        <span class="cuenta" id="rDias">—</span>
+        <span class="nota" id="rTexto">Sin fecha anotada.</span>
+      </div>
+      <h3 style="margin-top:18px">Para que el próximo recibo llegue más bajo</h3>
+      <ul class="consejos" id="consejos"></ul>
+    </section>
+  </div>
+
+  <section class="panel" id="dondePagar">
+    <h2>¿Dónde pagar?</h2>
+    <p class="sub">Los canales oficiales de Emsersopó. Cada botón abre el sitio de la empresa o de la pasarela; HidroSopó no interviene en el pago.</p>
+    <div class="canales">
+      <a class="canal-ofi prim" data-canal="pse" href="#" target="_blank" rel="noopener noreferrer"><b>Pagar con PSE</b><span>Débito desde su cuenta bancaria. Le pide la «Identificación Cliente en la Empresa»: su número de cuenta.</span><small>psepagos.co</small></a>
+      <a class="canal-ofi prim" data-canal="aval" href="#" target="_blank" rel="noopener noreferrer"><b>Pagar en AvalPayCenter</b><span>Portal de pagos de los bancos del Grupo Aval, convenio de Emsersopó.</span><small>avalpaycenter.com</small></a>
+      <a class="canal-ofi" data-canal="factura" href="#" target="_blank" rel="noopener noreferrer"><b>Descargar la factura</b><span>Portal de facturación de Emsersopó, para ver o imprimir el recibo.</span><small>emsersopo.hassqlservice.com</small></a>
+    </div>
+    <p class="nota" style="margin-top:10px">También puede pagar en las oficinas de la empresa y en los bancos o corresponsales que indica su recibo. Dudas o reclamos: directamente con Emsersopó, con el número de cuenta a la mano.</p>
+    <div class="cuidado" role="note"><span aria-hidden="true">⚠</span><span><b>Cuidado con los fraudes.</b> No pague por enlaces que le lleguen por WhatsApp, SMS o correo sin verificar que son de la empresa, y nunca comparta claves bancarias. HidroSopó no cobra ni recibe pagos.</span></div>
+    <p class="nota" style="margin-top:10px">Mejora futura: con un convenio, la app podría traer la factura automáticamente con el número de cuenta, sin copiar los datos a mano.</p>
+  </section>
+
+</div>
+</main>
+
+<script>
+(function(){
+"use strict";
+/* Canales oficiales de Emsersopó (se abren en su propio sitio, nunca embebidos).
+   Si la empresa cambia un enlace, se cambia SOLO aquí. */
+const CANALES = {
+  factura: 'https://emsersopo.hassqlservice.com/ImpuestoSPD.aspx',
+  pse:     'https://www.psepagos.co/PSEHostingUI/ShowTicketOffice.aspx?ID=7639',
+  aval:    'https://www.avalpaycenter.com/wps/portal/portal-de-pagos/web/pagos-aval/resultado-busqueda/realizar-pago-facturadores?idConv=00024242&origen=buscar'
+};
+document.querySelectorAll('[data-canal]').forEach(a => { a.href = CANALES[a.dataset.canal]; });
+const $ = s => document.querySelector(s);
+const fmt = (n,d=0) => Number(n).toLocaleString('es-CO',{maximumFractionDigits:d,minimumFractionDigits:d});
+const cop = n => '$' + fmt(Math.round(n));
+const leer = (k,d) => { try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } };
+const guardar = (k,v) => { try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} };
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+
+/* Ejemplo de una casa de 4 personas: lecturas mensuales del contador (m³). Se marca como ejemplo. */
+function ejemplo(){
+  const base = new Date(); base.setDate(5);
+  const consumos = [17.2, 16.4, 18.1, 15.9, 16.8, 22.6];   // el último mes sube: posible fuga
+  let lectura = 1180.0; const out = [];
+  for(let i = consumos.length; i >= 0; i--){
+    const f = new Date(base); f.setMonth(base.getMonth() - i);
+    out.push({fecha: f.toISOString().slice(0,10), valor: +lectura.toFixed(1)});
+    if(i > 0) lectura += consumos[consumos.length - i];
+  }
+  return out;
+}
+let estado = leer('hs_recibo', null);
+if(!estado) estado = {ejemplo:true, lecturas: ejemplo(), tarifa:{}, limite:''};
+
+function periodos(){
+  const ls = [...estado.lecturas].sort((a,b) => a.fecha.localeCompare(b.fecha));
+  const out = [];
+  for(let i = 1; i < ls.length; i++){
+    const dias = Math.max(1, Math.round((new Date(ls[i].fecha) - new Date(ls[i-1].fecha)) / 864e5));
+    const m3 = ls[i].valor - ls[i-1].valor;
+    out.push({desde: ls[i-1].fecha, hasta: ls[i].fecha, dias, m3, ld: m3*1000/dias});
+  }
+  return out;
+}
+const mes = f => new Date(f + 'T12:00').toLocaleDateString('es-CO',{month:'short'}).replace('.','');
+
+function pintar(){
+  guardar('hs_recibo', estado);
+  $('#chipEjemplo').hidden = !estado.ejemplo;
+  $('#btnEmpezar').hidden = !estado.ejemplo;
+  const ps = periodos(), personas = Math.max(1, +$('#tPersonas').value || 1);
+  const ult = ps[ps.length-1], prev = ps.slice(0, -1);
+  const prom = prev.length ? prev.reduce((s,p) => s + p.ld, 0) / prev.length : null;
+  const cambio = ult && prom ? 100*(ult.ld/prom - 1) : null;
+  const fuga = cambio != null && cambio > 25;
+  // KPIs
+  $('#kpis').innerHTML = ult ? `
+    <div class="kpi"><div class="v">${fmt(ult.m3,1)} m³</div><div class="d">consumo del último periodo (${ult.dias} días)</div></div>
+    <div class="kpi"><div class="v">${fmt(ult.ld/personas)} L</div><div class="d">por persona al día</div></div>
+    <div class="kpi ${fuga ? 'alerta' : (cambio != null && cambio < 0 ? 'bien' : '')}"><div class="v">${cambio == null ? '—' : (cambio > 0 ? '+' : '') + fmt(cambio) + ' %'}</div><div class="d">${fuga ? 'Subió mucho: revise si hay una fuga' : 'frente a su promedio anterior'}</div></div>
+    <div class="kpi"><div class="v">${fmt(ult.m3*1000/200)}</div><div class="d">canecas de 200 L en el periodo</div></div>`
+    : `<div class="kpi" style="grid-column:1/-1"><div class="v">Anote dos lecturas</div><div class="d">Con la lectura de hoy y la del próximo mes le calculo el consumo.</div></div>`;
+  // Gráfica de barras (litros por día, una sola escala)
+  if(ps.length){
+    const W = 520, H = 210, l = 40, r = 10, t = 16, b = 30, iw = W-l-r, ih = H-t-b;
+    const max = Math.max(...ps.map(p => p.ld)) * 1.15, bw = iw / ps.length;
+    let g = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Litros por día en cada periodo">`;
+    const paso = max > 900 ? 300 : max > 450 ? 150 : 100;
+    for(let v = 0; v <= max; v += paso){ const y = t + ih*(1 - v/max);
+      g += `<line x1="${l}" x2="${W-r}" y1="${y}" y2="${y}" stroke="${css('--linea')}"/><text x="${l-6}" y="${y+4}" font-size="11" text-anchor="end" fill="${css('--humo')}">${fmt(v)}</text>`; }
+    ps.forEach((p,i) => { const h = ih*p.ld/max, x = l + i*bw + bw*0.18, y = t + ih - h;
+      const color = (i === ps.length-1 && fuga) ? css('--arcilla') : css('--agua');
+      g += `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${(bw*0.64).toFixed(1)}" height="${h.toFixed(1)}" rx="5" fill="${color}"/>`;
+      g += `<text x="${(x + bw*0.32).toFixed(1)}" y="${H-10}" font-size="11.5" text-anchor="middle" fill="${css('--humo')}">${mes(p.hasta)}</text>`;
+      g += `<text x="${(x + bw*0.32).toFixed(1)}" y="${(y-5).toFixed(1)}" font-size="11" text-anchor="middle" font-weight="700" fill="${css('--tinta')}">${fmt(p.ld)}</text>`; });
+    if(prom){ const y = t + ih*(1 - prom/max);
+      g += `<line x1="${l}" x2="${W-r}" y1="${y}" y2="${y}" stroke="${css('--humo')}" stroke-dasharray="5 4"/><text x="${W-r}" y="${y-5}" font-size="11" text-anchor="end" fill="${css('--humo')}">promedio ${fmt(prom)} L/día</text>`; }
+    $('#grafica').innerHTML = g + '</svg><p class="nota" style="margin:4px 0 10px">Litros por día de la casa en cada periodo entre lecturas.</p>';
+  } else $('#grafica').innerHTML = '';
+  // Tabla
+  const ls = [...estado.lecturas].sort((a,b) => b.fecha.localeCompare(a.fecha));
+  $('#tablaLecturas').innerHTML = `<thead><tr><th>Fecha</th><th style="text-align:right">Lectura</th><th style="text-align:right">Consumo</th><th></th></tr></thead><tbody>` +
+    ls.map(x => { const p = ps.find(q => q.hasta === x.fecha);
+      return `<tr><td>${new Date(x.fecha+'T12:00').toLocaleDateString('es-CO',{day:'numeric',month:'short',year:'numeric'})}</td><td class="n">${fmt(x.valor,1)} m³</td><td class="n">${p ? fmt(p.m3,1) + ' m³' : '—'}</td><td class="n"><button type="button" data-f="${x.fecha}" aria-label="Borrar la lectura del ${x.fecha}">×</button></td></tr>`; }).join('') + '</tbody>';
+  document.querySelectorAll('#tablaLecturas button').forEach(bt => bt.onclick = () => {
+    estado.lecturas = estado.lecturas.filter(x => x.fecha !== bt.dataset.f); pintar(); });
+  // Factura estimada
+  if(ult && !$('#tConsumo').dataset.manual) $('#tConsumo').value = ult.m3.toFixed(1);
+  factura(); recordatorio(fuga, ult, personas);
+}
+
+function factura(){
+  const n = id => Math.max(0, +$(id).value || 0);
+  const m3 = n('#tConsumo'), ajuste = (+$('#tAjuste').value || 0) / 100;
+  const acu = n('#tFijo') + m3*n('#tM3'), alc = n('#tFijoA') + m3*n('#tM3A');
+  const aj = (acu + alc) * ajuste, total = acu + alc + aj + n('#tOtros');
+  $('#tTotal').textContent = cop(total);
+  $('#tTotalNota').textContent = `por ${fmt(m3,1)} m³`;
+  $('#tPartidas').innerHTML = `
+    <div class="partida"><span>Acueducto</span><b>${cop(acu)}</b></div>
+    <div class="partida"><span>Alcantarillado</span><b>${cop(alc)}</b></div>
+    ${aj ? `<div class="partida"><span>${aj < 0 ? 'Subsidio' : 'Contribución'}</span><b>${aj < 0 ? '−' : '+'}${cop(Math.abs(aj))}</b></div>` : ''}
+    ${n('#tOtros') ? `<div class="partida"><span>Otros cobros</span><b>${cop(n('#tOtros'))}</b></div>` : ''}
+    <div class="partida"><span>Si ahorra 10 % de agua, se ahorra al mes</span><b style="color:var(--pasto)">${cop(m3*0.1*(n('#tM3')+n('#tM3A'))*(1+ajuste))}</b></div>`;
+  estado.tarifa = {fijo:$('#tFijo').value, m3:$('#tM3').value, fijoA:$('#tFijoA').value, m3A:$('#tM3A').value, ajuste:$('#tAjuste').value, otros:$('#tOtros').value, personas:$('#tPersonas').value};
+  guardar('hs_recibo', estado);
+}
+
+function recordatorio(fuga, ult, personas){
+  const v = $('#rFecha').value;
+  if(v){ const dias = Math.ceil((new Date(v+'T23:59') - new Date()) / 864e5);
+    $('#rDias').textContent = dias >= 0 ? `${dias} día${dias === 1 ? '' : 's'}` : 'Vencida';
+    $('#rDias').style.color = dias < 0 ? css('--arcilla') : dias <= 3 ? css('--sol') : css('--pasto');
+    $('#rTexto').textContent = dias >= 0 ? `para la fecha límite (${new Date(v+'T12:00').toLocaleDateString('es-CO',{day:'numeric',month:'long'})}).` : 'Pague cuanto antes por un canal oficial para evitar intereses o suspensión.';
+  } else { $('#rDias').textContent = '—'; $('#rDias').style.color = ''; $('#rTexto').textContent = 'Sin fecha anotada.'; }
+  estado.limite = v;
+  const c = [];
+  if(fuga) c.push('Su consumo subió mucho: cierre todas las llaves y mire si el contador sigue girando. Si gira, hay una fuga.');
+  if(ult && ult.ld/personas > 130) c.push('Su casa gasta más de 130 L por persona al día: duchas de 5 minutos ahorran unos 50 L por persona.');
+  c.push('Revise el sanitario: unas gotas de colorante en el tanque; si el color pasa a la taza sin descargar, está botando agua.');
+  c.push('Recoja agua lluvia para regar y trapear: en «Sopó Cuida el Agua» le calculo cuánta.');
+  $('#consejos').innerHTML = c.slice(0,4).map(t => `<li>${t}</li>`).join('');
+}
+
+/* ---------- Mi miFactura del mes ---------- */
+let miFactura = leer('hs_factura', null);
+const F = ['fCuenta','fRef','fPeriodo','fConsumo','fTotal','fLimite'];
+function pintarFactura(){
+  const caja = $('#tarjetaFactura');
+  if(!miFactura || !(+miFactura.fTotal > 0)){
+    caja.innerHTML = `<div class="vacia"><b>Aún no ha guardado su miFactura</b><span>Copie el total, la fecha límite y la referencia de su recibo y aquí los tendrá siempre a la mano, con el recordatorio de pago.</span></div>`;
+    return;
+  }
+  let est = '', estTxt = 'Por pagar';
+  if(miFactura.pagada){ est = 'pagada'; estTxt = 'Pagada'; }
+  else if(miFactura.fLimite){
+    const d = Math.ceil((new Date(miFactura.fLimite+'T23:59') - new Date())/864e5);
+    if(d < 0){ est = 'vencida'; estTxt = 'Vencida'; } else if(d <= 3){ est = 'vence'; estTxt = d === 0 ? 'Vence hoy' : `Vence en ${d} día${d===1?'':'s'}`; } else estTxt = `Faltan ${d} días`;
+  }
+  const lim = miFactura.fLimite ? new Date(miFactura.fLimite+'T12:00').toLocaleDateString('es-CO',{day:'numeric',month:'short'}) : '—';
+  const esc = t => String(t||'').replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+  caja.innerHTML = `<div class="tarjeta">
+      <div class="fila" style="justify-content:space-between;align-items:center"><span class="t-eti">Acueducto y alcantarillado · Sopó</span><span class="estado ${est}">${estTxt}</span></div>
+      <div><span class="t-eti" style="letter-spacing:.06em">Total a pagar</span><div class="t-total">${cop(+miFactura.fTotal)}</div></div>
+      <div class="t-fila"><div><span>Fecha límite</span><b>${lim}</b></div><div><span>Consumo</span><b>${miFactura.fConsumo ? fmt(+miFactura.fConsumo,1)+' m³' : '—'}</b></div><div><span>Periodo</span><b>${esc(miFactura.fPeriodo) || '—'}</b></div></div>
+      ${miFactura.fRef ? `<div class="ref"><span class="t-eti" style="letter-spacing:.06em">Ref.</span><code id="refTxt">${esc(miFactura.fRef)}</code><button type="button" id="btnCopiar">Copiar</button></div>` : ''}
+      ${miFactura.fCuenta ? `<span style="font-size:12.5px;color:#BFD8E2">Cuenta ${esc(miFactura.fCuenta)}</span>` : ''}
+      <div class="t-acciones">
+        <a class="boton" href="${CANALES.pse}" target="_blank" rel="noopener noreferrer" id="btnPSE">Pagar con PSE ↗</a>
+        <a class="boton sec" href="${CANALES.aval}" target="_blank" rel="noopener noreferrer" id="btnAval">AvalPayCenter ↗</a>
+        <button class="boton sec" type="button" id="btnPagada">${miFactura.pagada ? 'Marcar como pendiente' : 'Ya la pagué'}</button>
+      </div>
+      <span style="font-size:12.5px;color:#BFD8E2">Se abre el portal oficial. En PSE, en «Identificación Cliente en la Empresa» va su número de cuenta${miFactura.fCuenta ? ' (se copia al tocar el botón)' : ''}.</span>
+    </div>`;
+  const bc = $('#btnCopiar');
+  if(bc) bc.onclick = () => {
+    const t = miFactura.fRef;
+    const ok = () => { bc.textContent = 'Copiada'; setTimeout(() => bc.textContent = 'Copiar', 1600); };
+    if(navigator.clipboard) navigator.clipboard.writeText(t).then(ok).catch(() => seleccionar());
+    else seleccionar();
+    function seleccionar(){ const r = document.createRange(); r.selectNodeContents($('#refTxt')); const s = getSelection(); s.removeAllRanges(); s.addRange(r); bc.textContent = 'Seleccionada'; }
+  };
+  const copiarCuenta = () => { if(miFactura.fCuenta && navigator.clipboard) navigator.clipboard.writeText(miFactura.fCuenta).catch(() => {}); };
+  $('#btnPSE').addEventListener('click', copiarCuenta);
+  $('#btnAval').addEventListener('click', copiarCuenta);
+  $('#btnPagada').onclick = () => { miFactura.pagada = !miFactura.pagada; guardar('hs_factura', miFactura); pintarFactura(); };
+}
+function cargarFactura(){ if(miFactura) F.forEach(k => { if(miFactura[k] != null) $('#'+k).value = miFactura[k]; }); }
+$('#formFactura').addEventListener('submit', e => {
+  e.preventDefault();
+  const nueva = {pagada:false}; F.forEach(k => nueva[k] = $('#'+k).value.trim());
+  if(!(+nueva.fTotal > 0)){ $('#fTotal').focus(); return; }
+  miFactura = nueva; guardar('hs_factura', miFactura);
+  if(miFactura.fLimite){ $('#rFecha').value = miFactura.fLimite; }
+  if(miFactura.fConsumo){ $('#tConsumo').value = miFactura.fConsumo; $('#tConsumo').dataset.manual = '1'; }
+  pintar(); pintarFactura();
+});
+$('#fBorrar').addEventListener('click', () => { miFactura = null; try{ localStorage.removeItem('hs_factura'); }catch(e){} F.forEach(k => $('#'+k).value = ''); $('#fFotoVista').innerHTML = ''; pintarFactura(); });
+$('#fFoto').addEventListener('change', e => {
+  const f = e.target.files && e.target.files[0]; if(!f) return;
+  const url = URL.createObjectURL(f);
+  $('#fFotoVista').innerHTML = `<div class="adjunto"><img src="${url}" alt="Foto de su recibo"><button class="boton sec" type="button" id="fQuitarFoto">Quitar foto</button></div>`;
+  $('#fQuitarFoto').onclick = () => { URL.revokeObjectURL(url); $('#fFotoVista').innerHTML = ''; e.target.value = ''; };
+});
+
+// Eventos
+const ahora = new Date(); const hoy = new Date(ahora - ahora.getTimezoneOffset()*6e4).toISOString().slice(0,10);
+$('#lFecha').value = hoy;
+$('#formLectura').addEventListener('submit', e => {
+  e.preventDefault();
+  const f = $('#lFecha').value, v = parseFloat($('#lValor').value);
+  if(!f || !(v >= 0)) return;
+  if(estado.ejemplo){ estado = {ejemplo:false, lecturas:[], tarifa:estado.tarifa, limite:estado.limite}; }
+  estado.lecturas = estado.lecturas.filter(x => x.fecha !== f).concat({fecha:f, valor:v});
+  $('#lValor').value = ''; delete $('#tConsumo').dataset.manual; pintar();
+});
+$('#btnEmpezar').addEventListener('click', () => { estado = {ejemplo:false, lecturas:[], tarifa:estado.tarifa, limite:estado.limite}; pintar(); $('#lValor').focus(); });
+['#tFijo','#tM3','#tFijoA','#tM3A','#tAjuste','#tOtros'].forEach(s => $(s).addEventListener('input', factura));
+$('#tConsumo').addEventListener('input', e => { e.target.dataset.manual = '1'; factura(); });
+$('#tPersonas').addEventListener('input', pintar);
+$('#rFecha').addEventListener('input', () => { recordatorio(false, null, 1); guardar('hs_recibo', estado); pintar(); });
+// Restaurar lo que el usuario había escrito
+const t = estado.tarifa || {};
+[['#tFijo','fijo'],['#tM3','m3'],['#tFijoA','fijoA'],['#tM3A','m3A'],['#tAjuste','ajuste'],['#tOtros','otros'],['#tPersonas','personas']].forEach(([s,k]) => { if(t[k] != null && t[k] !== '') $(s).value = t[k]; });
+if(estado.limite) $('#rFecha').value = estado.limite;
+matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', pintar);
+cargarFactura(); pintar(); pintarFactura();
+if(miFactura && miFactura.fLimite && !estado.limite){ $('#rFecha').value = miFactura.fLimite; recordatorio(false, null, 1); }
+})();
+</script>

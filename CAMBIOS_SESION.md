@@ -1,3 +1,14 @@
+# Versión 1.5.0 (16/11/2026): Mi recibo de agua y navegación unificada
+
+- **Mi recibo de agua** (`04_dashboard/recibo.html`, `/recibo`): lecturas del contador guardadas en el celular, consumo por periodo y por persona, gráfica, alerta de posible fuga, estimación de la factura con los valores que el usuario copia de su recibo, guía para leer la factura, recordatorio de fecha límite y pago seguro por canales oficiales. **No es un canal de Emsersopó: no consulta cuentas ni recibe pagos.** Integración oficial solo mediante convenio con la empresa.
+- **Navegación:** barra «← Volver a la app» y accesos en laboratorio, Sopó Cuida el Agua, Mi recibo y resultados, más un botón flotante para volver (`04_dashboard/comun.js`). Esas páginas respetan el tema elegido en la app.
+- **Mi factura del mes:** el usuario copia los datos de su recibo (total, fecha límite, referencia con botón copiar, estado pagada o por pagar). Botón «Consultar con Emsersopó» y endpoint `GET /api/v1/factura` listos, **inactivos hasta el convenio** (variables `EMSERSOPO_API_URL`, `EMSERSOPO_API_TOKEN`, `EMSERSOPO_PAGO_URL`). Propuesta técnica en `09_entregables/informes/Propuesta_Integracion_Emsersopo_HidroSopo.docx`.
+- **Canales oficiales de Emsersopó** enlazados (se abren en su sitio, no embebidos): descarga de la factura (emsersopo.hassqlservice.com), pago por PSE (taquilla de la empresa en psepagos.co, verificada) y AvalPayCenter (convenio 00024242). Los enlaces viven en `CANALES` al inicio del script de `recibo.html`.
+- **Asistente:** 33 temas (nuevos: cómo leer la factura y dónde pagar de forma segura). **119 pruebas.**
+- Informes del 19 y del 26, póster, correos y presentación actualizados.
+
+---
+
 # Versión 1.4.0 (10/11/2026): modo oscuro, asistente experto y educación completa
 
 - **Modo oscuro** automático (sigue al celular) o manual (menú → Automático / Claro / Oscuro). De noche la escena muestra luna y estrellas.

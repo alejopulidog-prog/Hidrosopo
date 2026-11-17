@@ -5,11 +5,11 @@
   "temporada_consumo": "seca",
   "ventana_humedad_desde": "2026-09-08",
   "url_qr": "https://hidrosopo.netlify.app/laboratorio",
-  "contacto": "jose.pulido@uniagustiniana.edu.co",
+  "contacto": "hidrosopo.netlify.app",
   "pruebas": {
     "software": {
-      "criterio": "102 pruebas automáticas",
-      "resultado": "102/102 ✓",
+      "criterio": "119 pruebas automáticas",
+      "resultado": "119/119 ✓",
       "estado": "ok"
     },
     "calibracion": {
@@ -33,5 +33,6 @@
       "estado": "sim"
     }
   },
-  "url_plegable": "https://hidrosopo.netlify.app/agua"
+  "url_plegable": "https://hidrosopo.netlify.app/agua",
+  "telefono": ""
 }

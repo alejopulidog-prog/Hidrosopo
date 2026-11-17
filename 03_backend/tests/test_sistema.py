@@ -319,3 +319,30 @@ def test_salud_informa_fuente_de_datos(monkeypatch):
     r = TestClient(main.app).get("/api/v1/salud")
     assert r.status_code == 200
     assert r.json()["fuente_datos"] in ("simulacion", "campo")
+
+
+def test_factura_inactiva_sin_convenio():
+    """Sin la API oficial de Emsersopó, no se consulta ni se inventa ninguna factura."""
+    from fastapi.testclient import TestClient
+    import main
+    main.EMSERSOPO_API_URL = ""
+    r = TestClient(main.app).get("/api/v1/factura", params={"cuenta": "123"})
+    assert r.status_code == 503
+    assert r.json()["detail"]["disponible"] is False
+
+
+def test_factura_con_convenio_usa_la_api_oficial(monkeypatch):
+    from fastapi.testclient import TestClient
+    import main, requests
+
+    class Resp:
+        status_code = 200
+        def json(self):
+            return {"referencia_pago": "999", "periodo": "oct", "consumo_m3": 20, "total": 100000,
+                    "fecha_limite": "2026-12-01", "estado": "pendiente"}
+    llamadas = []
+    monkeypatch.setattr(requests, "get", lambda url, **kw: llamadas.append(url) or Resp())
+    monkeypatch.setattr(main, "EMSERSOPO_API_URL", "https://api.oficial.example")
+    r = TestClient(main.app).get("/api/v1/factura", params={"cuenta": "12-34"})
+    assert r.status_code == 200 and r.json()["total"] == 100000
+    assert llamadas == ["https://api.oficial.example/facturas/1234"]

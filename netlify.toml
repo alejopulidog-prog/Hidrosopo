@@ -22,6 +22,10 @@
   to = "/comunidad.html"
   status = 301
 [[redirects]]
+  from = "/recibo"
+  to = "/recibo.html"
+  status = 301
+[[redirects]]
   from = "/resultados"
   to = "/resultados.html"
   status = 301

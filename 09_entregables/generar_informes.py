@@ -29,7 +29,7 @@ AGUA = RGBColor(0x2E, 0x7E, 0xA6)
 SIM = RGBColor(0x9A, 0x5A, 0x12)
 GRIS = RGBColor(0x5B, 0x55, 0x4B)
 
-BENEFICIARIO = "José Alejandro Pulido Gómez"
+BENEFICIARIO = "Jose Alejandro Pulido Gómez"
 # La cédula no va en el código (el repositorio es público): se lee de un
 # archivo local que está en .gitignore.
 try:
@@ -273,19 +273,25 @@ def avance2():
     tabla(d, ["N.º", "Actividad del plan", "Qué se hizo", "Estado"], [
         ["7", "Módulo de IA: balance hídrico FAO-56, aprendizaje automático (24 y 48 h) y asistente conversacional",
          "Motor FAO-56 (ETc = Kc × ET₀, agua fácilmente aprovechable, coeficiente de estrés) con pronóstico de Open-Meteo. "
-         "Dos modelos Gradient Boosting que predicen la humedad a 24 y 48 h. Asistente en español ampliado: avisos de helada "
-         "con la mínima pronosticada y conversión de la lámina a minutos de bomba. 102 pruebas automáticas aprobadas.",
+         "Dos modelos Gradient Boosting que predicen la humedad a 24 y 48 h. Asistente conversacional experto: registra riegos, "
+         "avisa riesgo de helada, traduce la lámina a minutos de bomba y responde 33 temas técnicos de una base de conocimiento "
+         "revisada, citando la fuente y sin necesitar internet. App con modo oscuro y navegación unificada entre la app, el laboratorio, Sopó Cuida el Agua y Mi recibo de agua. 119 pruebas automáticas aprobadas.",
          "Desarrollado con datos simulados; reentrenamiento con datos reales en la fase de campo"],
         ["8", "Instalación piloto en el predio y puesta en operación",
          "No ejecutada en el periodo. Se prepararon el protocolo, las planillas y el manual del productor.",
          "Reprogramada a enero de 2027 (ver avance 1)"],
+        ["Comp.", "Apropiación social: «Sopó Cuida el Agua»",
+         "Página web con calculadora de riego para huertas y plan semanal, agua lluvia, reto del hogar, «Mi recibo de agua» (mi factura del mes, acceso directo a la descarga de la factura y al pago oficial de Emsersopó por PSE y AvalPayCenter, lecturas del contador, valor estimado y alerta de fugas; la consulta automática queda preparada para un convenio con la empresa), quiz con certificado «Guardián del Agua» y «Pregúntele al experto»; plegable con QR; taller escolar articulado al PRAE; propuesta de trabajo con Emsersopó (Ley 373, art. 12).",
+         "Materiales listos; actividades con la comunidad desde diciembre"],
         ["5", "Pruebas reales en banco con la ESP32", ("c", "[COMPLETAR con lo que se haga del 12 al 18/11: envío a la plataforma, RSSI a 5/10/20/30 m, corriente en reposo con multímetro. Si no se alcanza, borrar esta fila]"),
          ("c", "[COMPLETAR]")],
     ], [1.0, 4.2, 8.4, 3.5], tam=8.5)
 
     d.add_heading("2. Evidencias", 1)
     tabla(d, ["Actividad", "Evidencia", "Dónde"], [
-        ["7 · Pruebas", "Pantallazo de pytest: 102 pruebas aprobadas", ("c", "[COMPLETAR: pegar pantallazo, ver Anexo]")],
+        ["7 · Pruebas", "Salida de las pruebas automáticas: 119 aprobadas", "Anexo A"],
+        ["7 · Asistente", "Respuestas del asistente experto y modo oscuro en la app", "Anexo B · " + URL_NETLIFY],
+        ["Comp. · Educación", "Sopó Cuida el Agua, estrategia de apropiación y plegable", URL_NETLIFY + "/agua · documentos adjuntos"],
         ["7 · Modelo", "Métricas de validación temporal de los modelos 24 h y 48 h", "03_backend/modelos/*_metricas.json · Figura 1"],
         ["7 · Recomendaciones", "Recomendación diaria y respuestas del asistente en la app (modo demostración)", URL_NETLIFY + " (app del productor)"],
         ["7 · Simulador", "Gemelo digital interactivo: calendario frente a HidroSopó con el mismo clima", URL_NETLIFY + "/laboratorio"],
@@ -328,8 +334,10 @@ def avance2():
     vineta(d, "Diciembre 2026 – marzo 2027: compras, instalación, calibración, línea base y comparación pareada (actividades 5, 8 y 9), según el cronograma propuesto en el avance 1.")
     firma(d, "19 / 11 / 2026")
     d.add_page_break()
-    d.add_heading("Anexo. Pantallazo de las pruebas automáticas", 1)
-    texto(d, ("c", "[COMPLETAR: en la carpeta 03_backend ejecutar «pytest» y pegar aquí el pantallazo con «102 passed»]"))
+    d.add_heading("Anexo A. Pruebas automáticas", 1)
+    figura(d, SALIDA / "pytest_119.png", "Figura A1. Ejecución de las pruebas automáticas del backend (FAO-56, modelo, asistente, base de conocimiento, costos, PUEAA y servidor): 119 aprobadas.", 15.5)
+    d.add_heading("Anexo B. La app y el asistente", 1)
+    figura(d, Path(__file__).resolve().parent / "poster" / "fotos" / "predio.png", "Figura B1. App del productor, asistente experto en modo oscuro y certificado de la Escuela del Agua (capturas reales con datos de prueba).", 15.5)
     guardar(d, "Informe_Avance2_HidroSopo_JAPulido.docx")
 
 
@@ -375,8 +383,8 @@ def informe_final():
         ["Captura", "ESP32 + 3 sensores capacitivos (15/30/45 cm), DS18B20, SHT31 o DHT22, pluviómetro de balancín, caudalímetro de pulsos; 2 × 18650 y panel de 10 W; caja IP65 impresa en 3D", "Medir el agua disponible y el agua captada (línea base)"],
         ["Comunicación", "WiFi directo por HTTPS; buffer de 120 lecturas; LoRa 915 MHz como opción", "Hardware ≈ 36 % más barato que con pasarela"],
         ["Nube", "FastAPI, PostgreSQL, Open-Meteo; servicios gratuitos", "Guardar lecturas, calcular indicadores PUEAA"],
-        ["IA", "FAO-56 (ETc = Kc × ET₀) + Gradient Boosting 24/48 h + asistente híbrido (reglas, sin LLM obligatorio)", "Recomendar si regar y cuánto; nunca inventa cifras"],
-        ["Usuario", "App web instalable, sin conexión; reporte CSV para el municipio", "El productor decide desde el celular"],
+        ["IA", "FAO-56 (ETc = Kc × ET₀) + Gradient Boosting 24/48 h + asistente experto híbrido: reglas, base de conocimiento de 33 temas con fuente y, opcional, IA generativa solo para redactar", "Recomendar si regar y cuánto, avisar heladas, resolver dudas técnicas; nunca inventa cifras"],
+        ["Usuario", "App web instalable, sin conexión y con modo oscuro; red de predios con ahorro en pesos; reporte CSV para el municipio", "El productor decide desde el celular"],
     ], [2.6, 8.8, 5.7], tam=8.5)
 
     d.add_heading("3. Metodología de validación", 1)
@@ -416,7 +424,7 @@ def informe_final():
     texto(d, "Para que el conocimiento del proyecto no se quede en un predio, se desarrolló el componente «Sopó Cuida el Agua», "
           "dirigido a huertas caseras, campesinos y ferias, hogares y colegios, y articulado con el PUEAA (Ley 373 de 1997, "
           "artículo 12: campañas educativas y de concientización). Materiales listos:")
-    for t_ in ["Página web con calculadora de riego por cultivo (FAO-56), calculadora de agua lluvia, reto del hogar, quiz escolar y vista de indicadores para Emsersopó.",
+    for t_ in ["Página web con calculadora de riego por cultivo (FAO-56) y plan semanal, calculadora de agua lluvia, reto del hogar, «Mi recibo de agua» (acceso a la descarga de la factura y al pago oficial por PSE y AvalPayCenter, lecturas del contador, estimación de la factura y alerta de fugas; HidroSopó no recibe pagos), quiz escolar con certificado «Guardián del Agua», «Pregúntele al experto» y vista de indicadores para Emsersopó.",
                "Plegable tríptico con QR para ferias, mercados campesinos y colegios.",
                "Taller escolar «El suelo habla» de 2 sesiones, articulado al PRAE (Decreto 1743 de 1994), con encuesta antes y después.",
                "Carta de intención a Emsersopó para una mesa técnica sobre indicadores rurales y campañas."]:
@@ -428,7 +436,7 @@ def informe_final():
     tabla(d, ["Actividad", "Fecha propuesta"], REPROGRAMACION, [12.6, 4.5], tam=8.5)
 
     d.add_heading("9. Conclusiones", 1)
-    texto(d, "El sistema completo —firmware, plataforma, app, IA y gemelo digital— está desarrollado, probado con 102 pruebas "
+    texto(d, "El sistema completo —firmware, plataforma, app, IA y gemelo digital— está desarrollado, probado con 119 pruebas "
           "automáticas y publicado. En simulación cumple los cinco criterios de aceptación y muestra un ahorro de agua relevante. "
           "La contribución que falta, y la más importante, es medir ese ahorro en el predio piloto; para eso quedan listos el "
           "protocolo, las planillas, el cronograma y el compromiso del beneficiario de completarlo al inicio de 2027. El componente "
@@ -620,5 +628,66 @@ def apropiacion():
     guardar(d, "Estrategia_Sopo_Cuida_el_Agua_HidroSopo.docx")
 
 
+# ================================================================== PROPUESTA DE INTEGRACIÓN EMSERSOPÓ
+def propuesta_emsersopo():
+    d = documento("Propuesta de integración con Emsersopó")
+    portada(d, "Propuesta de integración", "Consulta de factura y pago en línea de Emsersopó desde la app HidroSopó, mediante convenio", [
+        ["Proponente", f"{BENEFICIARIO} · proyecto HidroSopó (incentivo FOES 2026-II)"],
+        ["Dirigido a", "Empresa de Servicios Públicos de Sopó — Emsersopó"],
+        ["Fecha", "Noviembre de 2026 · versión 1"],
+        ["Estado de la app", "Sección «Mi recibo de agua» publicada en " + URL_NETLIFY + "/recibo; integración preparada e inactiva"],
+    ])
+    d.add_heading("1. Qué se propone", 1)
+    texto(d, "Que los usuarios de Emsersopó puedan ver su factura del mes dentro de la app HidroSopó, sin copiarla a mano, y pagarla en el canal "
+          "oficial de la empresa, junto con las herramientas que la app ya ofrece: seguimiento de las lecturas del contador, "
+          "estimación del consumo, alerta de fugas y educación para el uso eficiente del agua (Ley 373 de 1997, artículo 12).")
+    texto(d, ("b", "Principio: "), "HidroSopó nunca recibe dinero ni guarda datos de pago. El pago se hace siempre en la pasarela "
+          "oficial de Emsersopó; la app solo muestra la factura y lleva al usuario a ese canal.")
+    d.add_heading("2. Qué ya está listo", 1)
+    for t_ in ["«Mi recibo de agua»: lecturas del contador, consumo por persona, alerta de posible fuga, estimación de la factura, "
+               "guía para leer el recibo, recordatorio de fecha límite y aviso contra fraudes.",
+               "«Mi factura del mes»: el usuario copia los datos de su recibo y los tiene a la mano, con la referencia lista para copiar.",
+               "Acceso directo a los canales oficiales que ya tiene la empresa: descarga de la factura (portal de facturación) y pago por PSE y AvalPayCenter, que se abren en su propio sitio.",
+               "Servidor con el servicio de consulta de factura programado y probado, que permanece inactivo hasta recibir la "
+               "dirección y la credencial oficiales de la empresa."]:
+        vineta(d, t_)
+    d.add_heading("3. Qué necesitaría de Emsersopó", 1)
+    tabla(d, ["Elemento", "Detalle"], [
+        ["Servicio de consulta", "Una dirección segura (HTTPS) que, con el número de cuenta, entregue: referencia de pago, periodo, consumo en m³, total, fecha límite y estado (pendiente o pagada)."],
+        ["Credencial", "Un token de acceso exclusivo para HidroSopó, revocable por la empresa en cualquier momento."],
+        ["Enlace oficial de pago", "La dirección de la pasarela de pago de la empresa (por ejemplo, su botón PSE), a la que la app enviará al usuario."],
+        ["Lineamientos de imagen", "Cómo debe presentarse la empresa en la app y qué textos usar."],
+    ], [4.0, 13.1], tam=9)
+    d.add_heading("4. Funcionamiento técnico", 1)
+    texto(d, "La app pide la factura al servidor de HidroSopó; el servidor la consulta en el servicio de Emsersopó con la credencial "
+          "y devuelve solo los campos necesarios. La credencial vive únicamente en el servidor (nunca en el celular ni en el "
+          "código público). El botón «Pagar en línea» abre la pasarela oficial de la empresa en una pestaña aparte.")
+    tabla(d, ["Paso", "Quién", "Qué pasa"], [
+        ["1", "Usuario", "Escribe su número de cuenta en «Mi factura del mes» y toca «Consultar con Emsersopó»."],
+        ["2", "Servidor HidroSopó", "Consulta GET /facturas/{cuenta} en el servicio de Emsersopó, con el token, por HTTPS."],
+        ["3", "Emsersopó", "Responde los datos de la factura o «no encontrada»."],
+        ["4", "App", "Muestra la factura con su estado y la referencia; el botón lleva a la pasarela oficial."],
+        ["5", "Pasarela de Emsersopó", "Recibe el pago. HidroSopó no interviene."],
+    ], [1.2, 4.0, 11.9], tam=9)
+    d.add_heading("5. Protección de datos y seguridad", 1)
+    for t_ in ["Tratamiento según la Ley 1581 de 2012, con autorización expresa del usuario antes de la primera consulta.",
+               "No se almacenan facturas en el servidor: se consultan en el momento y se muestran solo al usuario.",
+               "Credencial guardada como variable de entorno del servidor; registros de acceso sin datos personales.",
+               "La empresa puede revocar el acceso o pausar la integración en cualquier momento.",
+               "Avisos permanentes contra fraudes: pagar solo por la pasarela oficial."]:
+        vineta(d, t_)
+    d.add_heading("6. Fases propuestas", 1)
+    tabla(d, ["Fase", "Qué", "Duración estimada"], [
+        ["1", "Reunión técnica y firma del convenio o acuerdo de uso de datos", "Según la empresa"],
+        ["2", "Pruebas con el ambiente de pruebas de Emsersopó (cuentas ficticias de la empresa)", "2 semanas"],
+        ["3", "Piloto con un grupo de usuarios voluntarios", "1 mes"],
+        ["4", "Apertura a todos los usuarios y medición de uso", "Continuo"],
+    ], [1.2, 11.4, 4.5], tam=9)
+    texto(d, "Para activar la integración basta con configurar tres variables en el servidor (EMSERSOPO_API_URL, "
+          "EMSERSOPO_API_TOKEN y EMSERSOPO_PAGO_URL) con los datos que entregue la empresa.")
+    firma(d, "____ / 11 / 2026")
+    guardar(d, "Propuesta_Integracion_Emsersopo_HidroSopo.docx")
+
+
 if __name__ == "__main__":
-    avance1(); avance2(); informe_final(); apropiacion()
+    avance1(); avance2(); informe_final(); apropiacion(); propuesta_emsersopo()

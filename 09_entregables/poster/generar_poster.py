@@ -116,14 +116,14 @@ def construir(cfg: dict) -> str:
   <div class="logos">{_logo("sopo", "LOGO ALCALDÍA DE SOPÓ")}{_logo("uniagustiniana", "LOGO UNIAGUSTINIANA")}</div>
 </header>
 
-<div class="autor"><b>José Alejandro Pulido Gómez</b> · Ingeniería Mecatrónica, Universitaria Agustiniana
+<div class="autor"><b>Jose Alejandro Pulido Gómez</b> · Ingeniería Mecatrónica, Universitaria Agustiniana
   <span>Estímulo para la formación en CTeI · FOES 2026-II · COMUC+CTeI · Municipio de Sopó</span></div>
 
 <main>
 <div class="col">
   <section><h2><i>01</i>El problema</h2>
     <p>En las fincas lecheras y los pequeños predios agrícolas de Sopó se riega <b>por costumbre</b>: por calendario o “a ojo”. Nadie sabe cuánta agua usa ni puede demostrarlo, y el <b>PUEAA</b> municipal necesita esos datos del sector rural.</p>
-    {_foto("predio", "Software funcionando: app del productor, asistente y laboratorio de pruebas (capturas reales, datos de prueba)", True)}
+    {_foto("predio", "Software funcionando: app del productor, asistente experto en modo oscuro y certificado de la Escuela del Agua (capturas reales, datos de prueba)", True)}
   </section>
   <section class="objetivo"><h2><i>02</i>Objetivo</h2>
     <p>Diseñar, implementar y validar un sistema de <b>bajo costo</b> que mida el agua del suelo y la que entra al predio, y le diga al productor —en su celular y en español— <b>si debe regar hoy y cuánto</b>.</p>
@@ -151,7 +151,7 @@ def construir(cfg: dict) -> str:
     <div class="capas">
       <div><b>Capa 1 · Física</b>Balance hídrico <b>FAO-56</b>: ET₀ (Penman-Monteith) × Kc del cultivo, con el pronóstico de Open-Meteo.</div>
       <div><b>Capa 2 · Aprendizaje automático</b><b>Gradient Boosting</b> entrenado con los datos del predio: predice la humedad a 24 y 48 h.</div>
-      <div><b>Capa 3 · Conversación</b>App instalable y asistente en español: “Regué 40 minutos”, “¿por qué no riego hoy?”.</div>
+      <div><b>Capa 3 · Asistente experto</b>App instalable, con modo oscuro y sin conexión. Asistente en español que registra riegos («Regué 40 minutos»), avisa heladas y responde 33 temas técnicos citando su fuente.</div>
     </div>
     <div class="fotos3">{_foto("nodo", "Diseño CAD del nodo: caja IP65, tapa, estaca de sensores y soporte solar (STEP · STL · DXF)", True)}{_foto("calibracion", "Calibración en banco virtual (simulación)", True)}{_foto("caudal", "Caudalímetro: corrección del factor K (simulación)", True)}</div>
   </section>
@@ -179,7 +179,7 @@ def construir(cfg: dict) -> str:
     <p>El sistema calcula solo los indicadores y los entrega en un informe y en CSV para Emsersopó:</p>
     <div class="chips"><span>Volumen captado <b>m³</b></span><span>Caudal medio y máximo <b>l/s</b></span><span>Módulo de consumo <b>l/s/ha</b></span><span>Lámina aplicada <b>mm</b></span><span>Eficiencia de aplicación <b>%</b></span><span>Ahorro vs. línea base <b>m³ · $</b></span></div>
     <div class="comunidad"><b>Sopó Cuida el Agua</b> · apropiación social (Ley 373, art. 12: campañas educativas)
-      <div><span><i>Huertas</i>litros por cultivo y agua lluvia</span><span><i>Ferias</i>plegable con QR y cálculo en vivo</span><span><i>Colegios</i>taller «El suelo habla» · PRAE</span><span><i>Hogares</i>reto de ahorro en casa</span></div>
+      <div><span><i>Huertas</i>litros por cultivo y agua lluvia</span><span><i>Ferias</i>plegable con QR y cálculo en vivo</span><span><i>Colegios</i>taller «El suelo habla» · PRAE</span><span><i>Hogares</i>reto de ahorro y «Mi recibo de agua»</span></div>
     </div>
   </section>
 </div>
@@ -222,7 +222,7 @@ def construir(cfg: dict) -> str:
       <li>Pedregosa, F. et al. (2011). Scikit-learn. <i>JMLR, 12</i>, 2825–2830.</li>
       <li>Zippenfenig, P. (2023). <i>Open-Meteo.com Weather API</i>. Zenodo.</li>
     </ol>
-    <div class="cierre">{_qr(cfg.get("url_qr", ""))}<div><b>Código abierto</b><span>Código MIT · diseños CC BY 4.0</span><span>{html.escape(cfg.get("contacto", ""))}</span></div></div>
+    <div class="cierre">{_qr(cfg.get("url_qr", ""))}<div><b>Código abierto</b><span>Código MIT · diseños CC BY 4.0</span><span>{html.escape(cfg.get("contacto", ""))}</span><span>{html.escape(cfg.get("telefono", ""))}</span></div></div>
   </section>
 </footer>
 <div class="lema">💧 Cuidemos el agua, cuidemos el futuro</div>
@@ -298,8 +298,9 @@ header{ position:relative; height:190mm; color:#fff; padding:20mm 34mm 0 }
 h1{ font-size:31mm; line-height:1.04; font-weight:900; margin-top:7mm; letter-spacing:-.01em }
 h1 em{ font-style:normal; color:#C9A46B }
 .sub{ margin-top:7mm; font-size:10mm; color:#E8E3DA; max-width:660mm; line-height:1.25 }
-.logos{ position:absolute; right:34mm; top:24mm; display:flex; flex-direction:column; gap:7mm; align-items:flex-end }
-.logo{ max-height:42mm; max-width:120mm; background:#fff; padding:3mm; border-radius:4mm }
+.logos{ position:absolute; right:34mm; top:22mm; display:flex; gap:6mm; align-items:center; background:#fff; padding:5mm 7mm; border-radius:6mm; box-shadow:0 3mm 10mm rgba(0,0,0,.25) }
+.logo{ height:40mm; max-width:115mm; object-fit:contain; display:block }
+.logos .logo + .logo{ border-left:.5mm solid #DDD8CE; padding-left:6mm }
 .logo.vacio{ background:transparent; padding:0; width:120mm; height:42mm; border:.7mm dashed rgba(255,255,255,.55); border-radius:4mm; display:grid; place-items:center; font-size:5.5mm; color:#E8E3DA; text-align:center; letter-spacing:.06em }
 .autor{ padding:7mm 34mm; font-size:9.6mm; border-bottom:.6mm solid var(--linea); display:flex; justify-content:space-between; align-items:baseline; gap:10mm }
 .autor span{ font-size:7.4mm; color:var(--humo) }
@@ -382,6 +383,11 @@ footer{ display:grid; grid-template-columns:250mm 320mm 236mm; gap:13mm; padding
 
 def main():
     cfg = json.loads((AQUI / "config.json").read_text(encoding="utf-8"))
+    privados = AQUI.parent / "datos_personales.json"   # no se sube a GitHub
+    if privados.exists():
+        for k, v in json.loads(privados.read_text(encoding="utf-8")).items():
+            if k in ("telefono", "contacto") and v:
+                cfg[k] = v
     pagina = construir(cfg)
     (AQUI / "poster.html").write_text(pagina, encoding="utf-8")
     print("✓ poster.html")

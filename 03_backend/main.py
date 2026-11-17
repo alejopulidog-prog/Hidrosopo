@@ -39,7 +39,7 @@ import costos
 app = FastAPI(
     title="HidroSopó API",
     description="Monitoreo IoT y optimización del uso del agua — Sopó, Cundinamarca",
-    version="1.4.0",
+    version="1.5.0",
 )
 
 app.add_middleware(
@@ -1123,3 +1123,43 @@ def raiz():
       <li><a href="/api/v1/salud">Estado del sistema</a></li>
       <li><a href="/api/v1/predios">Predios</a></li>
     </ul>"""
+
+
+# ------------------------------------------------------------------
+#  Factura de Emsersopó: integración preparada, inactiva sin convenio
+# ------------------------------------------------------------------
+# HidroSopó no tiene acceso a los sistemas de Emsersopó. Este endpoint solo
+# se activa si la empresa, mediante convenio, entrega una API oficial:
+#   EMSERSOPO_API_URL    = URL base que entregue la empresa
+#   EMSERSOPO_API_TOKEN  = credencial que entregue la empresa
+#   EMSERSOPO_PAGO_URL   = enlace oficial de pago en línea de la empresa
+# HidroSopó nunca recibe pagos ni guarda datos de pago: solo muestra la factura
+# y lleva al usuario al canal oficial.
+EMSERSOPO_API_URL = os.getenv("EMSERSOPO_API_URL", "").rstrip("/")
+
+
+@app.get("/api/v1/factura")
+def consultar_factura(cuenta: str):
+    cuenta = "".join(ch for ch in (cuenta or "") if ch.isalnum())[:24]
+    if not EMSERSOPO_API_URL:
+        raise HTTPException(503, {
+            "disponible": False,
+            "mensaje": "La consulta de facturas se activa cuando Emsersopó autorice la conexión mediante convenio. "
+                       "Mientras tanto, consulte y pague por los canales oficiales de la empresa."})
+    if not cuenta:
+        raise HTTPException(422, "Escriba el número de cuenta que aparece en su factura.")
+    import requests as _rq
+    try:
+        r = _rq.get(f"{EMSERSOPO_API_URL}/facturas/{cuenta}",
+                    headers={"Authorization": f"Bearer {os.getenv('EMSERSOPO_API_TOKEN', '')}"}, timeout=10)
+    except Exception:
+        raise HTTPException(502, "El sistema de Emsersopó no respondió. Intente más tarde.")
+    if r.status_code == 404:
+        raise HTTPException(404, "No se encontró una factura para esa cuenta.")
+    if r.status_code != 200:
+        raise HTTPException(502, "El sistema de Emsersopó no respondió como se esperaba.")
+    d = r.json()
+    return {"disponible": True, "fuente": "Emsersopó (API oficial del convenio)",
+            "cuenta": cuenta, "referencia_pago": d.get("referencia_pago"), "periodo": d.get("periodo"),
+            "consumo_m3": d.get("consumo_m3"), "total": d.get("total"), "fecha_limite": d.get("fecha_limite"),
+            "estado": d.get("estado"), "pago_url": os.getenv("EMSERSOPO_PAGO_URL") or None}
